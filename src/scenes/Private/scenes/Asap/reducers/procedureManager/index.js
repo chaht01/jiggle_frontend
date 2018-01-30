@@ -1,7 +1,7 @@
 import * as actionType from '../../sagas/types'
 
 const procedureManager = (state={
-    selectedTemplateIdx: 0,
+    selectedTemplateIdx: -1,
     dirtyData: {},
     appearance: null
 }, action) => {

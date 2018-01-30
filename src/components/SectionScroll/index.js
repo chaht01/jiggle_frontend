@@ -4,10 +4,15 @@ import ReactDOM from 'react-dom'
 import SectionScrollContainer from './SectionScrollContainer'
 import SectionScrollSection from './SectionScrollSection'
 import SectionScrollRouteSection from './SectionScrollRouteSection'
-import SectionScrollTimeline from './SectionScrollTimeline'
+import SectionScrollSpy from './SectionScrollSpy'
 import FullPage from '../Layout/FullPage'
 
 import styled from 'styled-components'
+
+const SectionScrollComponent = styled(FullPage)`
+    position:relative;
+    padding-top: ${props => props.timeline ? '50px' : 0};
+`
 
 class SectionScroll extends React.Component{
     constructor(props){
@@ -24,10 +29,16 @@ class SectionScroll extends React.Component{
             prevDelta: 0,
             wheelTId: -1
         }
-        this.updateScrollState = this.updateScrollState.bind(this)
-        this.handleScrollEvents = this.handleScrollEvents.bind(this)
+        this.sanitizedChildren = null
+        this.timeline = null
+        this.anchorIdx = 0
+        this.activeAnchorLength = 0
+        this.handleSection = this.handleSection.bind(this)
         this.disableScroll = this.disableScroll.bind(this)
         this.handleWheelEvents = this.handleWheelEvents.bind(this)
+        this.activateSection = this.activateSection.bind(this)
+        this.checkValidSectionIdx = this.checkValidSectionIdx.bind(this)
+        this.checkAnchorIndex = this.checkAnchorIndex.bind(this)
     }
 
     disableScroll(e){
@@ -35,111 +46,99 @@ class SectionScroll extends React.Component{
         return false
     }
 
-    updateScreenProperties(){
+    updateScreenProperties(cb){
         this.setState((prevState, props) => {
             const container = ReactDOM.findDOMNode(this.container)
             return {
                 screenHeight: container.clientHeight,
                 self: container,
                 prevScrollTop: container.scrollTop,
-                // activeSection: parseInt(container.scrollTop/prevState.screenHeight),
+                activeSection: parseInt(container.scrollTop/prevState.screenHeight),
                 delta: 0
             }
-        })
-    }
-
-    updateScrollState(){
-        this.setState((prevState, props) => {
-            const st = prevState.self.scrollTop
-            return {
-                direction: st > prevState.prevScrollTop ? 'down' : 'up',
-                prevScrollTop: st,
-                delta: st - prevState.prevScrollTop
+        }, () => {
+            if(cb && typeof cb === "function"){
+                cb()
             }
         })
     }
 
+    checkValidSectionIdx(idx){
+        if(this.state.self.children[idx] == undefined){
+            return false
+        }
+        return true
+    }
 
     handleWheelEvents(e){
-        console.log("start@@")
-        // console.log(e.deltaY, -e.wheelDelta, e.detail)
-        // console.log(this.state.activeSection, this.state.nextSection, prevDelta, currDelta, forceUpdate)
-        // console.log("start!!")
-        // ReactDOM.findDOMNode(this.container).removeEventListener('scroll', this.handleScrollEvents, false) // 스크롤 이벤트와 중복되는 것을 막기위해 스크롤은 중지시킨다
-        ReactDOM.findDOMNode(this.container).removeEventListener('wheel', this.disableScroll) // 휠 이벤트 블럭을 다시 푼다
-
-        const prevDirection = this.state.direction
-        // const direction = Math.abs(e.deltaY) < 20 ? 'idle' : (e.deltaY < 0 ? 'up':'down')
-        const prevDelta = this.state.prevDelta
-        const currDelta = e.deltaY
-        const forceUpdate = currDelta * prevDelta > 0 && Math.abs(currDelta) > Math.abs(prevDelta)
-
-        const direction = (currDelta < 0 ? 'up':'down')
-        let nextSection = direction === 'down' ? this.state.activeSection+1 :
-            (direction==='idle' ? this.state.activeSection : this.state.activeSection-1)
-        if(this.state.self.children[nextSection] == undefined){
-            nextSection = this.state.activeSection
-        }
-
-
-        this.setState((prevState) => {
-            if(prevState.wheelTId!=-1) { // 이미 휠 이벤트를 중지할 계획이었다면 취소한다(계속 휠 이벤트를 블럭하기 위함)
-                clearTimeout(prevState.wheelTId)
+        // Update current activeSection sync with current scroll bar status.
+        this.setState((prevState)=>{
+            return {
+                activeSection: parseInt(prevState.self.scrollTop/prevState.screenHeight)
             }
-            return{
-                direction,
-                isWheelEvent: true,
-                nextSection: nextSection,
-                prevDelta: currDelta,
-                wheelTId: setTimeout(() => {
-                    this.setState(()=>{
-                        return {
-                            direction: 'idle', // 상태 idle로 바꿈
-                            wheelTId: -1,
-                            isWheelEvent: false
-                        }
-                    }, () => {
-                        console.log('g', this.state.activeSection, this.state.nextSection)
-                        ReactDOM.findDOMNode(this.container).addEventListener('wheel', this.handleWheelEvents) // 휠 이벤트 재등록
-                    })
-                }, 500)
+        }, () => {
+            ReactDOM.findDOMNode(this.container).removeEventListener('wheel', this.disableScroll) // 휠 이벤트 블럭을 다시 푼다
+
+            const currDelta = e.deltaY
+            const direction = (currDelta < 0 ? 'up':'down')
+
+            let nextSection = direction === 'down' ? this.state.activeSection+1 :
+                (direction==='idle' ? this.state.activeSection : this.state.activeSection-1)
+            if(!this.checkValidSectionIdx(nextSection)){
+                nextSection = this.state.activeSection
             }
-        }, ()=>{
-            ReactDOM.findDOMNode(this.container).addEventListener('wheel', this.disableScroll, {passive: false}) // 휠 이벤트도 막는다(계산용으로만 사용)
-            ReactDOM.findDOMNode(this.container).removeEventListener('wheel', this.handleWheelEvents) // 휠 이벤트 블럭
-            if(this.state.animatingId.length == 0) { // 애니메이션이 끝났을때 재개
-                this.handleScrollEvents(e)
-            }
+
+            this.setState((prevState) => {
+                if(prevState.wheelTId!=-1) { // 이미 휠 이벤트를 중지할 계획이었다면 취소한다(계속 휠 이벤트를 블럭하기 위함)
+                    clearTimeout(prevState.wheelTId)
+                }
+                return{
+                    direction,
+                    isWheelEvent: true,
+                    nextSection: nextSection,
+                    prevDelta: currDelta,
+                    wheelTId: setTimeout(() => {
+                        this.setState(()=>{
+                            return {
+                                direction: 'idle', // 상태 idle로 바꿈
+                                wheelTId: -1,
+                                isWheelEvent: false
+                            }
+                        }, () => {
+                            ReactDOM.findDOMNode(this.container).addEventListener('wheel', this.handleWheelEvents) // 휠 이벤트 재등록
+                        })
+                    }, 500)
+                }
+            }, ()=>{
+                ReactDOM.findDOMNode(this.container).addEventListener('wheel', this.disableScroll, {passive: false}) // 휠 이벤트도 막는다(계산용으로만 사용)
+                ReactDOM.findDOMNode(this.container).removeEventListener('wheel', this.handleWheelEvents) // 휠 이벤트 블럭
+                if(this.state.animatingId.length == 0) { // 애니메이션이 끝났을때 재개
+                    this.handleSection(e)
+                }
+            })
         })
+
+
     }
 
-    handleScrollEvents(e){
-        /*
-        if(this.state.wheelTId==-1){ //catch idle
-
-        }else{ //catch direction
-
-        }
-        */
+    handleSection(e){
         if(this.state.nextSection!=this.state.activeSection){
             this.triggerScrollAnimate(ReactDOM.findDOMNode(this.container).children[this.state.nextSection])
         }
+    }
 
-        /*
-        * const nextSection = this.state.direction === 'down' ? this.state.activeSection+1 :
-         (this.state.direction==='idle' ? this.state.activeSection : this.state.activeSection-1)
-
-         if(this.state.self.children[nextSection] !== undefined) {
-         this.setState(()=>{
-         return {
-         activeSection: nextSection
-         }
-         }, () => {
-         this.triggerScrollAnimate(ReactDOM.findDOMNode(this.container).children[nextSection])
-         console.log('a')
-         })
-         }*/
-
+    activateSection(index, cb){
+        if(this.checkValidSectionIdx(index)){
+            this.setState(()=>{
+                return {
+                    nextSection: index
+                }
+            }, () => {
+                if(cb && typeof cb === "function"){
+                    cb()
+                }
+            })
+        }
     }
 
 
@@ -220,26 +219,27 @@ class SectionScroll extends React.Component{
     }
     triggerScrollAnimate(destination, duration=1000, easing='easeInOutCubic') {
 
-        // 스크롤 이벤트 블럭
-        ReactDOM.findDOMNode(this.container).removeEventListener('scroll', this.handleScrollEvents, false)
-        ReactDOM.findDOMNode(this.container).addEventListener('scroll', this.disableScroll, false)
-
         const container = this.state.self || ReactDOM.findDOMNode(this.container)
         const startTime = 'now' in window.performance ? performance.now() : new Date().getTime()
 
 
         const finished = () => {
-            console.log('finish called@', container.scrollTop, this.state.screenHeight)
             this.state.animatingId.forEach(id => cancelAnimationFrame(id))
             this.setState((prevState, props) => {
                 return {
                     animatingId: [],
                     direction: 'idle',
+                    isWheelEvents: false,
                     activeSection: parseInt(container.scrollTop/prevState.screenHeight),
                 }
+            }, () => {
             })
         }
         this.scroll(container, destination, startTime, duration, easing, finished)
+    }
+
+    checkAnchorIndex() {
+        this.anchorIdx = parseInt((this.state.self.scrollTop+this.state.screenHeight/2)/this.state.screenHeight)
     }
 
     sanitizeChildren(children){
@@ -248,17 +248,23 @@ class SectionScroll extends React.Component{
          */
         this.sanitizedChildren = children.filter((child)=>(child!==null && child!==undefined))
         const childrenIsArray = Array.isArray(this.sanitizedChildren)
-        const allowedComponents = [SectionScrollSection, SectionScrollRouteSection, SectionScrollTimeline]
+        const allowedComponents = [SectionScrollSection, SectionScrollRouteSection, SectionScrollSpy]
+        const allowedSections = [SectionScrollSection, SectionScrollRouteSection]
+        const allowedTimeline = [SectionScrollSpy]
         if((childrenIsArray ?
                 this.sanitizedChildren.filter((child)=> allowedComponents.indexOf(child.type)<0).length>0
                 : allowedComponents.indexOf(children.type)<0)){
             console.error('Render error: cannot render component but "SectionScrollSection"')
-            if(childrenIsArray){
-                this.sanitizedChildren = children.filter((child)=>allowedComponents.indexOf(child.type)>-1)
-                this.sanitizedChildren = this.sanitizedChildren.length === 0 ? null : this.sanitizedChildren
-            }else{
-                this.sanitizedChildren = null
-            }
+        }
+        if(childrenIsArray){
+            this.sanitizedChildren = children.filter((child)=>allowedSections.indexOf(child.type)>-1)
+            this.timeline = children.filter((child)=>allowedTimeline.indexOf(child.type)>-1)[0]
+            this.sanitizedChildren = this.sanitizedChildren.length === 0 ? null : this.sanitizedChildren
+            this.activeAnchorLength = this.sanitizedChildren.length
+        }else{
+            this.sanitizedChildren = allowedSections.indexOf(children)>-1 ? children : null
+            this.timeline = allowedTimeline.indexOf(children)>-1 ? children : null
+            this.activeAnchorLength = 0
         }
     }
 
@@ -267,23 +273,33 @@ class SectionScroll extends React.Component{
     }
 
     componentDidMount(){
-        this.updateScreenProperties()
-        window.addEventListener('resize', this.updateScreenProperties.bind(this), false)
-        // ReactDOM.findDOMNode(this.container).addEventListener('scroll', this.handleScrollEvents)
-        ReactDOM.findDOMNode(this.container).addEventListener('wheel', this.handleWheelEvents, {passive:false})
-        const active = this.props.active || 0
-        this.triggerScrollAnimate(ReactDOM.findDOMNode(this.container).children[active])
+        this.updateScreenProperties(()=>{
+            window.addEventListener('resize', this.updateScreenProperties.bind(this), false)
+            this.state.self.addEventListener('scroll', this.checkAnchorIndex)
+            this.state.self.addEventListener('wheel', this.handleWheelEvents, {passive:false})
+            const active = this.props.active || 0
+            this.activateSection(active, this.handleSection)
+        })
     }
 
     componentWillReceiveProps(nextProps){
         this.sanitizeChildren(nextProps.children)
+        const active = nextProps.active || 0
+        setTimeout(()=>this.activateSection(active, this.handleSection), 250) //TODO: async
     }
 
     render(){
         return (
-            <SectionScrollContainer ref={(container)=> this.container = container}>
-                {this.sanitizedChildren}
-            </SectionScrollContainer>
+            <SectionScrollComponent timeline={this.timeline!==null}>
+                {React.cloneElement(this.timeline, {
+                    active: this.anchorIdx,
+                    activeAnchorLength: this.activeAnchorLength,
+                    activateSection: (index)=>this.activateSection(index, this.handleSection)
+                })}
+                <SectionScrollContainer ref={(container)=> this.container = container}>
+                    {this.sanitizedChildren}
+                </SectionScrollContainer>
+            </SectionScrollComponent>
         )
 
     }

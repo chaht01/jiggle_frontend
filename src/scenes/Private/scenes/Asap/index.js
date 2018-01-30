@@ -7,7 +7,7 @@ import Sheet from '../../components/Sheet'
 import FullPage from '../../../../components/Layout/FullPage'
 import SectionScroll from '../../../../components/SectionScroll'
 import SectionScrollSection from '../../../../components/SectionScroll/SectionScrollSection'
-import SectionScrollTimeline from '../../../../components/SectionScroll/SectionScrollTimeline'
+import SectionScrollSpy from '../../../../components/SectionScroll/SectionScrollSpy'
 
 /* UTILS */
 import connect from "react-redux/es/connect/connect";
@@ -30,7 +30,8 @@ const mapDispatchToProps = (dispatch) => {
 
 const AsapRepresentation = ({match, selectedTemplate, dirtyData, selectTemplate, ...rest}) => {
     return (
-        <SectionScroll active={0}>
+        <SectionScroll active={selectedTemplate!=-1 ? 1: 0}>
+            <SectionScrollSpy items={['템플릿 선택', '데이터 선택', '입력세부 조정']}/>
             <SectionScrollSection>
                 <TemplateSelector selectTemplate={selectTemplate}/>
             </SectionScrollSection>
