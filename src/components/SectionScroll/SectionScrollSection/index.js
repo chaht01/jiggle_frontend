@@ -3,12 +3,12 @@ import FullPage from '../../Layout/FullPage'
 import styled from 'styled-components'
 
 const StyledFullPage = styled(FullPage)`
-    padding-top: 50px
+    padding-top: ${props => props.height};
 `
 
-const SectionScrollSection = ({children, ...rest}) => {
+const SectionScrollSection = ({children, active, spyHeight, ...rest}) => {
     return (
-        <StyledFullPage>{children}</StyledFullPage>
+        <StyledFullPage height={spyHeight}>{children}</StyledFullPage>
     )
 }
 

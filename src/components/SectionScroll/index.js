@@ -35,8 +35,10 @@ export default class SectionScroll extends React.Component{
         this.sanitizedChildren = null           // sanitized React component functions
         this.exceptionChildren = null           // sanitized but not regular SectionScroll's component set
         this.spy = null                         // SectionScrollSpy component
+        this.spyHeight = '50px'                 // default scroll spy height
         this.anchorIdx = 0                      // current activated anchorIdx(synchronized with real scroll position)
         this.activeAnchorLength = 0             // the number of active anchors (it can be used to style any component related to currently clickable object)
+
 
         this.handleSection = this.handleSection.bind(this)
         this.disableScroll = this.disableScroll.bind(this)
@@ -306,14 +308,14 @@ export default class SectionScroll extends React.Component{
         const allowedTimeline = [SectionScrollSpy]
         if((childrenIsArray ?
                 this.sanitizedChildren.filter((child)=> {
-                    return allowedComponents.indexOf(child.type)<0 && (child && !child.props.hasOwnProperty('sectionScrollException'))
+                    return allowedComponents.indexOf(child.type)<0 && (child && child.props && !child.props.hasOwnProperty('sectionScrollException'))
                 }).length>0
                 : allowedComponents.indexOf(children.type)<0)){
             console.error('Render error: cannot render component but "SectionScrollSection"')
         }
         if(childrenIsArray){
             this.sanitizedChildren = children.filter((child)=>allowedSections.indexOf(child.type)>-1)
-            this.exceptionChildren = children.filter((child)=> child && child.props.hasOwnProperty('sectionScrollException'))
+            this.exceptionChildren = children.filter((child)=> child && child.props && child.props.hasOwnProperty('sectionScrollException'))
             this.spy = children.filter((child)=>allowedTimeline.indexOf(child.type)>-1)[0]
             this.sanitizedChildren = this.sanitizedChildren.length === 0 ? null : this.sanitizedChildren
             this.activeAnchorLength = this.sanitizedChildren.length
@@ -335,7 +337,8 @@ export default class SectionScroll extends React.Component{
             activeAnchorLength: this.activeAnchorLength,
             activateSection: (index)=>this.activateSection(index, this.handleSection),
             direction: (this.state.activeSection === this.state.nextSection ? 'idle' :
-                (this.state.activeSection < this.state.nextSection) ? 'down' : 'up')
+                (this.state.activeSection < this.state.nextSection) ? 'down' : 'up'),
+            spyHeight: this.spy ? (this.spy.props.spyHeight || this.spyHeight) : this.spyHeight
         }
     }
 
@@ -362,18 +365,24 @@ export default class SectionScroll extends React.Component{
     render(){
         return (
             <SectionScrollComponent>
-                {React.cloneElement(this.spy, this.getPropsToSend())}
+                {React.cloneElement(this.spy, Object.assign({}, this.getPropsToSend(), this.spy.props))}
                 <SectionScrollContainer ref={(container)=> this.container = container} timeline={this.spy!==null}>
-                    {this.sanitizedChildren}
+                    {Array.isArray(this.sanitizedChildren) ?
+                        this.sanitizedChildren.map((child, i)=>{
+                            return (
+                                React.cloneElement(child, Object.assign({}, this.getPropsToSend(), {key:i}, child.props))
+                            )
+                        })
+                        : React.cloneElement(this.sanitizedChildren, Object.assign(this.getPropsToSend(), this.sanitizedChildren.props))}
                 </SectionScrollContainer>
                 {
                     Array.isArray(this.exceptionChildren) ?
                         this.exceptionChildren.map((child, i)=>{
                             return (
-                                React.cloneElement(child, Object.assign({}, this.getPropsToSend(),{key:i}))
+                                React.cloneElement(child, Object.assign({}, this.getPropsToSend(), {key:i}, child.props))
                             )
                         })
-                        : React.cloneElement(this.exceptionChildren, this.getPropsToSend())
+                        : React.cloneElement(this.exceptionChildren, Object.assign(this.getPropsToSend(), this.exceptionChildren.props))
                 }
             </SectionScrollComponent>
         )

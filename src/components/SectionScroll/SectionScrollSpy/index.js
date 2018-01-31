@@ -10,7 +10,7 @@ const Spy = styled.div`
     left: 0;
     top:0;
     width: 100%;
-    height: 50px;
+    height: ${props => props.height};
     background: rgba(255, 255, 255, ${props => props.direction=='idle' ? 1 : 0.5});
     z-index:9999;
     transition: all .5s;
@@ -39,9 +39,9 @@ const Anchor = styled.a`
 `
 
 
-const SectionScrollSpy = ({items, active, activateSection, activeAnchorLength, direction, ...rest}) => {
+const SectionScrollSpy = ({items, active, activateSection, activeAnchorLength, direction, spyHeight, ...rest}) => {
     return (
-        <Spy direction={direction}>
+        <Spy direction={direction} height={spyHeight}>
             {items.map((item, i)=>(
                 <Anchor key={i} onClick={()=>activateSection(i)} active={i==active} dim={activeAnchorLength<=i}>{item}</Anchor>
             ))}
