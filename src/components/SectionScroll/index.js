@@ -13,26 +13,31 @@ const SectionScrollComponent = styled(FullPage)`
     position:relative;
 `
 
-class SectionScroll extends React.Component{
+export default class SectionScroll extends React.Component{
     constructor(props){
         super(props);
+        /**
+         *
+         * @type {{self: null, screenHeight: Number, direction: string, isWheelEvent: boolean, animatingId: Array, nextSection: number, activeSection: number, prevDelta: number, wheelTId: number}}
+         */
         this.state = {
-            self: null,
-            screenHeight: window.innerHeight,
-            prevScrollTop: 0,
-            direction: 'idle',
-            isWheelEvent: false,
-            animatingId: [],
-            nextSection: 0,
-            activeSection: 0,
-            prevDelta: 0,
-            wheelTId: -1
+            self: null,                         // scrollable container DOM Node
+            screenHeight: window.innerHeight,   // scrollable container DOM Node's clientHeight
+            direction: 'idle',                  // scroll status: 'idle', 'up' and 'down'
+            isWheelEvent: false,                // wheel event flag
+            animatingId: [],                    // request animation frame id sequences
+            nextSection: 0,                     // scroll Destination Section Index
+            activeSection: 0,                   // current(but not synchronized with real scroll position) Source Section Index
+            prevDelta: 0,                       // deltaY value of wheel event(for detecting direction of wheel event)
+            wheelTId: -1                        // wheel Timeout Id for self blocking wheel event until reaching to next Section
         }
-        this.sanitizedChildren = null
-        this.exceptionChildren = null
-        this.timeline = null
-        this.anchorIdx = 0
-        this.activeAnchorLength = 0
+
+        this.sanitizedChildren = null           // sanitized React component functions
+        this.exceptionChildren = null           // sanitized but not regular SectionScroll's component set
+        this.spy = null                         // SectionScrollSpy component
+        this.anchorIdx = 0                      // current activated anchorIdx(synchronized with real scroll position)
+        this.activeAnchorLength = 0             // the number of active anchors (it can be used to style any component related to currently clickable object)
+
         this.handleSection = this.handleSection.bind(this)
         this.disableScroll = this.disableScroll.bind(this)
         this.handleWheelEvents = this.handleWheelEvents.bind(this)
@@ -42,18 +47,26 @@ class SectionScroll extends React.Component{
         this.getPropsToSend = this.getPropsToSend.bind(this)
     }
 
+    /**
+     * Cancel wheel event
+     * @param e
+     * @returns {boolean}
+     */
     disableScroll(e){
         e.preventDefault()
         return false
     }
 
+    /**
+     * Set state as current viewport statuses(screen, container, section, delta, and etc)
+     * @param cb
+     */
     updateScreenProperties(cb){
         this.setState((prevState, props) => {
             const container = ReactDOM.findDOMNode(this.container)
             return {
                 screenHeight: container.clientHeight,
                 self: container,
-                prevScrollTop: container.scrollTop,
                 activeSection: parseInt(container.scrollTop/prevState.screenHeight),
                 delta: 0
             }
@@ -64,21 +77,28 @@ class SectionScroll extends React.Component{
         })
     }
 
+    /**
+     * Check if given idx(index)th section exists
+     * @param idx {Number}
+     * @returns {boolean}
+     */
     checkValidSectionIdx(idx){
-        if(this.state.self.children[idx] == undefined){
-            return false
-        }
-        return true
+        return !(this.state.self.children[idx] == undefined)
     }
 
+    /**
+     * Pre-process wheel event(event handler registration & detaching, block self event by using timeout, and etc)
+     * to trigger section scroll method(handleSection).
+     * @param e
+     */
     handleWheelEvents(e){
-        // Update current activeSection sync with current scroll bar status.
         this.setState((prevState)=>{
+            // Update current activeSection sync with current scroll bar position
             return {
                 activeSection: parseInt(prevState.self.scrollTop/prevState.screenHeight)
             }
         }, () => {
-            ReactDOM.findDOMNode(this.container).removeEventListener('wheel', this.disableScroll) // 휠 이벤트 블럭을 다시 푼다
+            ReactDOM.findDOMNode(this.container).removeEventListener('wheel', this.disableScroll) // remove block function of wheel event
 
             const currDelta = e.deltaY
             const direction = (currDelta < 0 ? 'up':'down')
@@ -90,7 +110,7 @@ class SectionScroll extends React.Component{
             }
 
             this.setState((prevState) => {
-                if(prevState.wheelTId!=-1) { // 이미 휠 이벤트를 중지할 계획이었다면 취소한다(계속 휠 이벤트를 블럭하기 위함)
+                if(prevState.wheelTId!=-1) { // if there exist blocking wheel event by previous call, cancel it
                     clearTimeout(prevState.wheelTId)
                 }
                 return{
@@ -106,15 +126,15 @@ class SectionScroll extends React.Component{
                                 isWheelEvent: false
                             }
                         }, () => {
-                            ReactDOM.findDOMNode(this.container).addEventListener('wheel', this.handleWheelEvents) // 휠 이벤트 재등록
+                            ReactDOM.findDOMNode(this.container).addEventListener('wheel', this.handleWheelEvents) // Re-registration wheel handle function to wheel event
                         })
                     }, 500)
                 }
             }, ()=>{
-                ReactDOM.findDOMNode(this.container).addEventListener('wheel', this.disableScroll, {passive: false}) // 휠 이벤트도 막는다(계산용으로만 사용)
-                ReactDOM.findDOMNode(this.container).removeEventListener('wheel', this.handleWheelEvents) // 휠 이벤트 블럭
-                if(this.state.animatingId.length == 0) { // 애니메이션이 끝났을때 재개
-                    this.handleSection(e)
+                ReactDOM.findDOMNode(this.container).addEventListener('wheel', this.disableScroll, {passive: false}) // registration wheel block function to wheel event
+                ReactDOM.findDOMNode(this.container).removeEventListener('wheel', this.handleWheelEvents) // detach wheel handle function of wheel event
+                if(this.state.animatingId.length == 0) { // execute section scroll event only when all previous scroll animation ends
+                    this.handleSection()
                 }
             })
         })
@@ -122,12 +142,20 @@ class SectionScroll extends React.Component{
 
     }
 
-    handleSection(e){
+    /**
+     * Handle section scroll event along to activeSection and nextSection of current State.
+     */
+    handleSection(){
         if(this.state.nextSection!=this.state.activeSection){
             this.triggerScrollAnimate(ReactDOM.findDOMNode(this.container).children[this.state.nextSection])
         }
     }
 
+    /**
+     * Set nextSection of state and execute callback function
+     * @param index {Number}
+     * @param cb {function}
+     */
     activateSection(index, cb){
         if(this.checkValidSectionIdx(index)){
             this.setState(()=>{
@@ -143,6 +171,16 @@ class SectionScroll extends React.Component{
     }
 
 
+    /**
+     * scroll animation
+     * @param container {Object}
+     * @param destination {Object}
+     * @param startTime {Number}
+     * @param duration {Number}
+     * @param easing {string}
+     * @param callback {function}
+     * @returns {*}
+     */
     scroll(container, destination, startTime, duration, easing, callback){
         const easings = {
             linear(t) {
@@ -218,6 +256,13 @@ class SectionScroll extends React.Component{
             }
         })
     }
+
+    /**
+     * trigger scroll animation
+     * @param destination {Object}
+     * @param duration {Number}
+     * @param easing {string}
+     */
     triggerScrollAnimate(destination, duration=1000, easing='easeInOutCubic') {
 
         const container = this.state.self || ReactDOM.findDOMNode(this.container)
@@ -239,10 +284,17 @@ class SectionScroll extends React.Component{
         this.scroll(container, destination, startTime, duration, easing, finished)
     }
 
+    /**
+     * anchor index synchronized with current scroll position
+     */
     checkAnchorIndex() {
         this.anchorIdx = parseInt((this.state.self.scrollTop+this.state.screenHeight/2)/this.state.screenHeight)
     }
 
+    /**
+     * sanitize children(assume given as this.props.children) components
+     * @param children
+     */
     sanitizeChildren(children){
         /**
          * Check children is SectionScrollSection Component
@@ -262,14 +314,28 @@ class SectionScroll extends React.Component{
         if(childrenIsArray){
             this.sanitizedChildren = children.filter((child)=>allowedSections.indexOf(child.type)>-1)
             this.exceptionChildren = children.filter((child)=> child && child.props.hasOwnProperty('sectionScrollException'))
-            this.timeline = children.filter((child)=>allowedTimeline.indexOf(child.type)>-1)[0]
+            this.spy = children.filter((child)=>allowedTimeline.indexOf(child.type)>-1)[0]
             this.sanitizedChildren = this.sanitizedChildren.length === 0 ? null : this.sanitizedChildren
             this.activeAnchorLength = this.sanitizedChildren.length
         }else{
             this.sanitizedChildren = allowedSections.indexOf(children)>-1 ? children : null
-            this.timeline = allowedTimeline.indexOf(children)>-1 ? children : null
+            this.spy = allowedTimeline.indexOf(children)>-1 ? children : null
             this.exceptionChildren = children.props.hasOwnProperty('sectionScrollException') ? children : null
             this.activeAnchorLength = 0
+        }
+    }
+
+    /**
+     * process and return props to give to children components
+     * @returns {{active: (number|Number|*), activeAnchorLength: (*|number), activateSection: (function(*=): *), direction: string}}
+     */
+    getPropsToSend(){
+        return {
+            active: this.anchorIdx,
+            activeAnchorLength: this.activeAnchorLength,
+            activateSection: (index)=>this.activateSection(index, this.handleSection),
+            direction: (this.state.activeSection === this.state.nextSection ? 'idle' :
+                (this.state.activeSection < this.state.nextSection) ? 'down' : 'up')
         }
     }
 
@@ -293,21 +359,11 @@ class SectionScroll extends React.Component{
         setTimeout(()=>this.activateSection(active, this.handleSection), 250) //TODO: async
     }
 
-    getPropsToSend(){
-        return {
-            active: this.anchorIdx,
-            activeAnchorLength: this.activeAnchorLength,
-            activateSection: (index)=>this.activateSection(index, this.handleSection),
-            direction: (this.state.activeSection === this.state.nextSection ? 'idle' :
-                (this.state.activeSection < this.state.nextSection) ? 'down' : 'up')
-        }
-    }
-
     render(){
         return (
             <SectionScrollComponent>
-                {React.cloneElement(this.timeline, this.getPropsToSend())}
-                <SectionScrollContainer ref={(container)=> this.container = container} timeline={this.timeline!==null}>
+                {React.cloneElement(this.spy, this.getPropsToSend())}
+                <SectionScrollContainer ref={(container)=> this.container = container} timeline={this.spy!==null}>
                     {this.sanitizedChildren}
                 </SectionScrollContainer>
                 {
@@ -325,5 +381,3 @@ class SectionScroll extends React.Component{
     }
 
 }
-
-export default SectionScroll
