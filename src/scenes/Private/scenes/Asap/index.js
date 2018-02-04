@@ -2,9 +2,10 @@ import React from 'react'
 import { Route } from 'react-router-dom'
 
 /* COMPONENTS */
-import { Button } from 'semantic-ui-react'
+import { Loader } from 'semantic-ui-react'
 import TemplateSelector from './components/TemplateSelector'
-import Sheet from '../../components/Sheet'
+import DataConfigView from './components/DataConfigView'
+import Preview from './components/Preview'
 import FullPage from '../../../../components/Layout/FullPage'
 import SectionScroll from '../../../../components/SectionScroll'
 import SectionScrollSection from '../../../../components/SectionScroll/SectionScrollSection'
@@ -15,60 +16,69 @@ import styled from 'styled-components'
 
 /* UTILS */
 import connect from "react-redux/es/connect/connect";
-import { selectTemplate } from './sagas/actions'
+import { fetchTemplate } from './sagas/actions'
+import media from '../../../../config/media'
+import viewport from '../../../../config/viewport'
 
 
 const mapStateToProps = (state, ownProps) => {
     return {
-        selectedTemplate: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplateIdx,
+        selectedTemplate: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate,
         dirtyData: state.PrivateReducer.AsapReducer.procedureManager.dirtyData,
     }
 }
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        selectTemplate: (idx) => dispatch(selectTemplate(idx))
+        selectTemplate: (idx) => {
+            return dispatch(fetchTemplate(idx))
+        }
     }
 }
 
-const FooterStyled = styled.div`
-    position: fixed;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 0 2rem;
-    width: 100%;
-    height: 64px;
-    background: #3B3F44;
-    bottom: 0;
-    top: auto;
-    color: #fff;
-    transform: translateY(${props => props.visible ? 0: '100%'});
-    transition: all .5s;
-    z-index: 9999;
-`
-
-const Footer = ({activeAnchorLength, direction, ...rest}) => {
+const AutoSaver = ({loading, ...rest}) => {
+    const StyledAutoSaver = styled.span`
+        color: #61C584;
+        border-radius: 100px;
+        padding: .4rem ${loading ? '.4rem' : '1rem'};
+        font-size: 14px;
+        border: 1px solid #61C584;
+        transition: all .5s;
+    `
     return (
-        <FooterStyled visible={activeAnchorLength>2}>
-            <Button color="red">저장하기</Button>
-            <Button color="yellow">추가작업</Button>
-        </FooterStyled>
+        <StyledAutoSaver loading={loading}>
+            {
+                loading ?
+                    <Loader size='mini' active inline />
+                    :
+                    '저장완료'
+            }
+        </StyledAutoSaver>
     )
 }
 
 
+const StyledSectionScroll = styled(SectionScroll)`
+    background: #282b2e;
+`
 const AsapRepresentation = ({match, selectedTemplate, dirtyData, selectTemplate, ...rest}) => {
     return (
-        <SectionScroll active={selectedTemplate!=-1 ? 1: 0}>
-            <SectionScrollSpy items={['템플릿 선택', '데이터 선택', '입력세부 조정']}/>
+        <StyledSectionScroll>
+            <SectionScrollSpy items={['애니메이션 선택', '데이터 입력', '프리뷰']} spyHeight={'80px'}>
+                {(selectedTemplate.config || selectedTemplate.loading) && <AutoSaver loading={selectedTemplate.loading || dirtyData.loading}/>}
+            </SectionScrollSpy>
             <SectionScrollSection>
                 <TemplateSelector selectTemplate={selectTemplate}/>
             </SectionScrollSection>
-            { selectedTemplate!=-1 && <SectionScrollSection><Sheet/></SectionScrollSection> }
-            { selectedTemplate!=-1 && dirtyData!==null && <SectionScrollSection><FullPage/></SectionScrollSection> }
-            <Footer sectionScrollException/>
-        </SectionScroll>
+            { selectedTemplate.config!=null
+            && <SectionScrollSection>
+                <DataConfigView/>
+            </SectionScrollSection> }
+            { selectedTemplate.config!=null && dirtyData!==null
+            && <SectionScrollSection>
+                <Preview/>
+            </SectionScrollSection> }
+        </StyledSectionScroll>
     )
 }
 

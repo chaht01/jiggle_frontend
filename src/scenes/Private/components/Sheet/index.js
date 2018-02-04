@@ -1,7 +1,6 @@
 import React from 'react'
 
 /* COMPONENTS */
-import { Input, Segment } from 'semantic-ui-react'
 import Handson from '../../../../components/Handson'
 import FullPage from '../../../../components/Layout/FullPage'
 
@@ -11,77 +10,116 @@ import connect from 'react-redux/es/connect/connect'
 
 
 
-const mapStateToDispatch = (state, ownProps) => {
-    return {
-        handsontableData: [
-            ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""],
-            ["", "", "", "", "", "", "", "", ""]
-        ]
-    }
-}
 
-const SheetRepresentation = ({handsontableData}) => {
-    const size = {
-        width: 820,
-        height: 520,
-        padding:{
-            top: 1,
-            left: 1.6,
+class Sheet extends React.Component{
+    constructor(props){
+        super(props)
+        this.state = {
+            placeholder: false,
+            dirtyData: this.props.dirtyData
         }
+        this.setPlaceHolderStatus = this.setPlaceHolderStatus.bind(this)
+        this.checkDirty = this.checkDirty.bind(this)
+        this.handson = null
     }
-    const SheetContainer = styled.div`
-        padding: ${size.padding.top}rem ${size.padding.left}rem;
-        border: 1px solid #e1e1e7;
-        background: #f1f1f5;
-        border-radius: 2px;
-        width: calc(${size.width}px + ${size.padding.left * 2}rem);
-    `
-    return(
-        <FullPage>
-            <SheetContainer>
-                <Handson data={handsontableData}
-                         colHeaders={true}
-                         rowHeaders={true}
-                         width={size.width}
-                         height={size.height}
-                         colWidths="80"
-                         rowHeights="23"/>
-            </SheetContainer>
-            <Input/>
-        </FullPage>
-    )
-}
 
-const Sheet = connect(
-    mapStateToDispatch,
-    null
-)(SheetRepresentation)
+    setPlaceHolderStatus(isOver){
+        this.setState({placeholder:isOver})
+    }
+
+    checkDirty(){
+        for(let i=0; i<this.state.dirtyData.length; i++){
+            for(let j=0; j<this.state.dirtyData[i].length; j++){
+                if(['', undefined, null].indexOf(this.state.dirtyData[i][j])==-1)
+                    return true;
+            }
+        }
+        return false;
+    }
+    shouldComponentUpdate(nextProps, nextState){
+        if(nextState.placeholder != this.state.placeholder){
+            return true;
+        }
+        if(this.state.dirtyData.length == nextProps.dirtyData.length){
+            return false;
+        }
+        return true;
+    }
+    render(){
+        const SheetContainer = styled.div`
+            position: relative;
+            width: calc(${props => props.width}px);
+            background: #fff;
+        `
+        const SheetFakeCover = styled.div`
+            position: absolute;
+            display: flex;
+            justify-content:center;
+            align-items: center;
+            background: rgba(0,0,0,0.7);
+            border-radius: 2px;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            z-index:1000;
+            &:after{
+            position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                content: "클릭하여 수정하기";
+                font-size: 1.5rem;
+                color: #fff;
+            }
+           
+        `
+        const saveData = () => {
+            const dataToSave = JSON.parse(JSON.stringify(this.state.dirtyData))
+            this.props.saveData(dataToSave)
+        }
+        return (
+            <FullPage>
+                <SheetContainer width={this.props.width}>
+                    <Handson
+                        ref={(handson)=> this.handson = handson}
+                        data={this.state.placeholder ? this.props.placeholderData : this.state.dirtyData}
+                        afterDeselect={()=>{
+                            if(!this.checkDirty()){
+                                this.setPlaceHolderStatus(false)
+                            }
+                        }}
+
+                        afterChange={(changes, source) => {
+                            if(source !== 'loadData'){
+                                saveData()
+                            }
+                        }}
+                        afterUndo={()=>saveData()}
+                        afterCreateRow={()=>saveData()}
+                        afterCreateCol={()=>saveData()}
+                        afterRemoveCol={()=>saveData()}
+                        afterRemoveRow={()=>saveData()}
+
+                        colHeaders={true}
+                        rowHeaders={true}
+                        width={this.props.width}
+                        height={this.props.height}
+                        colWidths="80"
+                        rowHeights="23"
+
+                    />
+                    {this.state.placeholder && (
+                        <SheetFakeCover onClick={()=>{
+                            this.setPlaceHolderStatus(false)
+                            setTimeout(()=>this.handson.getInstance().selectCell(0, 0, 0, 0, true), 0)
+                        }}/>)}
+
+                </SheetContainer>
+            </FullPage>
+        )
+    }
+
+}
 
 export default Sheet

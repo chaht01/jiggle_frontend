@@ -2,7 +2,8 @@ import { delay } from 'redux-saga'
 import { all, call, fork, put, take, cancel, cancelled } from 'redux-saga/effects'
 import * as actionType from './types'
 import Api from '../config/Api'
-import { watchFetchTemplatesAsync, watchGetTemplateAsync } from '../scenes/Private/sagas/templates'
+import { watchFetchTemplatesThumbnailsAsync } from '../scenes/Private/sagas/templates'
+import { watchFetchTemplateAsync, watchSaveDataAsync, watchSaveMetaAsync } from '../scenes/Private/scenes/Asap/sagas'
 
 
 function* authorize(user, password) {
@@ -63,7 +64,9 @@ function* loginFlow() {
 export default function* rootSaga() {
     yield all([
         loginFlow(),
-        watchFetchTemplatesAsync(),
-        watchGetTemplateAsync(),
+        watchFetchTemplatesThumbnailsAsync(),
+        watchFetchTemplateAsync(),
+        watchSaveDataAsync(),
+        watchSaveMetaAsync(),
     ])
 }

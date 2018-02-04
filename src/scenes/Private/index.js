@@ -17,12 +17,33 @@ import routeConfig from '../../config/route'
 import * as actionType from '../../sagas/types'
 
 /* ASSETS */
-import image from '../../assets/images/image.png'
+import LogoTitle from '../../assets/images/jiggle-01.png'
+import LogoImage from '../../assets/images/Untitled-27-01.png'
 import connect from "react-redux/es/connect/connect";
+
+
 
 const AppContainer = styled.div`
     width: 100%;
     height: 100%;
+    background: #0F1011;
+`
+
+const PrivateAppBar = styled(({width, ...rest})=> <AppBar width={width} {...rest}/>)`
+    background-color: #17181C;
+`
+
+const PrivateAppContent = styled(({width, ...rest}) => <AppContent width={width} {...rest}/>)`
+    background: #0F1011;
+`
+
+const LogoContainer = styled.div`
+    height: 100%;
+    padding: 1.1rem 0;
+    >img{
+        height: 100%;
+        margin-right: 1rem;
+    }
 `
 
 const AuthButton = withRouter(({history, logout, ...rest}) =>{
@@ -67,19 +88,24 @@ const mapDispatchToProps = (dispatch) => {
 const PrivateRepresentation = ({match, logout}) => {
     return (
         <AppContainer>
-            <AppBar>
-                <Logo to={`${match.url}`}>jiggle</Logo>
+            <PrivateAppBar>
+                <Logo to={`${match.url}`}>
+                    <LogoContainer>
+                        <img src={LogoTitle} alt="jiggle"/>
+                        <img src={LogoImage} alt="jiggle_logo"/>
+                    </LogoContainer>
+                </Logo>
                 <Route exact path={`${match.url}`} component={CreateButton}/>
                 <AuthButton logout={logout}/>
-            </AppBar>
-            <AppContent>
+            </PrivateAppBar>
+            <PrivateAppContent>
                 <Switch>
                     <Route exact path={`${match.url}`} component={Dashboard}/>
                     <Route path={`${match.url}/asap`} component={Asap}/>
                     {/*<Route exact path={`${match.url}/:id(\\d+)`} component={ChartBuilder}/>*/}
                     <Route component={() => (<Redirect to={{pathname: match.url}}/>)}/>
                 </Switch>
-            </AppContent>
+            </PrivateAppContent>
         </AppContainer>
     )
 }

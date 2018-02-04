@@ -6,9 +6,19 @@ const StyledFullPage = styled(FullPage)`
     padding-top: ${props => props.height};
 `
 
-const SectionScrollSection = ({children, active, spyHeight, ...rest}) => {
+const SectionScrollSection = ({children, spyHeight, activateSection, ...rest}) => {
     return (
-        <StyledFullPage height={spyHeight}>{children}</StyledFullPage>
+        <StyledFullPage height={spyHeight}>
+            {
+                Array.isArray(children) ?
+                    children.map((child, i) => {
+                        return (
+                            React.cloneElement(child, Object.assign({}, {activateSection}, {key: i}, child.props))
+                        )
+                    })
+                    : React.cloneElement(children, Object.assign({}, {activateSection}, children.props))
+            }
+        </StyledFullPage>
     )
 }
 

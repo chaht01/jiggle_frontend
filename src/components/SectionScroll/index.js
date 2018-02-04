@@ -153,21 +153,23 @@ export default class SectionScroll extends React.Component{
         }
     }
 
+    testFunction(){
+        return 0;
+    }
+
     /**
      * Set nextSection of state and execute callback function
      * @param index {Number}
      * @param cb {function}
      */
-    activateSection(index, cb){
+    activateSection(index){
         if(this.checkValidSectionIdx(index)){
             this.setState(()=>{
                 return {
                     nextSection: index
                 }
             }, () => {
-                if(cb && typeof cb === "function"){
-                    cb()
-                }
+                this.handleSection()
             })
         }
     }
@@ -335,7 +337,8 @@ export default class SectionScroll extends React.Component{
         return {
             active: this.anchorIdx,
             activeAnchorLength: this.activeAnchorLength,
-            activateSection: (index)=>this.activateSection(index, this.handleSection),
+            activateSection: this.activateSection,
+            // activateSection: this.testFunction,
             direction: (this.state.activeSection === this.state.nextSection ? 'idle' :
                 (this.state.activeSection < this.state.nextSection) ? 'down' : 'up'),
             spyHeight: this.spy ? (this.spy.props.spyHeight || this.spyHeight) : this.spyHeight
@@ -352,14 +355,16 @@ export default class SectionScroll extends React.Component{
             this.state.self.addEventListener('scroll', this.checkAnchorIndex)
             this.state.self.addEventListener('wheel', this.handleWheelEvents, {passive:false})
             const active = this.props.active || 0
-            this.activateSection(active, this.handleSection)
+            this.activateSection(active)
         })
     }
 
     componentWillReceiveProps(nextProps){
         this.sanitizeChildren(nextProps.children)
-        const active = nextProps.active || 0
-        setTimeout(()=>this.activateSection(active, this.handleSection), 250) //TODO: async
+        const active = nextProps.active
+        if(active){
+            setTimeout(()=>this.activateSection(active), 250) //TODO: async
+        }
     }
 
     render(){

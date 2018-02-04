@@ -11,6 +11,7 @@ const LogoContainer = styled.div`
     text-decoration: none;
     font-weight: bold;
     flex: 1;
+    height: 100%;
 `
 const Logo = ({children, ...rest}) => {
     return (

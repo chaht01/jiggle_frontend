@@ -32,7 +32,6 @@ const HomeRepresentation = ({isAuthenticated, ...rest})=>{
             <div>
                 <AppBar>
                     <Logo to={routeConfig.publicRoot}>
-                        <img src={logo} style={{height:'100%'}}/>
                     </Logo>
                     <Button compact color="yellow" as={Link} to={`${routeConfig.publicRoot}/sign`}>log in</Button>
                 </AppBar>

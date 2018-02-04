@@ -5,22 +5,25 @@ const AppContentOuter = styled.div`
     position: relative;
     width: 100%;
     padding-top: 60px;
-    background: #fff;
     height: 100%;
-    
 `
 const AppContentInner = styled.div`
     position: relative;
+    display: block;
     width: 100%;
+    max-width: ${props=> props.width};
     height: 100%;
     overflow: auto;
+    margin: 0 auto;
 `
 
-const AppContent = ({children, ...rest}) => (
-    <AppContentOuter>
-        <AppContentInner rest>
-            {children}
-        </AppContentInner>
-    </AppContentOuter>
-)
+const AppContent = ({children, width, ...rest}) => {
+    return (
+        <AppContentOuter>
+            <AppContentInner width={width} {...rest}>
+                {children}
+            </AppContentInner>
+        </AppContentOuter>
+    )
+}
 export default AppContent

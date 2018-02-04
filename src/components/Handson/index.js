@@ -8,6 +8,7 @@ import styled from 'styled-components'
 class Handson extends React.Component {
     constructor(props){
         super(props);
+        this.getInstance = this.getInstance.bind(this)
     }
     handleWheelEvent(element, e){
         const dY = e.deltaY,
@@ -27,6 +28,9 @@ class Handson extends React.Component {
             (scrollableNode)=>{
                 scrollableNode.addEventListener('wheel', this.handleWheelEvent.bind(this, scrollableNode), {passive: false})
         })
+    }
+    getInstance(){
+        return this.container.hotInstance
     }
     render(){
         const contextMenu = {
@@ -71,7 +75,7 @@ class Handson extends React.Component {
     `
         return(
             <ScrollContainer>
-                <HotTable root="hot" {...this.props} settings={{contextMenu}} ref={(container)=> this.container = container}/>
+                <HotTable {...this.props} settings={{contextMenu}} ref={(container)=> this.container = container}/>
             </ScrollContainer>
         )
     }
