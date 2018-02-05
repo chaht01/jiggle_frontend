@@ -22,6 +22,12 @@ export const fetchTemplateFailure = (err) => {
     }
 }
 
+export const clearTemplate = () => {
+    return {
+        type: actionType.TEMPLATE_CLEAR
+    }
+}
+
 /*** SAVE DATA ***/
 export const getRangeOfValidData = (data) => {
     let range = [-1, -1, -1, -1] //[left, right, top, bottom]
@@ -61,6 +67,12 @@ export const saveDataFailure = (err) => {
     }
 }
 
+export const clearData = () => {
+    return {
+        type: actionType.CHART_DATA_CLEAR
+    }
+}
+
 /*** SAVE META ***/
 export const saveMeta = (meta) => {
     return {
@@ -79,5 +91,17 @@ export const saveMetaFailure = (err) => {
     return {
         type: actionType.CHART_META_POST_FAILURE,
         payload: err
+    }
+}
+
+export const clearMeta = () => {
+    return {
+        type: actionType.CHART_META_CLEAR
+    }
+}
+
+export const clearAllProcedure = () => {
+    return {
+        type: actionType.PROCEDURE_CLEAR
     }
 }

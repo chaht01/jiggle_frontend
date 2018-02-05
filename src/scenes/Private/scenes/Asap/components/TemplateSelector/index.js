@@ -31,6 +31,9 @@ const Thumbnail = styled.div`
     display: block;
 `
 const ThumbnailDescription = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 3.4rem;
     color: #C7C8CA;
@@ -42,6 +45,20 @@ const CompositionExtended = styled(Composition)`
     font-size: 2rem;
     cursor: pointer;
     background: #2A2E2F;
+    overflow: hidden;
+`
+
+const ThumbJoke = styled.img`
+    position:relative;
+    width: 100%; 
+    top: 50%; 
+    transform: translate(0, -50%) scale(1.5);
+    opacity: 0.3;
+    transition: all .5s;
+    &:hover{
+        transform: translate(0, -50%) scale(1);
+        opacity: 1;
+    }
 `
 
 const mapStateToProps = (state, ownProps) => {
@@ -95,6 +112,9 @@ class TemplatesRepresentation extends React.Component{
             setTimeout(()=>this.props.activateSection(1), 250)
         }
     }
+    componentWillUnmount(){
+
+    }
     render(){
         return (
             <PaddedContainer>
@@ -111,9 +131,14 @@ class TemplatesRepresentation extends React.Component{
                                             this.props.selectTemplate(i)
                                         }}>
                                             <CompositionExtended>
-                                                {i}{this.props.selectedTemplate.index==i && (this.props.selectedTemplate.loading ? 'loading' : (this.props.selectedTemplate.error ? '':'active'))}
+                                                {
+                                                    key.thumb ? (<ThumbJoke src={key.thumb} alt=""/>)
+                                                        : i
+                                                }{this.props.selectedTemplate.index==i && (this.props.selectedTemplate.loading ? 'loading' : (this.props.selectedTemplate.error ? '':'active'))}
                                             </CompositionExtended>
-                                            <ThumbnailDescription/>
+                                            <ThumbnailDescription>
+                                                {key.desc}
+                                            </ThumbnailDescription>
                                         </Thumbnail>
                                     ))
                                 return (

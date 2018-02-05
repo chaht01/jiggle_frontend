@@ -2,7 +2,7 @@ import React from 'react'
 
 /* COMPONENTS */
 import { Route, Link, Switch, Redirect, withRouter } from 'react-router-dom'
-import { Icon, Popup, Card, Image, Segment, Header, Container } from 'semantic-ui-react'
+import { Icon, Popup, Loader, Card, Image, Segment, Header, Container } from 'semantic-ui-react'
 import Button from '../../components/Button'
 import { AppBar, AppContent } from '../../components/Layout'
 import Logo from '../../components/Logo'
@@ -78,14 +78,40 @@ const CreateButton = () => {
     )
 }
 
-
+const mapStateToProps = (state, ownProps) => {
+    return {
+        selectedTemplate: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate,
+        dirtyData: state.PrivateReducer.AsapReducer.procedureManager.dirtyData,
+    }
+}
 const mapDispatchToProps = (dispatch) => {
     return {
         logout: () => dispatch({type: actionType.LOGOUT}),
     }
 }
+const AutoSaver = ({loading, ...rest}) => {
+    const StyledAutoSaver = styled.span`
+        color: #61C584;
+        border-radius: 100px;
+        padding: .4rem ${loading ? '.4rem' : '1rem'};
+        font-size: 14px;
+        border: 1px solid #61C584;
+        transition: all .5s;
+        margin-right: 1rem;
+    `
+    return (
+        <StyledAutoSaver loading={loading}>
+            {
+                loading ?
+                    <Loader size='mini' active inline />
+                    :
+                    '저장완료'
+            }
+        </StyledAutoSaver>
+    )
+}
 
-const PrivateRepresentation = ({match, logout}) => {
+const PrivateRepresentation = ({match, logout, selectedTemplate, dirtyData}) => {
     return (
         <AppContainer>
             <PrivateAppBar>
@@ -96,6 +122,12 @@ const PrivateRepresentation = ({match, logout}) => {
                     </LogoContainer>
                 </Logo>
                 <Route exact path={`${match.url}`} component={CreateButton}/>
+                <Route exact path={`${match.url}/asap`} component={()=> {
+                    return(
+                        (selectedTemplate.config || selectedTemplate.loading) && <AutoSaver loading={selectedTemplate.loading || dirtyData.loading}/>
+                    )}
+                }/>
+
                 <AuthButton logout={logout}/>
             </PrivateAppBar>
             <PrivateAppContent>
@@ -111,7 +143,7 @@ const PrivateRepresentation = ({match, logout}) => {
 }
 
 const Private = connect(
-    null,
+    mapStateToProps,
     mapDispatchToProps
 )(PrivateRepresentation)
 

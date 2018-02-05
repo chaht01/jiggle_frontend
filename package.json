@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "axios": "^0.17.1",
+    "d3-reusable": "https://github.com/Jiwoopark0508/project-md.git#dev",
     "lodash": "^4.17.4",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
@@ -30,15 +31,16 @@
   },
   "scripts": {
     "build-css": "node-sass-chokidar src/ -o src/",
-    "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
+    "watch-css": "yarn run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
     "start-js": "react-scripts start",
-    "start": "npm-run-all -p watch-css start-js",
+    "start": "yarn npm-run-all -p watch-css start-js",
     "build-js": "react-scripts build",
-    "build": "npm-run-all build-css build-js",
+    "build": "yarn run build-css build-js",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
   "devDependencies": {
-    "node-sass-chokidar": "0.0.3"
+    "node-sass-chokidar": "0.0.3",
+    "npm-run-all": "^4.1.2"
   }
 }
