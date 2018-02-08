@@ -11,7 +11,9 @@ import {chart0, chart1, chart2} from 'd3-reusable/src/data/bar-data'
 import styled from 'styled-components'
 import {parseBar} from "d3-reusable/src/parser/bar-parser";
 import BarFactory from "d3-reusable/src/factory/bar-factory";
+import Resizeable from '../../../../components/Resizeable'
 
+import sampleImg from '../../../../../../assets/images/thumbs/greenboy.jpeg'
 const PreviewContainer = styled.div`
     width: 60rem;
     margin: 0 auto;
@@ -44,143 +46,6 @@ const GifViewer = styled.div`
     align-items: center;
 `
 
-const Transformable = styled.rect`
-    cursor:pointer;
-    stroke: blue;
-    fill:transparent;
-    stroke-width:2;       
-`
-const TransformAnchor = styled.rect`
-    cursor: ${props => props.cursor};
-    fill: #fff;
-    stroke: blue;
-    stroke-width:1;
-`
-class Sizeable extends React.Component{
-
-    constructor(props){
-        super(props)
-        this.state = {
-            appearance:{
-                width: this.props.width || 100,
-                height: this.props.height || 100,
-                x: this.props.x || 100,
-                y: this.props.y || 100,
-            },
-            href: this.props.href,
-            anchor:{
-                triggered: -1,
-                startPos:{
-                    x: this.props.x || 100,
-                    y: this.props.y || 100,
-                    mouseX : 0,
-                    mouseY : 0
-                }
-            },
-            prevWidth: 0,
-            prevHeight: 0,
-        }
-    }
-    componentDidMount(){
-        console.log(ReactDOM.findDOMNode(this.node).parentNode.getClientRects())
-    }
-
-    render(){
-        const {children, focused, focus, idx} = this.props
-        if(!this.state.href){
-            return null
-        }
-        const focusSelf = (e, idx) => {
-            focus(idx)
-            e.stopPropagation()
-        }
-        const anchorSize = 6
-        return(
-            <g onClick={(e)=>focusSelf(e, idx)}
-               ref={(node) => this.node = node}
-               onMouseUp={()=>
-                   this.setState((prevState)=>{
-                       return{
-                           anchor:{
-                               triggered: -1,
-                               startPos:{
-                                   x: prevState.appearance.x,
-                                   y: prevState.appearance.y,
-                               }
-                           },
-                           prevWidth: prevState.appearance.width,
-                           prevHeight: prevState.appearance.height
-                       }})}>
-                <image {...this.state.appearance} href={this.state.href}/>
-                {focused &&
-                <g>
-                    <Transformable {...this.state.appearance}/>
-                    <TransformAnchor cursor="nwse-resize" width={anchorSize} height={anchorSize}
-                                     x={this.state.appearance.x + this.state.appearance.width*0 - anchorSize/2}
-                                     y={this.state.appearance.y + this.state.appearance.height*0 - anchorSize/2}
-                                     onMouseDown={(e)=>{
-                                         console.log('f')
-                                         e.persist()
-                                         const {left, top} = ReactDOM.findDOMNode(this.node).parentNode.parentNode.getClientRects()[0]
-                                         this.setState((prevState) => {
-                                             return {
-                                                 anchor: {
-                                                     triggered: 0,
-                                                     startPos: {
-                                                         x: e.clientX - left,
-                                                         y: e.clientY - top,
-                                                         mouseX: e.clientX,
-                                                         mouseY: e.clientY
-                                                     }
-                                                 },
-                                             }
-                                         })
-                                     }}
-                                     onMouseMove={(e)=>{
-                                         if(this.state.anchor.triggered==0){
-                                             const delX = e.clientX - this.state.anchor.startPos.mouseX
-                                             const delY = e.clientY - this.state.anchor.startPos.mouseY
-                                             console.log(delX, delY, this.state.anchor.startPos.mouseX, this.state.anchor.startPos.mouseY, this.state.prevWidth, this.state.prevHeight)
-                                             this.setState((prevState) => {
-                                                 return {
-                                                     appearance:{
-                                                         ...prevState.appearance,
-                                                         x: prevState.anchor.startPos.x += (delX),
-                                                         y: prevState.anchor.startPos.y += (delY),
-                                                     }
-                                                 }
-                                             })
-                                         }
-                                     }}
-                    />
-                    <TransformAnchor cursor="ns-resize" width={anchorSize} height={anchorSize}
-                                     x={this.state.appearance.x + this.state.appearance.width*0.5 - anchorSize/2}
-                                     y={this.state.appearance.y + this.state.appearance.height*0 - anchorSize/2}/>
-                    <TransformAnchor cursor="nesw-resize" width={anchorSize} height={anchorSize}
-                                     x={this.state.appearance.x + this.state.appearance.width*1 - anchorSize/2}
-                                     y={this.state.appearance.y + this.state.appearance.height*0 - anchorSize/2}/>
-                    <TransformAnchor cursor="ew-resize" width={anchorSize} height={anchorSize}
-                                     x={this.state.appearance.x + this.state.appearance.width*1 - anchorSize/2}
-                                     y={this.state.appearance.y + this.state.appearance.height*0.5 - anchorSize/2}/>
-                    <TransformAnchor cursor="nwse-resize" width={anchorSize} height={anchorSize}
-                                     x={this.state.appearance.x + this.state.appearance.width*1 - anchorSize/2}
-                                     y={this.state.appearance.y + this.state.appearance.height*1 - anchorSize/2}/>
-                    <TransformAnchor cursor="ns-resize" width={anchorSize} height={anchorSize}
-                                     x={this.state.appearance.x + this.state.appearance.width*0.5 - anchorSize/2}
-                                     y={this.state.appearance.y + this.state.appearance.height*1 - anchorSize/2}/>
-                    <TransformAnchor cursor="nesw-resize" width={anchorSize} height={anchorSize}
-                                     x={this.state.appearance.x + this.state.appearance.width*0 - anchorSize/2}
-                                     y={this.state.appearance.y + this.state.appearance.height*1 - anchorSize/2}/>
-                    <TransformAnchor cursor="ew-resize" width={anchorSize} height={anchorSize}
-                                     x={this.state.appearance.x + this.state.appearance.width*0 - anchorSize/2}
-                                     y={this.state.appearance.y + this.state.appearance.height*0.5 - anchorSize/2}/>
-                </g>
-                }
-
-            </g>
-        )
-    }
-}
 
 const Footer = ({activeAnchorLength, direction, renderGIF, ...rest}) => {
     return (
@@ -190,6 +55,24 @@ const Footer = ({activeAnchorLength, direction, renderGIF, ...rest}) => {
         </FooterStyled>
     )
 }
+
+function getDataUri(url, callback) {
+    var image = new Image();
+    image.crossOrigin = "Anonymous";
+
+    image.onload = function () {
+        var canvas = document.createElement('canvas');
+        canvas.width = this.naturalWidth; // or 'width' if you want a special/scaled size
+        canvas.height = this.naturalHeight; // or 'height' if you want a special/scaled size
+
+        canvas.getContext('2d').drawImage(this, 0, 0);
+
+        callback(canvas.toDataURL('image/png'));
+    };
+
+    image.src = url;
+}
+
 class Preview extends React.Component{
     constructor(props){
         super(props)
@@ -199,11 +82,51 @@ class Preview extends React.Component{
                 x: 0,
                 y: 0
             },
-            anchorIdx: -1
+            anchorIdx: -1,
+            diff:{
+                x:0,
+                y:0
+            },
+            images:[
+                {
+                    width: 100,
+                    height: 100,
+                    x: 140,
+                    y: 120,
+                    href: "data:image/gif;base64,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"
+
+                },
+                {
+                    width: 50,
+                    height: 50,
+                    x: 240,
+                    y: 100,
+                    href: "data:image/gif;base64,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"
+                }
+            ]
         }
+        // Usage
+        getDataUri('https://cdn.mdn.mozilla.net/static/img/home-globe.ce5923c4246e.jpg', (dataUri)=>{
+            this.setState((prevState) => {
+                return {
+                    images: prevState.images.map((img,i)=>{
+                        if(i!=1){
+                            return img
+                        }else{
+                            return {
+                                ...img,
+                                href: dataUri
+                            }
+                        }
+                    })
+                }
+            })
+        });
         this.renderGIF = this.renderGIF.bind(this)
         this.focusImage = this.focusImage.bind(this)
         this.setAnchorIdx = this.setAnchorIdx.bind(this)
+        this.updateTransformer = this.updateTransformer.bind(this)
+        this.deleteImage = this.deleteImage.bind(this)
     }
     renderGIF(){
         this.factory.recordTransition(this.node, [...this.charts])
@@ -212,52 +135,97 @@ class Preview extends React.Component{
         this.charts = [chart0, chart1, chart2]
         this.charts.forEach(chart => parseBar(chart));
         this.factory = new BarFactory();
-        // const renderer = factory.renderChart();
-        // renderer(this.node, props.charts[0]);
         const renderTransition = this.factory.renderTransition();
         renderTransition(this.node, [...this.charts]);
     }
 
-    setAnchorIdx(idx){
+    setAnchorIdx(idx, cb){
         this.setState({
             anchorIdx: idx
-        })
+        }, cb)
     }
-    focusImage(idx){
+    focusImage(idx, cb){
         this.setState({
             focusedIdx:idx,
+        }, cb)
+    }
+    deleteImage(idx){
+        this.focusImage(-1, ()=>{
+            this.setState((prevState) =>{
+                let newArr = prevState.images.slice()
+                newArr.splice(idx, 1);
+                return {
+                    images:newArr
+                }
+            }, ()=>this.updateTransformer())
         })
+
+
     }
     componentDidMount(){
         this.init()
     }
-    render(){
-        const images = [
-            {
-                href: "https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png"
+    updateTransformer(){
+        const focusedIdx = this.state.focusedIdx
+        const focusedAnchorIdx = this.state.anchorIdx
+        this.setState((prevState)=>{
+            return {
+                images: prevState.images.map((image, i)=>{
+                    if(i != focusedIdx){
+                        return image
+                    }else{
+                        return {
+                            ...image,
+                            ...this.refs[`image${focusedIdx}`].transform(image, {width:100, height:100, x:100, y:100}, focusedAnchorIdx, this.state.diff)
+                        }
+                    }
+                })
             }
-        ]
+        }, ()=>{
+            this.setAnchorIdx(-1)
+            this.setState({diff:{x:0, y:0}})
+        })
+    }
+
+    render(){
         return (
             <PaddedContainer>
                 <FullPage>
                     <PreviewContainer>
-                        <PreviewThumbnails onClick={()=>this.focusImage(-1)}>
+                        <PreviewThumbnails>
                             <svg style={{width:'100%', height:'100%'}} ref={node => this.node = node}
                                  onMouseDown={(e)=>{
                                      e.persist()
-                                     console.log('ff')
                                      this.setState({x:e.clientX, y: e.clientY})
+                                     if(e.target == this.node){
+                                         this.focusImage(-1)
+                                     }
                                  }}
                                  onMouseMove={(e)=>{
-                                     if(this.state.focusedIdx>-1){
-                                         const {left, top} = ReactDOM.findDOMNode(this.node).getClientRects()[0]
+                                     if(this.state.focusedIdx>-1 && this.state.anchorIdx>-1){
                                          const diffX = e.clientX - this.state.x
                                          const diffY = e.clientY - this.state.y
-                                         console.log(diffX, diffY)
+                                         this.setState({diff:{x: diffX, y: diffY}})
                                      }
-                                 }}>
-                                {images.map((image, i)=>(
-                                    <Sizeable key={i} idx={i} focused={i===this.state.focusedIdx} focus={this.focusImage} setAnchorIdx={this.setAnchorIdx} {...image}/>)
+                                 }}
+                                 onMouseUp={(e)=> {
+                                     this.updateTransformer()
+                                 }}
+                                 onMouseLeave={(e)=>{
+                                     this.updateTransformer()
+                                 }}
+                            >
+                                {this.state.images.map((image, i)=>(
+                                    <Resizeable key={i}
+                                              idx={i}
+                                              ref={`image${i}`}
+                                              focused={i===this.state.focusedIdx}
+                                              focus={this.focusImage}
+                                              setAnchorIdx={this.setAnchorIdx}
+                                              anchorIdx={this.state.anchorIdx}
+                                              diff={this.state.diff}
+                                              deleteSelf={this.deleteImage}
+                                              {...image}/>)
                                 )}
                             </svg>
 
