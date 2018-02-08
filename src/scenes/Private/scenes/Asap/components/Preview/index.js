@@ -71,20 +71,22 @@ class Sizeable extends React.Component{
             anchor:{
                 triggered: -1,
                 startPos:{
-                    width: this.props.width || 100,
-                    height: this.props.height || 100,
                     x: this.props.x || 100,
                     y: this.props.y || 100,
+                    mouseX : 0,
+                    mouseY : 0
                 }
-            }
+            },
+            prevWidth: 0,
+            prevHeight: 0,
         }
     }
     componentDidMount(){
-        console.log(ReactDOM.findDOMNode(this.node))
+        console.log(ReactDOM.findDOMNode(this.node).parentNode.getClientRects())
     }
 
     render(){
-        const {children, focused, focus, idx, parent} = this.props
+        const {children, focused, focus, idx} = this.props
         if(!this.state.href){
             return null
         }
@@ -104,10 +106,10 @@ class Sizeable extends React.Component{
                                startPos:{
                                    x: prevState.appearance.x,
                                    y: prevState.appearance.y,
-                                   width: prevState.appearance.width,
-                                   height: prevState.appearance.height
                                }
-                           }
+                           },
+                           prevWidth: prevState.appearance.width,
+                           prevHeight: prevState.appearance.height
                        }})}>
                 <image {...this.state.appearance} href={this.state.href}/>
                 {focused &&
@@ -117,33 +119,34 @@ class Sizeable extends React.Component{
                                      x={this.state.appearance.x + this.state.appearance.width*0 - anchorSize/2}
                                      y={this.state.appearance.y + this.state.appearance.height*0 - anchorSize/2}
                                      onMouseDown={(e)=>{
+                                         console.log('f')
                                          e.persist()
+                                         const {left, top} = ReactDOM.findDOMNode(this.node).parentNode.parentNode.getClientRects()[0]
                                          this.setState((prevState) => {
                                              return {
                                                  anchor: {
                                                      triggered: 0,
                                                      startPos: {
-                                                         x: e.clientX,
-                                                         y: e.clientY,
-                                                         width: prevState.appearance.width,
-                                                         height: prevState.appearance.height
+                                                         x: e.clientX - left,
+                                                         y: e.clientY - top,
+                                                         mouseX: e.clientX,
+                                                         mouseY: e.clientY
                                                      }
-                                                 }
+                                                 },
                                              }
                                          })
                                      }}
                                      onMouseMove={(e)=>{
                                          if(this.state.anchor.triggered==0){
-                                             const delX = e.clientX - this.state.anchor.startPos.x
-                                             const delY = e.clientY - this.state.anchor.startPos.y
-                                             console.log(delX, delY)
+                                             const delX = e.clientX - this.state.anchor.startPos.mouseX
+                                             const delY = e.clientY - this.state.anchor.startPos.mouseY
+                                             console.log(delX, delY, this.state.anchor.startPos.mouseX, this.state.anchor.startPos.mouseY, this.state.prevWidth, this.state.prevHeight)
                                              this.setState((prevState) => {
                                                  return {
                                                      appearance:{
-                                                         x: prevState.anchor.startPos.x += delX,
-                                                         y: prevState.anchor.startPos.y += delY,
-                                                         width: prevState.anchor.startPos.width -= delX,
-                                                         height: prevState.anchor.startPos.height -= delY,
+                                                         ...prevState.appearance,
+                                                         x: prevState.anchor.startPos.x += (delX),
+                                                         y: prevState.anchor.startPos.y += (delY),
                                                      }
                                                  }
                                              })
@@ -191,10 +194,16 @@ class Preview extends React.Component{
     constructor(props){
         super(props)
         this.state = {
-            focusedIdx: -1
+            focusedIdx: -1,
+            event: {
+                x: 0,
+                y: 0
+            },
+            anchorIdx: -1
         }
         this.renderGIF = this.renderGIF.bind(this)
         this.focusImage = this.focusImage.bind(this)
+        this.setAnchorIdx = this.setAnchorIdx.bind(this)
     }
     renderGIF(){
         this.factory.recordTransition(this.node, [...this.charts])
@@ -208,9 +217,16 @@ class Preview extends React.Component{
         const renderTransition = this.factory.renderTransition();
         renderTransition(this.node, [...this.charts]);
     }
+
+    setAnchorIdx(idx){
+        this.setState({
+            anchorIdx: idx
+        })
+    }
     focusImage(idx){
-        console.log(idx)
-        this.setState({focusedIdx:idx})
+        this.setState({
+            focusedIdx:idx,
+        })
     }
     componentDidMount(){
         this.init()
@@ -226,9 +242,22 @@ class Preview extends React.Component{
                 <FullPage>
                     <PreviewContainer>
                         <PreviewThumbnails onClick={()=>this.focusImage(-1)}>
-                            <svg style={{width:'100%', height:'100%'}} ref={node => this.node = node} >
+                            <svg style={{width:'100%', height:'100%'}} ref={node => this.node = node}
+                                 onMouseDown={(e)=>{
+                                     e.persist()
+                                     console.log('ff')
+                                     this.setState({x:e.clientX, y: e.clientY})
+                                 }}
+                                 onMouseMove={(e)=>{
+                                     if(this.state.focusedIdx>-1){
+                                         const {left, top} = ReactDOM.findDOMNode(this.node).getClientRects()[0]
+                                         const diffX = e.clientX - this.state.x
+                                         const diffY = e.clientY - this.state.y
+                                         console.log(diffX, diffY)
+                                     }
+                                 }}>
                                 {images.map((image, i)=>(
-                                    <Sizeable key={i} idx={i} focused={i===this.state.focusedIdx} focus={this.focusImage} {...image}/>)
+                                    <Sizeable key={i} idx={i} focused={i===this.state.focusedIdx} focus={this.focusImage} setAnchorIdx={this.setAnchorIdx} {...image}/>)
                                 )}
                             </svg>
 
