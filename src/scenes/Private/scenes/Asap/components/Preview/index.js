@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import Button from '../../../../../../components/Button'
 import FullPage from '../../../../../../components/Layout/FullPage'
 import Composition from '../../../../../../components/Composition'
@@ -34,18 +35,166 @@ const FooterStyled = styled.div`
     top: auto;
     color: #fff;
 `
+
+const GifViewer = styled.div`
+    width: auto;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+`
+
+const Transformable = styled.rect`
+    cursor:pointer;
+    stroke: blue;
+    fill:transparent;
+    stroke-width:2;       
+`
+const TransformAnchor = styled.rect`
+    cursor: ${props => props.cursor};
+    fill: #fff;
+    stroke: blue;
+    stroke-width:1;
+`
+class Sizeable extends React.Component{
+
+    constructor(props){
+        super(props)
+        this.state = {
+            appearance:{
+                width: this.props.width || 100,
+                height: this.props.height || 100,
+                x: this.props.x || 100,
+                y: this.props.y || 100,
+            },
+            href: this.props.href,
+            anchor:{
+                triggered: -1,
+                startPos:{
+                    width: this.props.width || 100,
+                    height: this.props.height || 100,
+                    x: this.props.x || 100,
+                    y: this.props.y || 100,
+                }
+            }
+        }
+    }
+    componentDidMount(){
+        console.log(ReactDOM.findDOMNode(this.node))
+    }
+
+    render(){
+        const {children, focused, focus, idx, parent} = this.props
+        if(!this.state.href){
+            return null
+        }
+        const focusSelf = (e, idx) => {
+            focus(idx)
+            e.stopPropagation()
+        }
+        const anchorSize = 6
+        return(
+            <g onClick={(e)=>focusSelf(e, idx)}
+               ref={(node) => this.node = node}
+               onMouseUp={()=>
+                   this.setState((prevState)=>{
+                       return{
+                           anchor:{
+                               triggered: -1,
+                               startPos:{
+                                   x: prevState.appearance.x,
+                                   y: prevState.appearance.y,
+                                   width: prevState.appearance.width,
+                                   height: prevState.appearance.height
+                               }
+                           }
+                       }})}>
+                <image {...this.state.appearance} href={this.state.href}/>
+                {focused &&
+                <g>
+                    <Transformable {...this.state.appearance}/>
+                    <TransformAnchor cursor="nwse-resize" width={anchorSize} height={anchorSize}
+                                     x={this.state.appearance.x + this.state.appearance.width*0 - anchorSize/2}
+                                     y={this.state.appearance.y + this.state.appearance.height*0 - anchorSize/2}
+                                     onMouseDown={(e)=>{
+                                         e.persist()
+                                         this.setState((prevState) => {
+                                             return {
+                                                 anchor: {
+                                                     triggered: 0,
+                                                     startPos: {
+                                                         x: e.clientX,
+                                                         y: e.clientY,
+                                                         width: prevState.appearance.width,
+                                                         height: prevState.appearance.height
+                                                     }
+                                                 }
+                                             }
+                                         })
+                                     }}
+                                     onMouseMove={(e)=>{
+                                         if(this.state.anchor.triggered==0){
+                                             const delX = e.clientX - this.state.anchor.startPos.x
+                                             const delY = e.clientY - this.state.anchor.startPos.y
+                                             console.log(delX, delY)
+                                             this.setState((prevState) => {
+                                                 return {
+                                                     appearance:{
+                                                         x: prevState.anchor.startPos.x += delX,
+                                                         y: prevState.anchor.startPos.y += delY,
+                                                         width: prevState.anchor.startPos.width -= delX,
+                                                         height: prevState.anchor.startPos.height -= delY,
+                                                     }
+                                                 }
+                                             })
+                                         }
+                                     }}
+                    />
+                    <TransformAnchor cursor="ns-resize" width={anchorSize} height={anchorSize}
+                                     x={this.state.appearance.x + this.state.appearance.width*0.5 - anchorSize/2}
+                                     y={this.state.appearance.y + this.state.appearance.height*0 - anchorSize/2}/>
+                    <TransformAnchor cursor="nesw-resize" width={anchorSize} height={anchorSize}
+                                     x={this.state.appearance.x + this.state.appearance.width*1 - anchorSize/2}
+                                     y={this.state.appearance.y + this.state.appearance.height*0 - anchorSize/2}/>
+                    <TransformAnchor cursor="ew-resize" width={anchorSize} height={anchorSize}
+                                     x={this.state.appearance.x + this.state.appearance.width*1 - anchorSize/2}
+                                     y={this.state.appearance.y + this.state.appearance.height*0.5 - anchorSize/2}/>
+                    <TransformAnchor cursor="nwse-resize" width={anchorSize} height={anchorSize}
+                                     x={this.state.appearance.x + this.state.appearance.width*1 - anchorSize/2}
+                                     y={this.state.appearance.y + this.state.appearance.height*1 - anchorSize/2}/>
+                    <TransformAnchor cursor="ns-resize" width={anchorSize} height={anchorSize}
+                                     x={this.state.appearance.x + this.state.appearance.width*0.5 - anchorSize/2}
+                                     y={this.state.appearance.y + this.state.appearance.height*1 - anchorSize/2}/>
+                    <TransformAnchor cursor="nesw-resize" width={anchorSize} height={anchorSize}
+                                     x={this.state.appearance.x + this.state.appearance.width*0 - anchorSize/2}
+                                     y={this.state.appearance.y + this.state.appearance.height*1 - anchorSize/2}/>
+                    <TransformAnchor cursor="ew-resize" width={anchorSize} height={anchorSize}
+                                     x={this.state.appearance.x + this.state.appearance.width*0 - anchorSize/2}
+                                     y={this.state.appearance.y + this.state.appearance.height*0.5 - anchorSize/2}/>
+                </g>
+                }
+
+            </g>
+        )
+    }
+}
+
 const Footer = ({activeAnchorLength, direction, renderGIF, ...rest}) => {
     return (
         <FooterStyled>
-            <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}} disabled={true}>저장하기</Button>
-            <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}} onClick={(e)=>renderGIF()}>추가작업</Button>
+            <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}} disabled={true}>추가작업</Button>
+            <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}} onClick={(e)=>renderGIF()}>렌더 & 저장하기</Button>
         </FooterStyled>
     )
 }
 class Preview extends React.Component{
     constructor(props){
         super(props)
+        this.state = {
+            focusedIdx: -1
+        }
         this.renderGIF = this.renderGIF.bind(this)
+        this.focusImage = this.focusImage.bind(this)
     }
     renderGIF(){
         this.factory.recordTransition(this.node, [...this.charts])
@@ -57,22 +206,33 @@ class Preview extends React.Component{
         // const renderer = factory.renderChart();
         // renderer(this.node, props.charts[0]);
         const renderTransition = this.factory.renderTransition();
-        // renderTransition(this.node, [...this.charts]);
+        renderTransition(this.node, [...this.charts]);
+    }
+    focusImage(idx){
+        console.log(idx)
+        this.setState({focusedIdx:idx})
     }
     componentDidMount(){
         this.init()
     }
-    componentWillReceiveProps(nextProps){
-        this.init()
-    }
     render(){
+        const images = [
+            {
+                href: "https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png"
+            }
+        ]
         return (
             <PaddedContainer>
                 <FullPage>
                     <PreviewContainer>
-                        <PreviewThumbnails>
-                            <svg style={{display: 'none'}} width="100%" height="100%" ref={node => this.node = node}></svg>
-                            <div id="gif"/>
+                        <PreviewThumbnails onClick={()=>this.focusImage(-1)}>
+                            <svg style={{width:'100%', height:'100%'}} ref={node => this.node = node} >
+                                {images.map((image, i)=>(
+                                    <Sizeable key={i} idx={i} focused={i===this.state.focusedIdx} focus={this.focusImage} {...image}/>)
+                                )}
+                            </svg>
+
+                            <GifViewer id="gif"/>
                         </PreviewThumbnails>
                     </PreviewContainer>
                     <Footer renderGIF={this.renderGIF}/>

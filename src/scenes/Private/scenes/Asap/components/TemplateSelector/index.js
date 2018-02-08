@@ -61,6 +61,39 @@ const ThumbJoke = styled.img`
     }
 `
 
+const RealThumb = styled.div`
+    position:relative;
+    width: 100%; 
+    height: 100%;
+    background-size: auto 100%;
+    background-repeat: no-repeat;
+    background-position: 50%;
+    background-color: #fff;
+    opacity: 0.3;
+    transition: all .5s;
+    background-image: url(${props => props.thumb});
+    &:after{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-size: auto 100%;
+        background-repeat: no-repeat;
+        background-position: 50%;
+        background-color: #fff;
+        left: 0;
+        top: 0;
+        background-image: url(${props => props.animate});
+        content:"";
+        display: none;
+    }
+    &:hover{
+        opacity: 1;
+        &:after{
+            display: block;
+        }
+    }
+`
+
 const mapStateToProps = (state, ownProps) => {
     return {
         thumbnails: state.PrivateReducer.templatesThumbnails.list,
@@ -81,9 +114,11 @@ class TemplatesRepresentation extends React.Component{
         super(props)
         this.state = {
             loading: this.props.selectedTemplate.loading,
-            config: this.props.selectedTemplate.config
+            config: this.props.selectedTemplate.config,
+            over: false
         }
         this.scrollable = null
+        this.handleOver = this.handleOver.bind(this)
     }
     handleWheelEvent(element, e){
         const dY = e.deltaY,
@@ -99,6 +134,9 @@ class TemplatesRepresentation extends React.Component{
             return false;
         }
         e.stopPropagation();
+    }
+    handleOver(value){
+        this.setState({over:value})
     }
     componentWillMount(){
         this.props.fetchTemplates()
@@ -132,7 +170,7 @@ class TemplatesRepresentation extends React.Component{
                                         }}>
                                             <CompositionExtended>
                                                 {
-                                                    key.thumb ? (<ThumbJoke src={key.thumb} alt=""/>)
+                                                    key.thumb ? (key.dummy ? <ThumbJoke src={key.thumb} alt=""/> : <RealThumb thumb={key.thumb} animate={key.animate}/>)
                                                         : i
                                                 }{this.props.selectedTemplate.index==i && (this.props.selectedTemplate.loading ? 'loading' : (this.props.selectedTemplate.error ? '':'active'))}
                                             </CompositionExtended>

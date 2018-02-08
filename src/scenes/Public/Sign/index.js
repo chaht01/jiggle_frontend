@@ -30,6 +30,7 @@ const SignFormContainer = styled(Segment)`
 
 const OAuthBtn = styled(Button)`
     width: 100% !important;
+    margin: 0 !important;
 `
 
 const GoogleBtn = OAuthBtn.extend`

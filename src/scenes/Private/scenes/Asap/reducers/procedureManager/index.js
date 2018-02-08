@@ -2,7 +2,7 @@ import * as actionType from '../../sagas/types'
 
 const initialTemplateState = {
     loading: false,
-    index: -1,
+    index: 0,
     error: null,
     config: null
 }

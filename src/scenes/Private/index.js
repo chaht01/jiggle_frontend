@@ -68,7 +68,7 @@ const AuthButton = withRouter(({history, logout, ...rest}) =>{
 
 const CreateButton = () => {
     return (
-        <Button compact size="small" color="blue" inverted
+        <Button compact size="small" theme={{fg:'#fff', bg:'#FA4D1E'}}
                 as={Link}
                 to={`${routeConfig.privateRoot}/asap`}
             >
