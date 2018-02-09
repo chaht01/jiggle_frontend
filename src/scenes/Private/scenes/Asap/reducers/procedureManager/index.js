@@ -46,6 +46,7 @@ const initialDirtyDataState = {
     data: initialDataState,
     meta: initialMetaState,
     range:initialRange,
+    focusTarget: null,
     error: null
 }
 const initialAppearanceState = null
@@ -169,6 +170,22 @@ const procedureManager = (state=initialState, action) => {
                     meta: initialMetaState
                 }
             }
+
+        case actionType.CHART_CELL_FOCUS:
+            const {x, y} = action.payload
+            if(state.dirtyData.range[0]<=x && x<=state.dirtyData.range[1]
+            && state.dirtyData.range[2]<=y && y<=state.dirtyData.range[3]){
+                return {
+                    ...state,
+                    dirtyData: {
+                        ...state.dirtyData,
+                        focusTarget: [action.payload.x, action.payload.y]
+                    }
+                }
+            }else{
+                return state
+            }
+
 
         /* GLOBAL */
         case actionType.PROCEDURE_CLEAR:

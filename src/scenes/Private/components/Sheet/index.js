@@ -5,53 +5,19 @@ import Handson from '../../../../components/Handson'
 import FullPage from '../../../../components/Layout/FullPage'
 
 import styled from 'styled-components'
+import Handsontable from 'handsontable'
 
 import connect from 'react-redux/es/connect/connect'
 
+import {getRangeOfValidData} from '../../scenes/Asap/sagas/actions'
 
 
-
-class Sheet extends React.Component{
-    constructor(props){
-        super(props)
-        this.state = {
-            placeholder: false,
-            dirtyData: this.props.dirtyData
-        }
-        this.setPlaceHolderStatus = this.setPlaceHolderStatus.bind(this)
-        this.checkDirty = this.checkDirty.bind(this)
-        this.handson = null
-    }
-
-    setPlaceHolderStatus(isOver){
-        this.setState({placeholder:isOver})
-    }
-
-    checkDirty(){
-        for(let i=0; i<this.state.dirtyData.length; i++){
-            for(let j=0; j<this.state.dirtyData[i].length; j++){
-                if(['', undefined, null].indexOf(this.state.dirtyData[i][j])==-1)
-                    return true;
-            }
-        }
-        return false;
-    }
-    shouldComponentUpdate(nextProps, nextState){
-        if(nextState.placeholder != this.state.placeholder){
-            return true;
-        }
-        if(this.state.dirtyData.length == nextProps.dirtyData.length){
-            return false;
-        }
-        return true;
-    }
-    render(){
-        const SheetContainer = styled.div`
+const SheetContainer = styled.div`
             position: relative;
             width: calc(${props => props.width}px);
             background: #fff;
         `
-        const SheetFakeCover = styled.div`
+const SheetFakeCover = styled.div`
             position: absolute;
             display: flex;
             justify-content:center;
@@ -74,52 +40,131 @@ class Sheet extends React.Component{
             }
            
         `
-        const saveData = () => {
-            const dataToSave = JSON.parse(JSON.stringify(this.state.dirtyData))
-            this.props.saveData(dataToSave)
+
+
+const mapStateToDispatch = (state, ownProps) => {
+    return {
+        focusTarget: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.focusTarget,
+    }
+}
+
+class SheetRepresentation extends React.Component{
+    constructor(props){
+        super(props)
+        this.dirtyData = [['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],
+            ['','','','','','','','','','','','','','','','','','','',''],]
+        this.setPlaceHolderStatus = this.setPlaceHolderStatus.bind(this)
+        this.checkDirty = this.checkDirty.bind(this)
+        this.saveData = this.saveData.bind(this)
+        this.handson = null
+    }
+
+    setPlaceHolderStatus(isOver){
+        this.setState({placeholder:isOver})
+    }
+
+    checkDirty(){
+        for(let i=0; i<this.dirtyData.length; i++){
+            for(let j=0; j<this.dirtyData[i].length; j++){
+                if(['', undefined, null].indexOf(this.dirtyData[i][j])==-1)
+                    return true;
+            }
         }
+        return false;
+    }
+
+    saveData(){
+        const dataToSave = JSON.parse(JSON.stringify(this.dirtyData))
+        this.props.saveData(dataToSave)
+    }
+    render(){
+        const {width, height} = this.props
+
         return (
             <FullPage>
-                <SheetContainer width={this.props.width}>
+                <SheetContainer width={width}>
                     <Handson
                         ref={(handson)=> this.handson = handson}
-                        data={this.state.placeholder ? this.props.placeholderData : this.state.dirtyData}
-                        afterDeselect={()=>{
-                            if(!this.checkDirty()){
-                                this.setPlaceHolderStatus(false)
+                        settings={{
+                            data: this.dirtyData,
+                            onAfterChange:(changes, source) => {
+                                if(source !== 'loadData'){
+                                    this.saveData()
+                                }
+                            },
+                            onAfterUndo: this.saveData,
+                            onAfterCreateRow:this.saveData,
+                            onAfterCreateCol:this.saveData,
+                            onAfterRemoveCol:this.saveData,
+                            onAfterRemoveRow:this.saveData,
+                            colHeaders:true,
+                            rowHeaders:true,
+                            width:width,
+                            height:height,
+                            colWidths:80,
+                            rowHeights:23,
+                            cells: (row, col, prop) => {
+                                let cellProperties = {}
+                                const range = getRangeOfValidData(this.dirtyData)
+                                if(this.props.focusTarget === null){
+                                    if(col === range[1] && row === range[3]){
+                                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                            td.style.border = '2px solid #FA4D1E'
+                                            td.innerText = value
+                                        }
+                                    }else{
+                                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                            td.innerText = value
+                                        }
+                                    }
+                                }else{
+                                    if(col === this.props.focusTarget[0] && row === this.props.focusTarget[1]){
+                                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                            td.style.border = '2px solid #FA4D1E'
+                                            td.innerText = value
+                                        }
+                                    }else{
+                                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                            td.innerText = value
+                                        }
+                                    }
+                                }
+                                return cellProperties
                             }
                         }}
-
-                        afterChange={(changes, source) => {
-                            if(source !== 'loadData'){
-                                saveData()
-                            }
-                        }}
-                        afterUndo={()=>saveData()}
-                        afterCreateRow={()=>saveData()}
-                        afterCreateCol={()=>saveData()}
-                        afterRemoveCol={()=>saveData()}
-                        afterRemoveRow={()=>saveData()}
-
-                        colHeaders={true}
-                        rowHeaders={true}
-                        width={this.props.width}
-                        height={this.props.height}
-                        colWidths="80"
-                        rowHeights="23"
 
                     />
-                    {this.state.placeholder && (
-                        <SheetFakeCover onClick={()=>{
-                            this.setPlaceHolderStatus(false)
-                            setTimeout(()=>this.handson.getInstance().selectCell(0, 0, 0, 0, true), 0)
-                        }}/>)}
-
                 </SheetContainer>
             </FullPage>
         )
     }
 
 }
+
+const Sheet = connect(
+    mapStateToDispatch,
+    null
+)(SheetRepresentation)
 
 export default Sheet

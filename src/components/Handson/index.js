@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import HotTable from 'react-handsontable'
 
 import styled from 'styled-components'
-
+import store from '../../store'
 
 class Handson extends React.Component {
     constructor(props){
@@ -34,6 +34,13 @@ class Handson extends React.Component {
     }
     render(){
         const contextMenu = {
+            callback: (key, options) => {
+                if(key === 'focus'){
+                    store.dispatch({type:"CHART_CELL_FOCUS", payload:{x:options.end.col , y: options.end.row}})
+                    console.log(options)
+                }
+                console.log(options)
+            },
             items: {
                 "row_above": {
                     name: "위에 행 추가"
@@ -65,6 +72,10 @@ class Handson extends React.Component {
                 "make_read_only": {
                     name: "선택영역을 읽기전용으로"
                 },
+                "hsep4": "---------",
+                "focus": {
+                    name: '강조하기'
+                }
 
             }
         }
@@ -75,7 +86,7 @@ class Handson extends React.Component {
     `
         return(
             <ScrollContainer>
-                <HotTable {...this.props} settings={{contextMenu}} ref={(container)=> this.container = container}/>
+                <HotTable settings={Object.assign({}, this.props.settings, {contextMenu})} ref={(container)=> this.container = container}/>
             </ScrollContainer>
         )
     }

@@ -1,5 +1,6 @@
 import React from 'react'
 
+
 /* COMPONENT */
 import { Segment, Form } from 'semantic-ui-react'
 import Sheet from '../../../../components/Sheet'
@@ -41,9 +42,8 @@ const ConfigLabel = styled.label`
 
 const mapStateToDispatch = (state, ownProps) => {
     return {
-        dirtyData: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data,
+        data: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data,
         meta: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
-        placeholderData: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.data
     }
 }
 
@@ -58,39 +58,44 @@ const mapDispatchToProps = (dispatch) => {
     }
 }
 
-const DataConfigViewRepresentation = ({dirtyData, meta, placeholderData, saveData, saveMeta, activateSection, ...rest}) => {
-    console.log(meta)
-    return (
-        <PaddedContainer>
-            <FullPage>
-                <Sheet width={800} height={500} dirtyData={dirtyData} placeholderData={placeholderData} saveData={saveData}/>
-                <ConfigPanel>
-                    <Form>
-                        <ConfigField inline>
-                            <ConfigLabel>제목</ConfigLabel>
-                            <Input invert square={true} placeholder={meta.title} onChange={(e) => saveMeta(e, 'title')}/>
-                        </ConfigField>
-                        <ConfigField inline>
-                            <ConfigLabel>X축</ConfigLabel>
-                            <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'xAxis')}/>
-                            <ConfigLabel>Y축</ConfigLabel>
-                            <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'yAxis')}/>
-                        </ConfigField>
-                        <ConfigField inline>
-                            <ConfigLabel>자료 출처</ConfigLabel>
-                            <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'reference')}/>
-                        </ConfigField>
-                        <ConfigField inline>
-                            <ConfigLabel>만든이</ConfigLabel>
-                            <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'producer')}/>
-                        </ConfigField>
-                    </Form>
-                </ConfigPanel>
-            </FullPage>
-        </PaddedContainer>
+class DataConfigViewRepresentation extends React.Component{
+    constructor(props){
+        super(props)
+    }
+    render(){
+        const {saveData, meta} = this.props
+        return (
+            <PaddedContainer>
+                <FullPage>
+                    <Sheet width={800} height={500} saveData={saveData}/>
+                    <ConfigPanel>
+                        <Form>
+                            <ConfigField inline>
+                                <ConfigLabel>제목</ConfigLabel>
+                                <Input invert square={true} placeholder={meta.title} onChange={(e) => saveMeta(e, 'title')}/>
+                            </ConfigField>
+                            <ConfigField inline>
+                                <ConfigLabel>X축</ConfigLabel>
+                                <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'xAxis')}/>
+                                <ConfigLabel>Y축</ConfigLabel>
+                                <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'yAxis')}/>
+                            </ConfigField>
+                            <ConfigField inline>
+                                <ConfigLabel>자료 출처</ConfigLabel>
+                                <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'reference')}/>
+                            </ConfigField>
+                            <ConfigField inline>
+                                <ConfigLabel>만든이</ConfigLabel>
+                                <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'producer')}/>
+                            </ConfigField>
+                        </Form>
+                    </ConfigPanel>
+                </FullPage>
+            </PaddedContainer>
 
 
-    )
+        )
+    }
 }
 
 const DataConfigView = connect(

@@ -1,13 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { withRouter, Link } from 'react-router-dom'
-import {Dimmer, Loader, Segment} from 'semantic-ui-react'
+
 
 
 import routeConfig from '../../../../../../config/route'
 
 /* COMPONENTS */
-import { Button } from 'semantic-ui-react'
+import {Dimmer, Loader, Segment} from 'semantic-ui-react'
 import FullPage from '../../../../../../components/Layout/FullPage'
 import Composition from '../../../../../../components/Composition'
 import PaddedContainer from '../PaddedContainer'
@@ -169,10 +169,12 @@ class TemplatesRepresentation extends React.Component{
                                             this.props.selectTemplate(i)
                                         }}>
                                             <CompositionExtended>
-                                                {
-                                                    key.thumb ? (key.dummy ? <ThumbJoke src={key.thumb} alt=""/> : <RealThumb thumb={key.thumb} animate={key.animate}/>)
-                                                        : i
-                                                }{this.props.selectedTemplate.index==i && (this.props.selectedTemplate.loading ? 'loading' : (this.props.selectedTemplate.error ? '':'active'))}
+                                                {key.thumb ? (key.dummy ? <ThumbJoke src={key.thumb} alt=""/> : <RealThumb thumb={key.thumb} animate={key.animate}/>) : i}
+                                                {this.props.selectedTemplate.index==i && (this.props.selectedTemplate.loading ?
+                                                    <Dimmer active>
+                                                        <Loader size='medium'>Loading</Loader>
+                                                    </Dimmer>
+                                                : (this.props.selectedTemplate.error ? '':'active'))}
                                             </CompositionExtended>
                                             <ThumbnailDescription>
                                                 {key.desc}

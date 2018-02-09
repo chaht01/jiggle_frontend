@@ -105,3 +105,15 @@ export const clearAllProcedure = () => {
         type: actionType.PROCEDURE_CLEAR
     }
 }
+
+
+/*** FOCUS TARGET ***/
+export const focusTarget = (x, y) => {
+    return {
+        type: actionType.CHART_CELL_FOCUS,
+        payload:{
+            x,
+            y
+        }
+    }
+}
