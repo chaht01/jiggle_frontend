@@ -227,6 +227,7 @@ class Preview extends React.Component{
                                               deleteSelf={this.deleteImage}
                                               {...image}/>)
                                 )}
+                                {/* 차트 */}
                             </svg>
 
                             <GifViewer id="gif"/>

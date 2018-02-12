@@ -108,12 +108,44 @@ export const clearAllProcedure = () => {
 
 
 /*** FOCUS TARGET ***/
-export const focusTarget = (x, y) => {
+export const emphasizeTarget = (x, y) => {
     return {
-        type: actionType.CHART_CELL_FOCUS,
+        type: actionType.CHART_CELL_EMPHASIZE,
         payload:{
             x,
             y
         }
+    }
+}
+export const emphasisTargetValidate = () => {
+    return {
+        type: actionType.CHART_CELL_EMPHASIZE_VALIDATE
+    }
+}
+
+/*** SAVE COMMENT ***/
+export const saveComment = (comments) => {
+    return {
+        type: actionType.CHART_COMMENT_POST_REQUEST,
+        payload: comments
+    }
+}
+
+export const saveCommentSuccess = () => {
+    return {
+        type: actionType.CHART_COMMENT_POST_SUCCESS
+    }
+}
+
+export const saveCommentFailure = (err) => {
+    return {
+        type: actionType.CHART_COMMENT_POST_FAILURE,
+        payload: err
+    }
+}
+
+export const commentValidate = () => {
+    return {
+        type: actionType.CHART_COMMENT_VALIDATE
     }
 }

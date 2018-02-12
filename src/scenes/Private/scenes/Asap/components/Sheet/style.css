@@ -1,0 +1,9 @@
+.commentCell {
+  position: relative; }
+  .commentCell:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-left: 6px solid transparent;
+    border-top: 6px solid #272727; }

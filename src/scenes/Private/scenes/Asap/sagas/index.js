@@ -5,7 +5,9 @@ import * as actionType from './types'
 import {
     fetchTemplate, fetchTemplateSuccess, fetchTemplateFailure,
     saveData, saveDataSuccess, saveDataFailure,
-    saveMeta, saveMetaSuccess, saveMetaFailure
+    saveMeta, saveMetaSuccess, saveMetaFailure,
+    emphasisTargetValidate,
+    commentValidate
 } from './actions'
 
 
@@ -36,7 +38,11 @@ export function* watchFetchTemplateAsync() {
 /*** SAVE DATA ***/
 export function* saveDataAsync({payload: {data, range}}) {
     try{
-        yield call(delay, 1000)
+        yield call(delay, 0) // equivalent to setTimeout with 0
+        yield put(emphasisTargetValidate()) //async update emphasis validation
+        yield put(commentValidate()) //async update comment validation
+
+        yield call(delay, 1000) // throttle user's event with 1 seconds
         const sliced = yield data.slice(range[2], range[3]+1).map((row)=>row.slice(range[0], range[1]+1))
         yield call(console.log, sliced)
         yield put(saveDataSuccess())

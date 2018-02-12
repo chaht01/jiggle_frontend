@@ -3,12 +3,13 @@ import ReactDOM from 'react-dom'
 import HotTable from 'react-handsontable'
 
 import styled from 'styled-components'
-import store from '../../store'
 
 class Handson extends React.Component {
     constructor(props){
         super(props);
         this.getInstance = this.getInstance.bind(this)
+        this.preventWheel = this.preventWheel.bind(this)
+        this.handleWheelEvent = this.handleWheelEvent.bind(this)
     }
     handleWheelEvent(element, e){
         const dY = e.deltaY,
@@ -22,25 +23,24 @@ class Handson extends React.Component {
         }
         e.stopPropagation();
     }
-    componentDidMount(){
+    preventWheel(){
         Array.prototype.forEach.call(
             ReactDOM.findDOMNode(this.container).querySelectorAll('.wtHolder'),
             (scrollableNode)=>{
                 scrollableNode.addEventListener('wheel', this.handleWheelEvent.bind(this, scrollableNode), {passive: false})
-        })
+            })
     }
     getInstance(){
         return this.container.hotInstance
     }
+    componentDidMount(){
+        this.preventWheel()
+    }
+    componentDidUpdate(){
+        this.preventWheel()
+    }
     render(){
-        const contextMenu = {
-            callback: (key, options) => {
-                if(key === 'focus'){
-                    store.dispatch({type:"CHART_CELL_FOCUS", payload:{x:options.end.col , y: options.end.row}})
-                    console.log(options)
-                }
-                console.log(options)
-            },
+        const defaultContextMenu = {
             items: {
                 "row_above": {
                     name: "위에 행 추가"
@@ -72,20 +72,19 @@ class Handson extends React.Component {
                 "make_read_only": {
                     name: "선택영역을 읽기전용으로"
                 },
-                "hsep4": "---------",
-                "focus": {
-                    name: '강조하기'
-                }
-
             }
         }
+        const contextMenu = {
+            callback : this.props.settings.contextMenu.callback,
+            items: Object.assign({}, defaultContextMenu.items, this.props.settings.contextMenu.items)
+        }
         const ScrollContainer = styled.div`
-        width: ${this.props.width}px;
-        height: ${this.props.height}px;
+        width: ${props => props.width}px;
+        height: ${props => props.height}px;
         overflow: hidden;
     `
         return(
-            <ScrollContainer>
+            <ScrollContainer width={this.props.width} height={this.props.height}>
                 <HotTable settings={Object.assign({}, this.props.settings, {contextMenu})} ref={(container)=> this.container = container}/>
             </ScrollContainer>
         )
