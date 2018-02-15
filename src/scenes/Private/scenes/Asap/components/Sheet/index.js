@@ -104,8 +104,9 @@ class SheetRepresentation extends React.Component{
 
         const range = getRangeOfValidData(this.state.data)
         const rangedData = getValidDataWithinRange(this.state.data, range)
-        console.log(getValidNumerical(rangedData))
-        console.log(generateArchi(rangedData))
+        const schema = generateSchema(rangedData)
+        console.log(schema)
+        console.log(schemaToRawData(schema))
     }
 
     render(){
@@ -204,15 +205,121 @@ class SheetRepresentation extends React.Component{
         )
     }
 }
+const collapseMatrix = (arr) => {
+    return [arr.map(row => {
+        let reduced = []
+        row.reduce((a,c,i)=>{
+            if(c=='' || c===null || c==undefined){
+                reduced[i] = a;
+                return a;
+            }else{
+                reduced[i] = c;
+                return c;
+            }
+        },0)
+        return reduced
+    }).reduce((a,c,i)=>{
+        return a.map((e,j)=>e+' '+c[j])
+    })]
+}
+const schemaToRawData = (schema) => {
+    try{
+        let axisColumns,
+            axisLabel,
+            legends,
+            values
 
-const chartArchitecture = {
-    axisColumnNamespace:[[]], // [['삼성', '엘지', '두산']] or [['2013', '2014', '2015']] or [...dates]
+        if(schema.numeric.length===0){ // No way to draw chart
+            return []
+        }else{
+            if(schema.axisColumnNamespace.length == 0){
+                axisColumns = schema.dummyAxisColumnNamespace()
+            }else{
+                axisColumns = schema.axisColumnNamespace
+            }
 
-    legendNamespace:[[]], // [['삼성', '엘지', '두산']] or ['2013', '2014', '2015'].
+            if(axisColumns.length>1){
+                //collapse to single axis column
+                axisColumns = collapseMatrix(axisColumns)
+            }
+
+
+            axisLabel = schema.axisLabel || ''
+            if(schema.legendNamespace.length == 0){
+                legends = schema.dummyLegendNamespace()
+            }else{
+                legends = schema.legendNamespace
+            }
+
+            const legends_t = transpose(legends)
+            if(legends_t.length>1){
+                legends = transpose(collapseMatrix(legends_t))
+            }
+            legends.unshift([axisLabel])
+
+            values = schema.numeric.map((row) => {
+                return row.map((cell) => {
+                    const parsed = numeral(cell).value()
+                    return (parsed===null || isNaN(parsed)) ? '' : parsed
+                })
+            })
+
+            return [].concat(transpose(legends)).concat(transpose([].concat(axisColumns).concat(values)))
+        }
+    }catch(err){
+        console.error('Parse Error from schema to raw data.')
+        console.log(err.stack)
+        return [[]]
+    }
+
+}
+
+const chartSchema = {
+    axisColumnNamespace:[], // [['삼성', '엘지', '두산']] or [['2013', '2014', '2015']] or [...dates]
+    axisLabel:'',
+    legendNamespace:[], // [['삼성'], ['엘지'], ['두산']] or [['2013'], ['2014'], ['2015']].
     // 길이가 numeric의 length와 일치해야함(numeric의 length가 1이라면 비어있어도 됨). 1개일때는 곧 value Axis(direction의 보수)의 이름이 됨
 
-    numeric: [[]], // [[]]. 가로 길이와 AxisColumnNamespace 길이가 일치해야함(빈 스트링 가능)
-    direction: 'x' // or 'y'
+    numeric: [], // [[]]. 가로 길이와 AxisColumnNamespace 길이가 일치해야함(빈 스트링 가능)
+    direction: 'x', // or 'y'
+    dummyAxisColumnNamespace(){
+        let ret = []
+        if(this.numeric.length==0){
+            return []
+        }
+        for(let i=0; i<this.numeric[0].length; i++){
+            let str = ''
+            let curr = i
+            while(true){
+                str = (String.fromCharCode(97 + (curr%26)) + str)
+                curr = parseInt(curr/26)
+                if(curr === 0){
+                    break;
+                }
+            }
+            ret.push('항목_'+str)
+        }
+        return [ret]
+    },
+    dummyLegendNamespace(){
+        let ret = []
+        if(this.numeric.length==0){
+            return []
+        }
+        for(let i=0; i<this.numeric.length; i++){
+            let str = ''
+            let curr = i
+            while(true){
+                str = (String.fromCharCode(97 + (curr%26)) + str)
+                curr = parseInt(curr/26)
+                if(curr === 0){
+                    break;
+                }
+            }
+            ret.push('계열_'+str)
+        }
+        return [ret]
+    }
 }
 const transpose = (arr) => {
     //check size validation
@@ -227,23 +334,19 @@ const transpose = (arr) => {
     return arr.reduce(($, row) => row.map((_, i) => [...($[i] || []), row[i]]), [])
 }
 
-const isDirty = (range) => {
-    return !(range[0]==-1 && range[1]==-1 && range[2]==-1 && range[3]==-1)
-}
-
-const generateArchi = (data, direction) => {
-    let archi = Object.assign({}, chartArchitecture)
+const generateSchema = (data, direction) => {
+    let schema = Object.assign({}, chartSchema)
     if(data===null || data.length===0 || data[0].length===0){
-        return archi
+        return schema
     }
 
     /**
-     * Initialize architecture object(archi)
+     * Initialize schema object(schema)
      * @type {*}
      */
-    archi.direction = direction || data.length > data[0].length ? 'y' : 'x'
+    schema.direction = direction || data.length > data[0].length ? 'y' : 'x'
 
-    if(archi.direction == 'y')
+    if(schema.direction == 'y')
         data = transpose(data)
 
     /**
@@ -251,7 +354,9 @@ const generateArchi = (data, direction) => {
      */
     const width = data[0].length
     const height = data.length
-
+    if(width<2 || height==0){
+        return schema
+    }
 
     /**
      * Calculate vacant range
@@ -304,7 +409,8 @@ const generateArchi = (data, direction) => {
      */
     let axisColumnNamespaceExpectedRange = null
     let legendNamespaceExpectedRange = null
-    if(vacantRange[0] == 0){ // if vacant range exist
+    let axisLabel = ''
+    if(vacantRange[0] == 0){ // if vacant range exist: axis and value label could not be assigned
         axisColumnNamespaceExpectedRange = [
             vacantRange[1]+1, // right after vacant col position
             width-1,
@@ -321,165 +427,50 @@ const generateArchi = (data, direction) => {
         axisColumnNamespaceExpectedRange = [-1, -1, -1, -1]
         legendNamespaceExpectedRange = [-1, -1, -1, -1]
 
-        // Updating namespaces according to header & aside's non-numeric value
         const header = data[0]
         const aside = data.map(r => r[0])
         let headerNaN = 0, asideNaN = 0
-        for(let i=1; i<header.length; i++){
-            if(validator.numeric(header[i]) === false){
-                headerNaN++
-            }
-        }
-        for(let i=1; i<aside.length; i++){
-            if(validator.numeric(aside[i]) === false){
-                asideNaN++
-            }
-        }
-
-        /**
-         * Water fall
-         */
-
-        if (headerNaN>0) {
-            axisColumnNamespaceExpectedRange = [0, width-1, 0, 0]
-            numericExpectedRange[2] = 1 //update
-        } else {
-            // More deep validation -- rough checking of numerical data using 'numeral'
-            // Check if increment(or decrement) exist either header or aside
-            if (header.length>2) {
-                let interval = []
-                header.slice(1).reduce((a,c,i) => {
-                    interval.push(
-                        Number(math.subtract(math.bignumber(validator.numeric(c)), math.bignumber(validator.numeric(a))))
-                    );
-                    return c})
-                if(interval.filter(diff => diff!=interval[0]).length === 0) {
-                    let startPos = 1
-                    const cornerValue = validator.numeric(header[0])
-                    if(cornerValue!==false && Number(math.subtract(math.bignumber(validator.numeric(header[1])), math.bignumber(cornerValue))) == interval[0]){
-                        startPos = 0
-                    }
-                    axisColumnNamespaceExpectedRange = [startPos, width-1, 0, 0]
-                    numericExpectedRange[0] = startPos //update
-                    numericExpectedRange[2] = 1 //update
+        if(height===1){
+            // 행이 1개뿐이면 그 행이 numerical 인지 아닌지에따라 axis col ns를 정한다
+            for(let i=1; i<header.length; i++){
+                if(validator.numeric(header[i]) === false){
+                    headerNaN++
                 }
             }
-        }
-
-        if(axisColumnNamespaceExpectedRange[0]>0){
-            //waterfall
-            if (asideNaN>0) {
-                let legendStart = 0
-                if(isDirty(axisColumnNamespaceExpectedRange)){
-                    legendStart = axisColumnNamespaceExpectedRange[3]+1
-                }
-                legendNamespaceExpectedRange = [0, 0, legendStart, height-1]  // dependent on header NaN
-                numericExpectedRange[0] = 1 //update
-                numericExpectedRange[2] = legendStart //update
-            }
-            if(headerNaN>0 && asideNaN>0){
-                axisColumnNamespaceExpectedRange[0] = 1
-                legendNamespaceExpectedRange[2] = 1
-            }
-        }
-
-        console.log(numericExpectedRange)
-
-        /*
-        if(asideNaN==0){
-            if(aside.length>2){
-                let interval = []
-                aside.slice(1).reduce((a,c,i) => {
-                    interval.push(
-                        Number(math.subtract(math.bignumber(validator.numeric(c)), math.bignumber(validator.numeric(a))))
-                    );
-                    return c})
-                console.log(interval)
-                if(interval.filter(diff => diff!=interval[0]).length === 0){
-                    let startPos = 1
-                    const cornerValue = validator.numeric(aside[0])
-                    if(cornerValue!==false && Number(math.subtract(math.bignumber(validator.numeric(aside[1])), math.bignumber(cornerValue))) == interval[0]){
-                        startPos = 0
-                    }
-                    legendNamespaceExpectedRange = [0, 0, startPos, height-1]
-                    numericExpectedRange[0] = 1 //update
-                    numericExpectedRange[2] = startPos //update
+            if(headerNaN>0){ // axis col ns만 있고 numerical range는 없다
+                axisColumnNamespaceExpectedRange = [0, width-1, 0, 0]
+                numericExpectedRange = [-1, -1, -1, -1] // no numerics
+            }else{
+                if(validator.numeric(header[0]) === false){
+                    axisLabel = header[0]
+                    numericExpectedRange = [1, width-1, 0, height-1]
+                }else{
+                    numericExpectedRange = [0, width-1, 0, height-1]
                 }
             }
+        }else{
+            axisColumnNamespaceExpectedRange = [0, width-1, 0, 0] //The first row should be axis col ns
+            numericExpectedRange = [0, width-1, 1, height-1]
+            for(let i=1; i<aside.length; i++){
+                if(validator.numeric(aside[i]) === false){
+                    asideNaN++
+                }
+            }
+            if(asideNaN>0){ //exist
+                legendNamespaceExpectedRange = [0, 0, 1, height-1]
+                axisLabel = aside[0]
+                axisColumnNamespaceExpectedRange[0] = 1 //waterfall updated
+                numericExpectedRange[0] = 1
+            }
         }
-        */
+
     }
-    archi.axisColumnNamespace = getValidDataWithinRange(data, axisColumnNamespaceExpectedRange)
-    archi.legendNamespace = getValidDataWithinRange(data, legendNamespaceExpectedRange)
-    archi.numeric = getValidDataWithinRange(data, numericExpectedRange)
-    return archi
+    schema.axisColumnNamespace = getValidDataWithinRange(data, axisColumnNamespaceExpectedRange)
+    schema.legendNamespace = getValidDataWithinRange(data, legendNamespaceExpectedRange)
+    schema.numeric = getValidDataWithinRange(data, numericExpectedRange)
+    schema.axisLabel = axisLabel
+    return schema
 }
-
-const chartArchitectureValidator = (archi) => {
-    let msg = {} // [key]: archi의 key. [value]: {warning:'', error: ''}
-    const {AxisColumnNamespace, legendNamespace, unit, numeric, direction } = archi
-    /**
-     * 기본적으로 Numeric driven으로 진행
-     */
-
-    /**
-     * Axis Column Namespace Validation
-     * 서로 비슷한 타입의 namespace인지 확인한다 그렇지 않을 경우 warning
-     * 없을 경우 dummy를 핸들하도록(warning)
-     */
-
-
-
-}
-
-
-
-
-const getValidNumerical = (data) => {
-    const initialRange = [-1, -1, -1, -1]
-    let range = [-1, -1, -1, -1] //[left, right, top, bottom]
-    for(let i=0; i<data.length; i++){
-        for(let j=0; j<data[i].length; j++){
-            if(validator.numeric(data[i][j])!==false){
-                range[0] = range[0]==-1 ? j : Math.min(j, range[0])
-                range[1] = range[1]==-1 ? j : Math.max(j, range[1])
-                range[2] = range[2]==-1 ? i : Math.min(i, range[2])
-                range[3] = range[3]==-1 ? i : Math.max(i, range[3])
-            }
-        }
-    }
-
-    let rangedData
-    console.log(range, initialRange)
-    if(initialRange.filter((v, i) => range[i]===v).length>0){
-        rangedData = null
-    }else{
-        rangedData = getValidDataWithinRange(data, range)
-    }
-
-    let outsider = [-1, -1, -1, -1]
-    if(rangedData!==null){
-        for(let i=0; i<rangedData.length; i++){
-            for(let j=0; j<rangedData[i].length; j++){
-                console.log(rangedData[i][j], validator.numeric(rangedData[i][j]))
-                if(validator.numeric(rangedData[i][j])===false){
-                    outsider[0] = outsider[0]==-1 ? j : Math.min(j, outsider[0])
-                    outsider[1] = outsider[1]==-1 ? j : Math.max(j, outsider[1])
-                    outsider[2] = outsider[2]==-1 ? i : Math.min(j, outsider[2])
-                    outsider[3] = outsider[3]==-1 ? i : Math.max(j, outsider[3])
-                }
-            }
-        }
-    }
-
-    return {
-        rangedData: rangedData,
-        range: range,
-        outsider: outsider
-    }
-}
-
-
 
 const Sheet = connect(
     mapStateToProps,

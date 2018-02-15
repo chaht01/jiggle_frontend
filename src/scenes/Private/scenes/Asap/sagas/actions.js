@@ -46,8 +46,16 @@ export const getRangeOfValidData = (data) => {
     }
     return range
 }
-
+export const validRange = (range) => {
+    return range[0]<=range[1] && range[2]<=range[3]
+}
+export const isDirty = (range) => {
+    return !(range[0]==-1 && range[1]==-1 && range[2]==-1 && range[3]==-1)
+}
 export const getValidDataWithinRange = (data, range) =>{
+    if(!isDirty(range) || !validRange(range)){
+        return []
+    }
     const colSanitized = data.map((row, row_idx) => {
         if(range[2]<=row_idx && row_idx<=range[3]) {
             const filteredRow = row.filter((cell, col_idx) => {
@@ -59,7 +67,6 @@ export const getValidDataWithinRange = (data, range) =>{
         }
     })
     const rangedData = colSanitized.filter((row)=>row!==null)
-    console.log(rangedData)
     return rangedData
 }
 
