@@ -1,3 +1,4 @@
+import Api from '../../../../config/Api'
 import { delay } from 'redux-saga'
 import { call, put, takeEvery, takeLatest } from 'redux-saga/effects'
 
@@ -14,48 +15,63 @@ import * as actionType from './types'
 
 
 export function* fetchTemplatesThumbnailsAsync() {
-    yield call(delay, 1000)
-    const thumbnails = yield Array.from(Array(20).keys())
-    thumbnails[0] = {
-        thumb: funnyguy,
-        desc: '음악.. 그것은 유일하게 허락된 마약..',
-        dummy: true
+    try{
+        const res = yield call(Api.fetchApi, ['/template/all'])
+        let thumbnails = res.data
+        thumbnails[0] = Object.assign({}, thumbnails[0], {
+                thumb: animate_thumb,
+                animate: animate,
+                desc: '마지막 요소를 강조합니다',
+                dummy: false
+            })
+        // const thumbnails = yield Array.from(Array(20).keys())
+        // thumbnails[0] = {
+        //     thumb: funnyguy,
+        //     desc: '음악.. 그것은 유일하게 허락된 마약..',
+        //     dummy: true
+        // }
+        // thumbnails[1] = {
+        //     thumb: cryinggirl,
+        //     desc: '싫어! 너가해!',
+        //     dummy: true
+        // }
+        // thumbnails[2] = {
+        //     thumb: chairman,
+        //     desc: '여러분, 우리, 함께',
+        //     dummy: true
+        // }
+        // thumbnails[3] = {
+        //     thumb: greenboy,
+        //     desc: '그린가이맨',
+        //     dummy: true
+        // }
+        // thumbnails[4] = {
+        //     thumb: templestay,
+        //     desc: '파계승 2명',
+        //     dummy: true
+        // }
+        // thumbnails[5] = {
+        //     thumb: animate_thumb,
+        //     animate: animate,
+        //     desc: '마지막 요소를 강조합니다',
+        //     dummy: false
+        // }
+        // thumbnails[6] = {
+        //     thumb: webtoonslave,
+        //     desc: '웹툰 작가(노예)',
+        //     dummy: true
+        // }
+        yield put({
+            type: actionType.TEMPLATES_THUMBNAILS_FETCH_SUCCESS,
+            payload: thumbnails
+        })
+    }catch(error){
+        yield put({
+            type: actionType.TEMPLATES_THUMBNAILS_FETCH_FAILURE,
+            payload: error
+        })
     }
-    thumbnails[1] = {
-        thumb: cryinggirl,
-        desc: '싫어! 너가해!',
-        dummy: true
-    }
-    thumbnails[2] = {
-        thumb: chairman,
-        desc: '여러분, 우리, 함께',
-        dummy: true
-    }
-    thumbnails[3] = {
-        thumb: greenboy,
-        desc: '그린가이맨',
-        dummy: true
-    }
-    thumbnails[4] = {
-        thumb: templestay,
-        desc: '파계승 2명',
-        dummy: true
-    }
-    thumbnails[5] = {
-        thumb: animate_thumb,
-        animate: animate,
-        desc: '마지막 요소를 강조합니다',
-        dummy: false
-    }
-    thumbnails[6] = {
-        thumb: webtoonslave,
-        desc: '웹툰 작가(노예)',
-        dummy: true
-    }
-    yield put({
-        type: actionType.TEMPLATES_THUMBNAILS_FETCH_SUCCESS,
-        payload: thumbnails
-    })
+
 }
 
 export function* watchFetchTemplatesThumbnailsAsync() {

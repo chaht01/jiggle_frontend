@@ -12,20 +12,6 @@ const fetchApi = (endPoint, payload={}, method='get', headers={}, contentType='a
         } : headers,
         data: payload
     })
-        .then(res=>res)
-        .catch(err=>{
-            const errState = (err.response!==undefined ? err.response.status : undefined)
-            if(errState === undefined){
-                return err;
-            }else if(errState === 401){
-                /**
-                 * 401 unauthorized error detect
-                 */
-                sessionStorage.removeItem('token')
-            }
-            return err;
-
-        })
 }
 
 export default fetchApi

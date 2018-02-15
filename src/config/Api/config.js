@@ -1,4 +1,4 @@
 const apiConfig = {
-    url: 'http://127.0.0.1:8000'
+    url: 'http://127.0.0.1:3003'
 }
 export default apiConfig

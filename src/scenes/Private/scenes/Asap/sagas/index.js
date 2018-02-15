@@ -1,6 +1,6 @@
+import Api from '../../../../../config/Api'
 import { delay } from 'redux-saga'
 import { call, put, takeEvery, takeLatest, take, fork, cancel, cancelled } from 'redux-saga/effects'
-
 import * as actionType from './types'
 import {
     fetchTemplate, fetchTemplateSuccess, fetchTemplateFailure,
@@ -12,19 +12,11 @@ import {
 
 
 /*** FETCH TEMPLATE ***/
-export function* fetchTemplateAsync({payload: idx}) {
+export function* fetchTemplateAsync(action) {
     try{
         yield call(delay, 1000)
-        const templates = yield {
-            data: [
-                ["", "2017", "2018", "2019", idx],
-                ["서울", "1", "2", "3", "4"],
-                ["대전", "3", "3", "2", "1"],
-                ["대구", "0", "0", "0", "0"],
-                ["부산", "11", "3", "6", "7"],
-            ]
-        }
-        yield put(fetchTemplateSuccess(templates))
+        const template = yield action.payload.template
+        yield put(fetchTemplateSuccess(template))
     } catch (error){
         yield put(fetchTemplateFailure(error))
     }

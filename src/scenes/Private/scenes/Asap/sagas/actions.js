@@ -1,10 +1,13 @@
 import * as actionType from './types'
 
 /*** FETCH TEMPLATE ***/
-export const fetchTemplate = (idx) => {
+export const fetchTemplate = ({idx, template}) => {
     return {
         type: actionType.TEMPLATE_FETCH_REQUEST,
-        payload: idx
+        payload: {
+            idx,
+            template
+        }
     }
 }
 
@@ -42,6 +45,22 @@ export const getRangeOfValidData = (data) => {
         }
     }
     return range
+}
+
+export const getValidDataWithinRange = (data, range) =>{
+    const colSanitized = data.map((row, row_idx) => {
+        if(range[2]<=row_idx && row_idx<=range[3]) {
+            const filteredRow = row.filter((cell, col_idx) => {
+                return (range[0] <= col_idx && col_idx <= range[1])
+            })
+            return filteredRow
+        }else{
+            return null
+        }
+    })
+    const rangedData = colSanitized.filter((row)=>row!==null)
+    console.log(rangedData)
+    return rangedData
 }
 
 export const saveData = (data) => {

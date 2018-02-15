@@ -52,64 +52,64 @@ class Resizeable extends React.Component{
         switch (anchorIdx){
             case 0:
                 return {
-                    width: (prevAppearance.width||defaultAppearance.width) - diff.x,
-                    height: (prevAppearance.height||defaultAppearance.height) - diff.y,
+                    width: Math.max(0,(prevAppearance.width||defaultAppearance.width) - diff.x),
+                    height: Math.max(0,(prevAppearance.height||defaultAppearance.height) - diff.y),
                     x: (prevAppearance.x||defaultAppearance.x) + diff.x,
                     y: (prevAppearance.y||defaultAppearance.y) + diff.y
                 }
             case 1:
                 return {
-                    width: (prevAppearance.width||defaultAppearance.width),
-                    height: (prevAppearance.height||defaultAppearance.height) - diff.y,
+                    width: Math.max(0, (prevAppearance.width||defaultAppearance.width)),
+                    height: Math.max(0, (prevAppearance.height||defaultAppearance.height) - diff.y),
                     x: (prevAppearance.x||defaultAppearance.x),
                     y: (prevAppearance.y||defaultAppearance.y) + diff.y
                 }
             case 2:
                 return {
-                    width: (prevAppearance.width||defaultAppearance.width) + diff.x,
-                    height: (prevAppearance.height||defaultAppearance.height) - diff.y,
+                    width: Math.max(0,(prevAppearance.width||defaultAppearance.width) + diff.x),
+                    height: Math.max(0, (prevAppearance.height||defaultAppearance.height) - diff.y),
                     x: (prevAppearance.x||defaultAppearance.x),
                     y: (prevAppearance.y||defaultAppearance.y) + diff.y
                 }
             case 3:
                 return {
-                    width: (prevAppearance.width||defaultAppearance.width) + diff.x,
-                    height: (prevAppearance.height||defaultAppearance.height),
+                    width: Math.max(0, (prevAppearance.width||defaultAppearance.width) + diff.x),
+                    height: Math.max(0, (prevAppearance.height||defaultAppearance.height)),
                     x: (prevAppearance.x||defaultAppearance.x),
                     y: (prevAppearance.y||defaultAppearance.y)
                 }
             case 4:
                 return {
-                    width: (prevAppearance.width||defaultAppearance.width) + diff.x,
-                    height: (prevAppearance.height||defaultAppearance.height) + diff.y,
+                    width: Math.max(0, (prevAppearance.width||defaultAppearance.width) + diff.x),
+                    height: Math.max(0, (prevAppearance.height||defaultAppearance.height) + diff.y),
                     x: (prevAppearance.x||defaultAppearance.x),
                     y: (prevAppearance.y||defaultAppearance.y)
                 }
             case 5:
                 return {
-                    width: (prevAppearance.width||defaultAppearance.width),
-                    height: (prevAppearance.height||defaultAppearance.height) + diff.y,
+                    width: Math.max(0, (prevAppearance.width||defaultAppearance.width)),
+                    height: Math.max(0, (prevAppearance.height||defaultAppearance.height) + diff.y),
                     x: (prevAppearance.x||defaultAppearance.x),
                     y: (prevAppearance.y||defaultAppearance.y)
                 }
             case 6:
                 return {
-                    width: (prevAppearance.width||defaultAppearance.width) - diff.x,
-                    height: (prevAppearance.height||defaultAppearance.height) + diff.y,
+                    width: Math.max(0, (prevAppearance.width||defaultAppearance.width) - diff.x),
+                    height: Math.max(0, (prevAppearance.height||defaultAppearance.height) + diff.y),
                     x: (prevAppearance.x||defaultAppearance.x) + diff.x,
                     y: (prevAppearance.y||defaultAppearance.y)
                 }
             case 7:
                 return {
-                    width: (prevAppearance.width||defaultAppearance.width) - diff.x,
-                    height: (prevAppearance.height||defaultAppearance.height),
+                    width: Math.max(0, (prevAppearance.width||defaultAppearance.width) - diff.x),
+                    height: Math.max(0, (prevAppearance.height||defaultAppearance.height)),
                     x: (prevAppearance.x||defaultAppearance.x) + diff.x,
                     y: (prevAppearance.y||defaultAppearance.y)
                 }
             case 8:
                 return {
-                    width: (prevAppearance.width||defaultAppearance.width),
-                    height: (prevAppearance.height||defaultAppearance.height),
+                    width: Math.max(0, (prevAppearance.width||defaultAppearance.width)),
+                    height: Math.max(0, (prevAppearance.height||defaultAppearance.height)),
                     x: (prevAppearance.x||defaultAppearance.x) + diff.x,
                     y: (prevAppearance.y||defaultAppearance.y) + diff.y
                 }
@@ -159,7 +159,7 @@ class Resizeable extends React.Component{
             y:this.state.appearance.y + this.state.appearance.height*0.5 - anchorSize/2
         }]
         return(
-            <g onClick={(e)=>focusSelf(e, idx)}
+            <g className="resizeable" onClick={(e)=>focusSelf(e, idx)}
                ref={(node) => this.node = node}>
                 <image {...this.state.appearance} href={this.props.href}/>
                 {focused &&

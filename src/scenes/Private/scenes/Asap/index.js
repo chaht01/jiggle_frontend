@@ -30,9 +30,6 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        selectTemplate: (idx) => {
-            return dispatch(fetchTemplate(idx))
-        },
         clearAsap: () => {
             return dispatch(clearAllProcedure())
         }
@@ -59,16 +56,14 @@ class AsapRepresentation extends React.Component{
                 <SectionScrollSpy items={['애니메이션 선택', '데이터 입력', '프리뷰']} spyHeight={'80px'}>
                 </SectionScrollSpy>
                 <SectionScrollSection>
-                    <TemplateSelector selectTemplate={selectTemplate}/>
+                    <TemplateSelector/>
                 </SectionScrollSection>
                 { selectedTemplate.config!=null
                 && <SectionScrollSection>
                     <DataConfigView/>
                 </SectionScrollSection> }
-                { selectedTemplate.config!=null && dirtyData!==null
-                && <SectionScrollSection>
-                    <Preview/>
-                </SectionScrollSection> }
+                {/* selectedTemplate.config!=null && dirtyData!==null
+                && <SectionScrollSection/>*/}
             </StyledSectionScroll>
         )
     }

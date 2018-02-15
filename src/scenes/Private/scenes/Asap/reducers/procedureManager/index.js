@@ -2,8 +2,8 @@ import * as actionType from '../../sagas/types'
 
 const initialTemplateState = {
     loading: false,
-    index: 0,
     error: null,
+    idx: -1,
     config: null
 }
 const initialDataState = [
@@ -68,7 +68,7 @@ const procedureManager = (state=initialState, action) => {
                     ...state.selectedTemplate,
                     loading: true,
                     error: null,
-                    index: action.payload
+                    idx: action.payload.idx,
                 }
             }
         case actionType.TEMPLATE_FETCH_SUCCESS:
@@ -88,7 +88,8 @@ const procedureManager = (state=initialState, action) => {
                     ...state.selectedTemplate,
                     loading: false,
                     error: action.payload,
-                    config: null
+                    config: null,
+                    idx: -1
                 }
             }
         case actionType.TEMPLATE_CLEAR:

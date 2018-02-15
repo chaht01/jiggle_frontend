@@ -18,6 +18,7 @@ import { fetchTemplatesThumbnails } from '../../../../sagas/templates/actions'
 
 /* UTIL */
 import media from '../../../../../../config/media'
+import {fetchTemplate} from "../../sagas/actions";
 
 const ThumbnailContainer = styled(FullPage)`
     display: grid;
@@ -104,7 +105,14 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        fetchTemplates: () => dispatch(fetchTemplatesThumbnails())
+        fetchTemplates: () => dispatch(fetchTemplatesThumbnails()),
+        selectTemplate: (idx, template) => {
+            return dispatch(fetchTemplate({
+                idx,
+                template
+            }))
+        },
+
     }
 }
 
@@ -162,22 +170,22 @@ class TemplatesRepresentation extends React.Component{
                             <Dimmer active>
                                 <Loader />
                             </Dimmer> :
-                            this.props.thumbnails.map((key, i) => {
+                            this.props.thumbnails.map((template, i) => {
                                 const Thumb = withRouter(
                                     ({history, ...rest}) => (
                                         <Thumbnail onClick={() => {
-                                            this.props.selectTemplate(i)
+                                            this.props.selectTemplate(i, template)
                                         }}>
                                             <CompositionExtended>
-                                                {key.thumb ? (key.dummy ? <ThumbJoke src={key.thumb} alt=""/> : <RealThumb thumb={key.thumb} animate={key.animate}/>) : i}
-                                                {this.props.selectedTemplate.index==i && (this.props.selectedTemplate.loading ?
+                                                {template.thumb ? (template.dummy ? <ThumbJoke src={template.thumb} alt=""/> : <RealThumb thumb={template.thumb} animate={template.animate}/>) : i}
+                                                {this.props.selectedTemplate.idx==i && (this.props.selectedTemplate.loading ?
                                                     <Dimmer active>
                                                         <Loader size='medium'>Loading</Loader>
                                                     </Dimmer>
                                                 : (this.props.selectedTemplate.error ? '':'active'))}
                                             </CompositionExtended>
                                             <ThumbnailDescription>
-                                                {key.desc}
+                                                {template.desc}
                                             </ThumbnailDescription>
                                         </Thumbnail>
                                     ))
