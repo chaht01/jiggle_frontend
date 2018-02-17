@@ -62,8 +62,10 @@ class AsapRepresentation extends React.Component{
                 && <SectionScrollSection>
                     <DataConfigView/>
                 </SectionScrollSection> }
-                {/* selectedTemplate.config!=null && dirtyData!==null
-                && <SectionScrollSection/>*/}
+                {selectedTemplate.config!=null && dirtyData!==null
+                && <SectionScrollSection>
+                    <Preview/>
+                </SectionScrollSection>}
             </StyledSectionScroll>
         )
     }

@@ -6,22 +6,23 @@ import Composition from '../../../../../../components/Composition'
 import PaddedContainer from '../PaddedContainer'
 import _ from 'lodash'
 
-import {chart0, chart1, chart2} from 'd3-reusable/src/data/bar-data'
-
 import styled from 'styled-components'
 import {parseBar} from "d3-reusable/src/parser/bar-parser";
 import BarFactory from "d3-reusable/src/factory/bar-factory";
 import Resizeable from '../../../../components/Resizeable'
 
-import {getValidDataWithinRange} from '../../sagas/actions'
+import {getValidDataWithinRange, generateSchema, schemaToRawData} from '../../sagas/actions'
 
 import sampleImg from '../../../../../../assets/images/thumbs/greenboy.jpeg'
 import connect from "react-redux/es/connect/connect";
 const PreviewContainer = styled.div`
-    width: 60rem;
-    margin: 0 auto;
+    height: 60vh;
+    width: ${60*16/9}vh;
 `
-
+const CenteredFullPage = styled(FullPage)`
+    display: flex;
+    justify-content: center;
+`
 const PreviewThumbnails = styled(Composition)`
     background: #fff;
 `
@@ -93,17 +94,19 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
                 emphasisTarget = [range[1], range[3]]
             }
             const rangedData = getValidDataWithinRange(data, range)
+            const schema = generateSchema(rangedData)
+            const rawData = schemaToRawData(schema)
             const emphasisRowPos = emphasisTarget[1]
             const [offsetX, offsetY] = [range[0], range[2]]
             ret.push(
-                rangedData.filter((row, row_idx)=>{
+                rawData.filter((row, row_idx)=>{
                     if(row_idx + offsetY == emphasisRowPos){
                         return false
                     }
                     return true
                 })
             )
-            ret.push(rangedData)
+            ret.push(rawData)
             return ret
         })(stateProps.data, stateProps.emphasisTarget, stateProps.range),
         template: stateProps.template
@@ -129,7 +132,14 @@ class PreviewRepresentation extends React.Component{
                     width: 231,
                     height: 217,
                     x: 351,
-                    y: 264,
+                    y: 20,
+                    href: "data:image/gif;base64,R0lGODlhPQBEAPeoAJosM//AwO/AwHVYZ/z595kzAP/s7P+goOXMv8+fhw/v739/f+8PD98fH/8mJl+fn/9ZWb8/PzWlwv///6wWGbImAPgTEMImIN9gUFCEm/gDALULDN8PAD6atYdCTX9gUNKlj8wZAKUsAOzZz+UMAOsJAP/Z2ccMDA8PD/95eX5NWvsJCOVNQPtfX/8zM8+QePLl38MGBr8JCP+zs9myn/8GBqwpAP/GxgwJCPny78lzYLgjAJ8vAP9fX/+MjMUcAN8zM/9wcM8ZGcATEL+QePdZWf/29uc/P9cmJu9MTDImIN+/r7+/vz8/P8VNQGNugV8AAF9fX8swMNgTAFlDOICAgPNSUnNWSMQ5MBAQEJE3QPIGAM9AQMqGcG9vb6MhJsEdGM8vLx8fH98AANIWAMuQeL8fABkTEPPQ0OM5OSYdGFl5jo+Pj/+pqcsTE78wMFNGQLYmID4dGPvd3UBAQJmTkP+8vH9QUK+vr8ZWSHpzcJMmILdwcLOGcHRQUHxwcK9PT9DQ0O/v70w5MLypoG8wKOuwsP/g4P/Q0IcwKEswKMl8aJ9fX2xjdOtGRs/Pz+Dg4GImIP8gIH0sKEAwKKmTiKZ8aB/f39Wsl+LFt8dgUE9PT5x5aHBwcP+AgP+WltdgYMyZfyywz78AAAAAAAD///8AAP9mZv///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAKgALAAAAAA9AEQAAAj/AFEJHEiwoMGDCBMqXMiwocAbBww4nEhxoYkUpzJGrMixogkfGUNqlNixJEIDB0SqHGmyJSojM1bKZOmyop0gM3Oe2liTISKMOoPy7GnwY9CjIYcSRYm0aVKSLmE6nfq05QycVLPuhDrxBlCtYJUqNAq2bNWEBj6ZXRuyxZyDRtqwnXvkhACDV+euTeJm1Ki7A73qNWtFiF+/gA95Gly2CJLDhwEHMOUAAuOpLYDEgBxZ4GRTlC1fDnpkM+fOqD6DDj1aZpITp0dtGCDhr+fVuCu3zlg49ijaokTZTo27uG7Gjn2P+hI8+PDPERoUB318bWbfAJ5sUNFcuGRTYUqV/3ogfXp1rWlMc6awJjiAAd2fm4ogXjz56aypOoIde4OE5u/F9x199dlXnnGiHZWEYbGpsAEA3QXYnHwEFliKAgswgJ8LPeiUXGwedCAKABACCN+EA1pYIIYaFlcDhytd51sGAJbo3onOpajiihlO92KHGaUXGwWjUBChjSPiWJuOO/LYIm4v1tXfE6J4gCSJEZ7YgRYUNrkji9P55sF/ogxw5ZkSqIDaZBV6aSGYq/lGZplndkckZ98xoICbTcIJGQAZcNmdmUc210hs35nCyJ58fgmIKX5RQGOZowxaZwYA+JaoKQwswGijBV4C6SiTUmpphMspJx9unX4KaimjDv9aaXOEBteBqmuuxgEHoLX6Kqx+yXqqBANsgCtit4FWQAEkrNbpq7HSOmtwag5w57GrmlJBASEU18ADjUYb3ADTinIttsgSB1oJFfA63bduimuqKB1keqwUhoCSK374wbujvOSu4QG6UvxBRydcpKsav++Ca6G8A6Pr1x2kVMyHwsVxUALDq/krnrhPSOzXG1lUTIoffqGR7Goi2MAxbv6O2kEG56I7CSlRsEFKFVyovDJoIRTg7sugNRDGqCJzJgcKE0ywc0ELm6KBCCJo8DIPFeCWNGcyqNFE06ToAfV0HBRgxsvLThHn1oddQMrXj5DyAQgjEHSAJMWZwS3HPxT/QMbabI/iBCliMLEJKX2EEkomBAUCxRi42VDADxyTYDVogV+wSChqmKxEKCDAYFDFj4OmwbY7bDGdBhtrnTQYOigeChUmc1K3QTnAUfEgGFgAWt88hKA6aCRIXhxnQ1yg3BCayK44EWdkUQcBByEQChFXfCB776aQsG0BIlQgQgE8qO26X1h8cEUep8ngRBnOy74E9QgRgEAC8SvOfQkh7FDBDmS43PmGoIiKUUEGkMEC/PJHgxw0xH74yx/3XnaYRJgMB8obxQW6kL9QYEJ0FIFgByfIL7/IQAlvQwEpnAC7DtLNJCKUoO/w45c44GwCXiAFB/OXAATQryUxdN4LfFiwgjCNYg+kYMIEFkCKDs6PKAIJouyGWMS1FSKJOMRB/BoIxYJIUXFUxNwoIkEKPAgCBZSQHQ1A2EWDfDEUVLyADj5AChSIQW6gu10bE/JG2VnCZGfo4R4d0sdQoBAHhPjhIB94v/wRoRKQWGRHgrhGSQJxCS+0pCZbEhAAOw=="
+                },
+                {
+                    width: 231,
+                    height: 217,
+                    x: 101,
+                    y: 20,
                     href: "data:image/gif;base64,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"
                 }
             ]
@@ -139,12 +149,10 @@ class PreviewRepresentation extends React.Component{
             this.setState((prevState) => {
                 return {
                     images: prevState.images.map((img,i)=>{
-                        if(i==0){
                             return {
                                 ...img,
                                 href: dataUri
                             }
-                        }
                     })
                 }
             })
@@ -155,69 +163,13 @@ class PreviewRepresentation extends React.Component{
         this.updateTransformer = this.updateTransformer.bind(this)
         this.deleteImage = this.deleteImage.bind(this)
         this.clearChart = this.clearChart.bind(this)
+        this.renderImages = this.renderImages.bind(this)
+        this.images = []
     }
     renderGIF(){
         this.clearChart()
         this.factory.recordTransition(this.node, [...this.charts])
     }
-    clearChart(){
-        // for(let i=0; i<this.node.childNodes.length; i++){
-        //     if(Array.prototype.indexOf.call(this.node.childNodes[i].classList, 'resizeable')==-1){
-        //         this.node.childNodes[i].remove()
-        //     }
-        // }
-        for(let i=0; i<this.renderNode.childNodes.length; i++){
-            this.renderNode.childNodes[i].remove()
-
-        }
-    }
-    init(recentProps){
-        let isValid = true
-        const props = recentProps || this.props
-        for(let i=0; i<props.masked.length; i++){
-            console.log(props.masked)
-            if(props.masked[i].length == 0){
-                isValid = false
-                break;
-            }
-        }
-
-        if(isValid){
-            this.clearChart()
-            const settings = [{
-                rawData: props.masked[0],
-                duration: 1500,
-                delay: 1800,
-                delayType: "delayInOrder",
-                width_svg: 500,
-                margins:{left: 100, top: 100, bottom: 100, right: 100}
-            }, {
-                rawData: props.masked[1],
-                focusType: "end",
-                duration: 1500,
-                delayType: "delayInOrder",
-                width_svg: 500,
-                margins:{left: 100, top: 100, bottom: 100, right: 100}
-            }, {
-                rawData: props.masked[1],
-                focusType: "end",
-                duration: 1000,
-                width_svg: 500,
-                margins:{left: 100, top: 100, bottom: 100, right: 100}
-            }]
-
-            this.charts = settings.map((setting) => {
-                return Object.assign({}, props.template, setting)
-            })
-
-            this.charts.forEach(chart => parseBar(chart));
-            this.factory = new BarFactory();
-            const renderTransition = this.factory.renderTransition();
-            renderTransition(this.renderNode, [...this.charts]);
-        }
-
-    }
-
     setAnchorIdx(idx, cb){
         this.setState({
             anchorIdx: idx
@@ -241,8 +193,77 @@ class PreviewRepresentation extends React.Component{
 
 
     }
+    clearChart(){
+        // for(let i=0; i<this.node.childNodes.length; i++){
+        //     if(Array.prototype.indexOf.call(this.node.childNodes[i].classList, 'resizeable')==-1){
+        //         this.node.childNodes[i].remove()
+        //     }
+        // }
+        for(let i=0; i<this.renderNode.childNodes.length; i++){
+            this.renderNode.childNodes[i].remove()
+
+        }
+    }
+
+    renderImages(){
+        return this.state.images.map((image, i) => {
+            return(
+                <Resizeable key={i}
+                            idx={i}
+                            ref={node => this.images.push(node)}
+                            focused={i === this.state.focusedIdx}
+                            focus={this.focusImage}
+                            setAnchorIdx={this.setAnchorIdx}
+                            anchorIdx={this.state.anchorIdx}
+                            diff={this.state.diff}
+                            deleteSelf={this.deleteImage}
+                            {...image}/>)
+
+        })
+    }
+    init(recentProps){
+        let isValid = true
+        const props = recentProps || this.props
+        for(let i=0; i<props.masked.length; i++){
+            if(props.masked[i].length == 0){
+                isValid = false
+                break;
+            }
+        }
+
+        if(isValid){
+            this.clearChart()
+            const settings = [{
+                rawData: props.masked[0],
+                duration: 1500,
+                delay: 1800,
+                delayType: "delayInOrder",
+                width_svg: 960,
+                height_svg: 960*9/16,
+            }, {
+                rawData: props.masked[1],
+                focusType: "end",
+                duration: 1500,
+                delayType: "delayInOrder",
+                width_svg: 960,
+                height_svg: 960*9/16,
+            }]
+
+            this.charts = settings.map((setting) => {
+                return Object.assign({}, props.template, setting)
+            })
+
+            this.charts.forEach(chart => parseBar(chart));
+            this.factory = new BarFactory();
+            const renderStatic = this.factory.renderChart()
+            const gParent =renderStatic(this.renderNode, this.charts[1])
+            this.gChildren = this.factory.getChildG(gParent)
+            this.gChildren['graph'].style.cssText = "user-select:none; pointer-events:none;"
+        }
+
+    }
     componentDidMount(){
-        this.init()
+        this.init(this.props)
     }
     componentWillReceiveProps(nextProps){
         this.init(nextProps)
@@ -258,7 +279,7 @@ class PreviewRepresentation extends React.Component{
                     }else{
                         return {
                             ...image,
-                            ...this.refs[`image${focusedIdx}`].transform(image, {width:100, height:100, x:100, y:100}, focusedAnchorIdx, this.state.diff)
+                            ...this.images[focusedIdx].transform(image, {width:100, height:100, x:100, y:100}, focusedAnchorIdx, this.state.diff)
                         }
                     }
                 })
@@ -272,7 +293,7 @@ class PreviewRepresentation extends React.Component{
     render(){
         return (
             <PaddedContainer>
-                <FullPage>
+                <CenteredFullPage>
                     <PreviewContainer>
                         <PreviewThumbnails>
                             <svg style={{width:'100%', height:'100%'}} ref={node => this.node = node}
@@ -297,33 +318,38 @@ class PreviewRepresentation extends React.Component{
                                      this.updateTransformer()
                                  }}
                             >
-                                {this.state.images.map((image, i)=>(
-                                    <Resizeable key={i}
-                                              idx={i}
-                                              ref={`image${i}`}
-                                              focused={i===this.state.focusedIdx}
-                                              focus={this.focusImage}
-                                              setAnchorIdx={this.setAnchorIdx}
-                                              anchorIdx={this.state.anchorIdx}
-                                              diff={this.state.diff}
-                                              deleteSelf={this.deleteImage}
-                                              {...image}/>)
-                                )}
                                 {/* 차트 */}
-                                <g transform="translate(280, 10)" ref={node => this.renderNode = node}></g>
+                                {this.gChildren && this.gChildren['image'] ?
+                                    <ImageContainer images={this.renderImages} container={this.gChildren['image']}/>
+                                :null}
+
+                                <g ref={node => this.renderNode = node}></g>
                             </svg>
 
                             <GifViewer id="gif"/>
                         </PreviewThumbnails>
                     </PreviewContainer>
                     <Footer renderGIF={this.renderGIF}/>
-                </FullPage>
+                </CenteredFullPage>
             </PaddedContainer>
 
         )
     }
-
 }
+
+class ImageContainer extends React.Component{
+    constructor(props){
+        super(props)
+    }
+    render(){
+        return ReactDOM.createPortal(
+            this.props.images(),
+            this.props.container
+        )
+    }
+}
+
+
 
 const Preview = connect(
     mapStateToProps,

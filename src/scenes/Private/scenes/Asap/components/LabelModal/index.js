@@ -142,7 +142,7 @@ class LabelModal extends React.Component {
 
     render() {
         return (
-            <Modal size='mini' open={this.state.open} onClose={this.close}>
+            <Modal size='mini' dimmer={'inverted'} open={this.state.open} onClose={this.close}>
                 <Modal.Header>
                     라벨 편집
                 </Modal.Header>

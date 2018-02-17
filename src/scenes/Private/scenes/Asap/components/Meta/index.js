@@ -2,7 +2,8 @@ import React from 'react'
 
 /* COMPONENT */
 import Input from '../../../../../../components/Input'
-import {Form} from 'semantic-ui-react'
+import Button from '../../../../../../components/Button'
+import {Form, Grid} from 'semantic-ui-react'
 
 /* STYLE */
 import styled from 'styled-components'
@@ -15,11 +16,18 @@ import connect from "react-redux/es/connect/connect";
 const ConfigPanel = styled.div`
     position: absolute;
     left: auto;
-    right: 0;
-    top: 0;
+    right: 3rem;
+    top: 50%;
     width: 360px;
-    height: 100%;
-    background: #2A2E2F;
+    padding: 1rem 0 2rem;
+    border: 1px solid #404345;
+    border-bottom: 2px solid #4c5052;
+    background: #3c3f41;
+    transform: translate(0, -50%);
+    -webkit-box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
+    -moz-box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
+    box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
+    z-index: 1000;
 `
 
 const ConfigField = styled(Form.Field)`
@@ -30,6 +38,10 @@ const ConfigField = styled(Form.Field)`
     border-bottom: 1px solid #333738 !important;
     margin-bottom: 0 !important;
     color: #65696A;
+    &:last-of-type{
+        border-bottom: none !important;   
+        margin-bottom: 1rem !important;
+    }
 `
 
 const ConfigLabel = styled.label`
@@ -77,6 +89,9 @@ const MetaRepresentation = ({meta, saveMeta}) => {
                     <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'producer')}/>
                 </ConfigField>
             </Form>
+            <Grid centered>
+                <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}}>프리뷰 확인</Button>
+            </Grid>
         </ConfigPanel>
     )
 }
