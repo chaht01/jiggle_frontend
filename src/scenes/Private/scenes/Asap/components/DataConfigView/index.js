@@ -9,7 +9,7 @@ import numeral from 'numeral'
 import styled from 'styled-components'
 
 
-const offsetTop = 40
+const offsetTop = 0
 const CellWall = styled(FullPage)`
     position: relative;
     padding-top: ${offsetTop}px;
@@ -26,16 +26,18 @@ class DataConfigView extends React.Component{
     }
     componentDidMount(){
         this.size = {
-            width: numeral(getComputedStyle(ReactDOM.findDOMNode(this.wall)).width).value(),
-            height: numeral(getComputedStyle(ReactDOM.findDOMNode(this.wall)).height).value() - offsetTop
+            width: 800,
+            height: 500
         }
     }
     render(){
         return (
-            <CellWall ref={node => this.wall = node}>
-                <Sheet width={this.size.width} height={this.size.height}/>
-                <Meta/>
-            </CellWall>
+            <PaddedContainer>
+                <CellWall ref={node => this.wall = node}>
+                    <Sheet width={this.size.width} height={this.size.height}/>
+                    <Meta/>
+                </CellWall>
+            </PaddedContainer>
         )
     }
 

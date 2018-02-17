@@ -181,11 +181,11 @@ class SheetRepresentation extends React.Component{
                                     if(range[0]<=col && col<=range[1]
                                         && range[2]<=row && row<=range[3]){
                                         cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
-                                            td.style.background = '#1c1c1c'
                                             td.innerText = value
                                         }
                                     }else{
                                         cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                            td.style.background = '#f1f1f5'
                                             td.innerText = value
                                         }
                                     }

@@ -35,6 +35,7 @@ const initialCommentState = [] // [{col:Number, row:Number, value:""},...]
 const initialMetaState = {
     placeholder: '빈 차트 제목',
     title: '',
+    subtitle:'',
     xAxis:'',
     yAxis:'',
     reference:'',

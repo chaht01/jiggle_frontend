@@ -16,14 +16,11 @@ import connect from "react-redux/es/connect/connect";
 const ConfigPanel = styled.div`
     position: absolute;
     left: auto;
-    right: 3rem;
-    top: 50%;
+    right: 0;
+    top: 0;
     width: 360px;
-    padding: 1rem 0 2rem;
-    border: 1px solid #404345;
-    border-bottom: 2px solid #4c5052;
-    background: #3c3f41;
-    transform: translate(0, -50%);
+    padding-bottom: 1rem;
+    background: #2b2d2f;
     -webkit-box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
     -moz-box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
     box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
@@ -73,6 +70,8 @@ const MetaRepresentation = ({meta, saveMeta}) => {
                 <ConfigField inline>
                     <ConfigLabel>제목</ConfigLabel>
                     <Input invert square={true} placeholder={meta.title} onChange={(e) => saveMeta(e, 'title')}/>
+                    <ConfigLabel>부제목</ConfigLabel>
+                    <Input invert square={true} placeholder={meta.subtitle} onChange={(e) => saveMeta(e, 'subtitle')}/>
                 </ConfigField>
                 <ConfigField inline>
                     <ConfigLabel>X축</ConfigLabel>
@@ -90,7 +89,9 @@ const MetaRepresentation = ({meta, saveMeta}) => {
                 </ConfigField>
             </Form>
             <Grid centered>
-                <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}}>프리뷰 확인</Button>
+                <Grid.Row>
+                    <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}}>프리뷰 확인</Button>
+                </Grid.Row>
             </Grid>
         </ConfigPanel>
     )

@@ -23,7 +23,7 @@ const Anchor = styled.a`
     display: flex;
     align-items: flex-end;
     text-decoration: none;
-    color: ${props => props.dim ? '#2c2e30 !important' : (props.active ? '#C7C8CA' : '#474B4E')};
+    color: ${props => props.dim ? '#2c2e30 !important' : (props.active ? '#C7C8CA' : '#707070')};
     cursor: pointer;
     margin-right: 1.5rem;
     height: 100%;
