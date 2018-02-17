@@ -96,8 +96,9 @@ export default class SectionScroll extends React.Component{
     handleWheelEvents(e){
         this.setState((prevState)=>{
             // Update current activeSection sync with current scroll bar position
+            const container = ReactDOM.findDOMNode(this.container)
             return {
-                activeSection: parseInt(prevState.self.scrollTop/prevState.screenHeight)
+                activeSection: parseInt(prevState.self.scrollTop/container.clientHeight)
             }
         }, () => {
             ReactDOM.findDOMNode(this.container).removeEventListener('wheel', this.disableScroll) // remove block function of wheel event
@@ -151,10 +152,6 @@ export default class SectionScroll extends React.Component{
         if(this.state.nextSection!=this.state.activeSection){
             this.triggerScrollAnimate(ReactDOM.findDOMNode(this.container).children[this.state.nextSection])
         }
-    }
-
-    testFunction(){
-        return 0;
     }
 
     /**
@@ -246,7 +243,7 @@ export default class SectionScroll extends React.Component{
         }
 
         container.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start))
-        if (container.scrollTop === destinationOffsetToScroll) {
+        if (container.scrollTop-destinationOffsetToScroll === 0) {
             if (callback) {
                 callback()
             }
@@ -268,7 +265,6 @@ export default class SectionScroll extends React.Component{
      * @param easing {string}
      */
     triggerScrollAnimate(destination, duration=1000, easing='easeInOutCubic') {
-
         const container = this.state.self || ReactDOM.findDOMNode(this.container)
         const startTime = 'now' in window.performance ? performance.now() : new Date().getTime()
 
@@ -350,13 +346,21 @@ export default class SectionScroll extends React.Component{
     }
 
     componentDidMount(){
-        this.updateScreenProperties(()=>{
-            window.addEventListener('resize', this.updateScreenProperties.bind(this), false)
-            this.state.self.addEventListener('scroll', this.checkAnchorIndex)
-            this.state.self.addEventListener('wheel', this.handleWheelEvents, {passive:false})
-            const active = this.props.active || 0
-            this.activateSection(active)
+        this.setState((prevState, props) => {
+            const container = ReactDOM.findDOMNode(this.container)
+            return {
+                screenHeight: container.clientHeight
+            }
+        }, () => {
+            this.updateScreenProperties(()=>{
+                window.addEventListener('resize', this.updateScreenProperties.bind(this), false)
+                this.state.self.addEventListener('scroll', this.checkAnchorIndex)
+                this.state.self.addEventListener('wheel', this.handleWheelEvents, {passive:false})
+                const active = this.props.active || 0
+                this.activateSection(active)
+            })
         })
+
     }
 
     componentWillReceiveProps(nextProps){

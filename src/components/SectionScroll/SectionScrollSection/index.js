@@ -3,6 +3,7 @@ import FullPage from '../../Layout/FullPage'
 import styled from 'styled-components'
 
 const StyledFullPage = styled(FullPage)`
+    position: relative;
     padding-top: ${props => props.height};
 `
 
