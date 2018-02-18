@@ -10,36 +10,9 @@ class Handson extends React.Component {
         this.getInstance = this.getInstance.bind(this)
         this.preventWheel = this.preventWheel.bind(this)
         this.handleWheelEvent = this.handleWheelEvent.bind(this)
-    }
-    handleWheelEvent(element, e){
-        const dY = e.deltaY,
-            currScrollPos = element.scrollTop,
-            scrollableDist = element.scrollHeight - element.clientHeight
-        if((dY>0 && currScrollPos >= scrollableDist) ||
-            (dY<0 && currScrollPos <= 0)){
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        e.stopPropagation();
-    }
-    preventWheel(){
-        Array.prototype.forEach.call(
-            ReactDOM.findDOMNode(this.container).querySelectorAll('.wtHolder'),
-            (scrollableNode)=>{
-                scrollableNode.addEventListener('wheel', this.handleWheelEvent.bind(this, scrollableNode), {passive: false})
-            })
-    }
-    getInstance(){
-        return this.container.hotInstance
-    }
-    componentDidMount(){
-        this.preventWheel()
-    }
-    componentDidUpdate(){
-        this.preventWheel()
-    }
-    render(){
+
+
+
         const defaultContextMenu = {
             items: {
                 "row_above": {
@@ -74,10 +47,45 @@ class Handson extends React.Component {
                 },
             }
         }
-        const contextMenu = {
-            callback : this.props.settings.contextMenu.callback,
-            items: Object.assign({}, defaultContextMenu.items, this.props.settings.contextMenu.items)
+        this.contextMenu = {}
+        if(this.props.settings && this.props.settings.contextMenu){
+            this.contextMenu = {
+                callback : this.props.settings.contextMenu.callback,
+                items: Object.assign({}, defaultContextMenu.items, this.props.settings.contextMenu.items)
+            }
         }
+        console.log(this.contextMenu)
+
+    }
+    handleWheelEvent(element, e){
+        const dY = e.deltaY,
+            currScrollPos = element.scrollTop,
+            scrollableDist = element.scrollHeight - element.clientHeight
+        if((dY>0 && currScrollPos >= scrollableDist) ||
+            (dY<0 && currScrollPos <= 0)){
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        e.stopPropagation();
+    }
+    preventWheel(){
+        Array.prototype.forEach.call(
+            ReactDOM.findDOMNode(this.container).querySelectorAll('.wtHolder'),
+            (scrollableNode)=>{
+                scrollableNode.addEventListener('wheel', this.handleWheelEvent.bind(this, scrollableNode), {passive: false})
+            })
+    }
+    getInstance(){
+        return this.container.hotInstance
+    }
+    componentDidMount(){
+        this.preventWheel()
+    }
+    componentDidUpdate(){
+        this.preventWheel()
+    }
+    render(){
         const ScrollContainer = styled.div`
         width: ${props => props.width}px;
         height: ${props => props.height}px;
@@ -85,7 +93,7 @@ class Handson extends React.Component {
     `
         return(
             <ScrollContainer width={this.props.width} height={this.props.height}>
-                <HotTable settings={Object.assign({}, this.props.settings, {contextMenu})} ref={(container)=> this.container = container}/>
+                <HotTable settings={Object.assign({}, this.props.settings, {contextMenu:this.contextMenu})} ref={(container)=> this.container = container}/>
             </ScrollContainer>
         )
     }

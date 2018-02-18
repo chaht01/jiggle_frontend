@@ -5,6 +5,7 @@ import { Route } from 'react-router-dom'
 import { Loader } from 'semantic-ui-react'
 import TemplateSelector from './components/TemplateSelector'
 import DataConfigView from './components/DataConfigView'
+import Meta from './components/Meta'
 import Preview from './components/Preview'
 import FullPage from '../../../../components/Layout/FullPage'
 import SectionScroll from '../../../../components/SectionScroll'
@@ -60,6 +61,7 @@ class AsapRepresentation extends React.Component{
                 </SectionScrollSection>
                 { selectedTemplate.config!=null
                 && <SectionScrollSection>
+                    <Meta/>
                     <DataConfigView/>
                 </SectionScrollSection> }
                 {selectedTemplate.config!=null && dirtyData!==null

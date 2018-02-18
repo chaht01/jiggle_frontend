@@ -2,7 +2,7 @@ import React from 'react'
 
 /* COMPONENTS */
 import { Route, Link, Switch, Redirect } from 'react-router-dom'
-import { Button } from 'semantic-ui-react'
+import Button from '../../../components/Button'
 import { AppBar, AppContent } from '../../../components/Layout'
 import Logo from '../../../components/Logo'
 
@@ -15,9 +15,10 @@ import routeConfig from '../../../config/route'
 import connect from "react-redux/es/connect/connect";
 
 /* ASSETS */
-import logo from '../../../assets/images/tool_logo.gif'
-import LogoTitle from '../../../assets/images/jiggle-01.png'
-import LogoImage from '../../../assets/images/Untitled-27-01.png'
+import logo_white from '../../../assets/images/logo/jiggle_logo-01.png'
+import logo_colored from '../../../assets/images/logo/jiggle_logo-02.png'
+import wallVideo from '../../../assets/video/jiggle_wall.mp4'
+import collabo from '../../../assets/images/main/tool_logo_black-01.png'
 
 const LogoContainer = styled.div`
     height: 100%;
@@ -27,6 +28,63 @@ const LogoContainer = styled.div`
         margin-right: 1rem;
     }
 `
+const WallVideo = styled.video`
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    overflow:hidden;
+`
+
+const ParentContainer = styled.div`
+    position: relative;
+    width: 100%;
+    height: 100%;
+`
+const Parent = styled.div`
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    clip: rect(0, auto, auto, 0);
+    z-index:2;
+`
+const ParentContent = styled.div`
+    position: relative;
+    padding-top: 60px;
+    min-height: 100%;
+    background: #fff;
+`
+const Child = styled(AppBar)`
+    position: fixed;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
+    perspective: 1000;
+`
+const Collabo = ParentContent.extend`
+    display:flex;
+    justify-content: center;
+    align-items: center;
+`
+const CollaboHolder = styled.div`
+    text-align: center;
+    line-height: 1.5;
+    font-size: 1.1rem;
+    margin-top: -10rem;
+`
+CollaboHolder.ImageHolder = styled.div`
+    width: 22rem;position: relative;margin-bottom: 0rem;
+`
+CollaboHolder.Image = styled.img`
+display: block;
+width: 100%;
+margin: 0 auto;
+position: relative;
+`
+
 const mapStateToProps = (state, ownProps) => {
     return {
         isAuthenticated: state.userReducer.isAuthenticated,
@@ -40,20 +98,50 @@ const HomeRepresentation = ({isAuthenticated, ...rest})=>{
         )
     }else{
         return (
-            <div>
-                <AppBar>
-                    <Logo to={routeConfig.publicRoot}>
-                        <LogoContainer>
-                            <img src={LogoTitle} alt="jiggle"/>
-                            <img src={LogoImage} alt="jiggle_logo"/>
-                        </LogoContainer>
-                    </Logo>
-                    <Button compact color="yellow" as={Link} to={`${routeConfig.publicRoot}/sign`}>log in</Button>
-                </AppBar>
-                <AppContent>
-                    <h1>Public page</h1>
-                </AppContent>
-            </div>
+            <React.Fragment>
+                <ParentContainer>
+                    <Parent>
+                        <Child>
+                            <Logo to={`${routeConfig.publicRoot}`}>
+                                <LogoContainer>
+                                    <img src={logo_white} alt="jiggle"/>
+                                </LogoContainer>
+                            </Logo>
+                            <Button compact size="small" as={Link} to={`${routeConfig.publicRoot}/sign`} theme={{fg:'#FA4D1E', bg:'#fff'}}>로그인</Button>
+                        </Child>
+                    </Parent>
+                    <ParentContent>
+                        <WallVideo autoPlay muted loop>
+                            <source src={wallVideo} type="video/mp4"></source>
+                        </WallVideo>
+                    </ParentContent>
+                </ParentContainer>
+                <ParentContainer>
+                    <Parent>
+                        <Child>
+                            <Logo to={`${routeConfig.publicRoot}`}>
+                                <LogoContainer>
+                                    <img src={logo_colored} alt="jiggle"/>
+                                </LogoContainer>
+                            </Logo>
+                            <Button size="small" as={Link} to={`${routeConfig.publicRoot}/sign`} compact theme={{fg:'#fff', bg:'#FA4D1E'}}>로그인</Button>
+                        </Child>
+                    </Parent>
+                    <Collabo>
+                        <CollaboHolder>
+                            <CollaboHolder.ImageHolder>
+                                <CollaboHolder.Image src={collabo}/>
+                            </CollaboHolder.ImageHolder>
+                            <div>Jiggle은 데이터 스토리텔링을 도와줍니다.</div>
+                            <div>이제껏 기사에 쓰이는 도표는 겉치레에 지나지 않았죠.</div>
+                            <div>딱딱한 그래프에 플롯과 주인공을 만들어 보세요.</div>
+                            <div>Jiggle이 여러분의 이야기를 그려 드립니다.</div>
+                        </CollaboHolder>
+
+                    </Collabo>
+                </ParentContainer>
+
+            </React.Fragment>
         )
     }
 }

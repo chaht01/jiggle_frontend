@@ -10,10 +10,6 @@ import styled from 'styled-components'
 
 
 const offsetTop = 0
-const CellWall = styled(FullPage)`
-    position: relative;
-    padding-top: ${offsetTop}px;
-`
 
 class DataConfigView extends React.Component{
     constructor(props){
@@ -26,17 +22,14 @@ class DataConfigView extends React.Component{
     }
     componentDidMount(){
         this.size = {
-            width: 800,
-            height: 500
+            width: 830,
+            height: 400
         }
     }
     render(){
         return (
             <PaddedContainer>
-                <CellWall ref={node => this.wall = node}>
-                    <Sheet width={this.size.width} height={this.size.height}/>
-                    <Meta/>
-                </CellWall>
+                <Sheet width={this.size.width} height={this.size.height}/>
             </PaddedContainer>
         )
     }

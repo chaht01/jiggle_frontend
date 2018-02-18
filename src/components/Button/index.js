@@ -31,7 +31,7 @@ const StyledButton = styled(SemanticButton)`
     color: ${props => props.theme.fg} !important;
     background: ${props => props.theme.bg} !important;
     font-size: ${props => size[props.size || 'normal'].fontSize}px !important;
-    font-weight: 100 !important;
+    font-weight: 500 !important;
     padding: 0.7857em 1.6428em 0.7857em !important;
     margin: 0 0.8214em !important;
 `

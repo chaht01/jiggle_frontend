@@ -24,13 +24,12 @@ class LabelModal extends React.Component {
     constructor(props) {
         super(props)
         this.initialState = {
-            open: false,
             selectedData: null,
             range : null,
             comments: []
         }
         this.state = this.initialState
-        this.open = this.open.bind(this)
+        this.initState = this.initState.bind(this)
         this.close = this.close.bind(this)
         this.save = this.save.bind(this)
         this.isValidItem = this.isValidItem.bind(this)
@@ -51,6 +50,8 @@ class LabelModal extends React.Component {
     checkValidation(selectedData) {
         let totalCnt = 0
         let emptyCnt = 0
+        if(selectedData===undefined || selectedData===null)
+            return false
         selectedData.map((row) => {
             row.map((cell) => {
                 totalCnt++
@@ -68,15 +69,24 @@ class LabelModal extends React.Component {
         return true
     }
 
-    open(selectedData, range) {
-        if (this.checkValidation(selectedData)) {
+    componentWillReceiveProps(nextProps){
+        const {data, range, comments} = nextProps
+        this.initState(data, range, comments)
+    }
+
+    componentDidMount(){
+        const {data, range, comments} = this.props
+        this.initState(data, range, comments)
+    }
+
+    initState(data, range, comments){
+        if (this.checkValidation(data)) {
             this.setState({
-                open: true,
-                selectedData,
+                selectedData: data,
                 range,
-                comments: selectedData.map((row, row_idx)=>{
+                comments: data.map((row, row_idx)=>{
                     return row.map((cell, col_idx)=>{
-                        const filtered =this.props.comments.filter((comment)=>{
+                        const filtered =comments.filter((comment)=>{
                             if(range[0]+col_idx == comment.col
                                 && range[2]+row_idx ==comment.row){
                                 return true;
@@ -86,7 +96,7 @@ class LabelModal extends React.Component {
                         if(filtered.length!=0){
                             return filtered[0].value
                         }else{
-                            return selectedData[row_idx][col_idx]
+                            return data[row_idx][col_idx]
                         }
                     })
                 })
@@ -114,6 +124,7 @@ class LabelModal extends React.Component {
 
     close() {
         this.setState(this.initialState)
+        this.props.close()
     }
 
     save() {
@@ -142,7 +153,7 @@ class LabelModal extends React.Component {
 
     render() {
         return (
-            <Modal size='mini' dimmer={'inverted'} open={this.state.open} onClose={this.close}>
+            <Modal size='mini' dimmer={'inverted'} open={this.props.opened && this.checkValidation(this.props.data)} onClose={this.close}>
                 <Modal.Header>
                     라벨 편집
                 </Modal.Header>

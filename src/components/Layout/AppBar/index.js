@@ -11,6 +11,7 @@ const AppBarRepresentation = styled.div`
     justify-content: center;
     width: 100%;
     height: ${config('height')};
+    top:0;
     z-index: 1000;
 `
 

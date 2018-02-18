@@ -13,7 +13,6 @@ const AppContentInner = styled.div`
     width: 100%;
     max-width: ${props=> props.width};
     height: 100%;
-    overflow: auto;
     margin: 0 auto;
 `
 

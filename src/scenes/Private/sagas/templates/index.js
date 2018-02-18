@@ -11,6 +11,7 @@ import webtoonslave from '../../../../assets/images/thumbs/webtoonslave.jpeg'
 import animate from '../../../../assets/images/thumbs/example.gif'
 import animate_thumb from '../../../../assets/images/thumbs/example_thumb.png'
 
+import {mergeDataToDummy} from '../../scenes/Asap/sagas/actions'
 import * as actionType from './types'
 
 
@@ -22,7 +23,13 @@ export function* fetchTemplatesThumbnailsAsync() {
                 thumb: animate_thumb,
                 animate: animate,
                 desc: '마지막 요소를 강조합니다',
-                dummy: false
+                dummy: false,
+                placeholder: mergeDataToDummy([
+                    ['', '삼성', 'sk하이닉스'],
+                    ['2014', '1', '4'],
+                    ['2015', '2', '5'],
+                    ['2016', '3', '6'],
+                ])
             })
         // const thumbnails = yield Array.from(Array(20).keys())
         // thumbnails[0] = {

@@ -17,8 +17,7 @@ import routeConfig from '../../config/route'
 import * as actionType from '../../sagas/types'
 
 /* ASSETS */
-import LogoTitle from '../../assets/images/jiggle-01.png'
-import LogoImage from '../../assets/images/Untitled-27-01.png'
+import LogoImage from '../../assets/images/logo/jiggle_logo-02.png'
 import connect from "react-redux/es/connect/connect";
 
 
@@ -117,8 +116,7 @@ const PrivateRepresentation = ({match, logout, selectedTemplate, dirtyData}) => 
             <PrivateAppBar>
                 <Logo to={`${match.url}`}>
                     <LogoContainer>
-                        <img src={LogoTitle} alt="jiggle"/>
-                        <img src={LogoImage} alt="jiggle_logo"/>
+                        <img src={LogoImage} alt="jiggle"/>
                     </LogoContainer>
                 </Logo>
                 <Route exact path={`${match.url}`} component={CreateButton}/>
