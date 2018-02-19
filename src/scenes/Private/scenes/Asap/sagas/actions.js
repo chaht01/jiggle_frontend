@@ -624,3 +624,12 @@ export const mergeDataToDummy = (data, startIdx=[0,0]) => {
         }
     })
 }
+
+
+/*** DATA MODAL ***/
+export const dataModalOpen = (bool, payload) => {
+    return {
+        type: bool ? actionType.DATA_MODAL_OPEN : actionType.DATA_MODAL_CLOSE,
+        payload
+    }
+}

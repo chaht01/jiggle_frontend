@@ -1,6 +1,8 @@
 import React from 'react'
 import {Modal, Button, Input, Header} from 'semantic-ui-react'
 import styled from 'styled-components'
+import connect from "react-redux/es/connect/connect";
+import {saveComment} from "../../sagas/actions";
 
 const LabelEditor = styled.div`
     display: grid;
@@ -19,23 +21,59 @@ LabelEditor.Value = styled.div`
     text-overflow: ellipsis;
     overflow: hidden;
 `
-
-class LabelModal extends React.Component {
+const mapStateToProps = (state, ownProps) => {
+    return {
+        comments: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments,
+    }
+}
+const mapDispatchToProps = (dispatch) => {
+    return {
+        saveComment: (comments) => dispatch(saveComment(comments)),
+    }
+}
+class BreakModalRepresentation extends React.Component {
     constructor(props) {
         super(props)
         this.initialState = {
-            open: false,
             selectedData: null,
             range : null,
             comments: []
         }
         this.state = this.initialState
-        this.open = this.open.bind(this)
         this.close = this.close.bind(this)
         this.save = this.save.bind(this)
         this.isValidItem = this.isValidItem.bind(this)
         this.checkValidation = this.checkValidation.bind(this)
         this.editLabel = this.editLabel.bind(this)
+    }
+
+    componentWillReceiveProps(nextProps){
+        if(nextProps.payload === null || !this.checkValidation(nextProps.payload.selectedData)){
+            //close
+            this.props.close()
+        }else{
+            const {selectedData, range} = nextProps.payload
+            this.setState({
+                selectedData,
+                range,
+                comments: selectedData.map((row, row_idx)=>{
+                    return row.map((cell, col_idx)=>{
+                        const filtered =this.props.comments.filter((comment)=>{
+                            if(range[0]+col_idx == comment.col
+                                && range[2]+row_idx ==comment.row){
+                                return true;
+                            }
+                            return false
+                        })
+                        if(filtered.length!=0){
+                            return filtered[0].value
+                        }else{
+                            return selectedData[row_idx][col_idx]
+                        }
+                    })
+                })
+            })
+        }
     }
 
     isValidItem(item) {
@@ -68,32 +106,6 @@ class LabelModal extends React.Component {
         return true
     }
 
-    open(selectedData, range) {
-        if (this.checkValidation(selectedData)) {
-            this.setState({
-                open: true,
-                selectedData,
-                range,
-                comments: selectedData.map((row, row_idx)=>{
-                    return row.map((cell, col_idx)=>{
-                        const filtered =this.props.comments.filter((comment)=>{
-                            if(range[0]+col_idx == comment.col
-                                && range[2]+row_idx ==comment.row){
-                                return true;
-                            }
-                            return false
-                        })
-                        if(filtered.length!=0){
-                            return filtered[0].value
-                        }else{
-                            return selectedData[row_idx][col_idx]
-                        }
-                    })
-                })
-            })
-        }
-    }
-
     editLabel(e, rowIdx, colIdx){
         e.persist()
         this.setState((prevState)=>{
@@ -113,7 +125,7 @@ class LabelModal extends React.Component {
     }
 
     close() {
-        this.setState(this.initialState)
+        this.props.close()
     }
 
     save() {
@@ -141,8 +153,9 @@ class LabelModal extends React.Component {
     }
 
     render() {
+        console.log('Break!')
         return (
-            <Modal size='mini' open={this.state.open} onClose={this.close}>
+            <Modal size='mini' open={this.props.open} onClose={this.close}>
                 <Modal.Header>
                     말풍선 편집
                 </Modal.Header>
@@ -180,4 +193,9 @@ class LabelModal extends React.Component {
     }
 }
 
-export default LabelModal
+const BreakModal = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(BreakModalRepresentation)
+
+export default BreakModal

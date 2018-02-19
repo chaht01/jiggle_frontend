@@ -194,11 +194,6 @@ class PreviewRepresentation extends React.Component{
 
     }
     clearChart(){
-        // for(let i=0; i<this.node.childNodes.length; i++){
-        //     if(Array.prototype.indexOf.call(this.node.childNodes[i].classList, 'resizeable')==-1){
-        //         this.node.childNodes[i].remove()
-        //     }
-        // }
         for(let i=0; i<this.renderNode.childNodes.length; i++){
             this.renderNode.childNodes[i].remove()
 

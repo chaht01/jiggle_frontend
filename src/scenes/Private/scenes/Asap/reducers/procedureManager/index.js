@@ -42,12 +42,17 @@ const initialMetaState = {
     producer:'',
 }
 const initialRange = [0,0,0,0]
+const initialDataModal = {
+    open: false,
+    payload: null
+}
 
 const initialDirtyDataState = {
     loading: false,
     data: initialDataState,
     meta: initialMetaState,
     comments: initialCommentState,
+    modal: initialDataModal,
     range:initialRange,
     emphasisTarget: null,
     error: null
@@ -255,6 +260,30 @@ const procedureManager = (state=initialState, action) => {
                     }
                 }
             })()
+        case actionType.DATA_MODAL_OPEN:
+            return {
+                ...state,
+                dirtyData: {
+                    ...state.dirtyData,
+                    modal:{
+                        ...state.dirtyData.modal,
+                        open: true,
+                        payload: action.payload
+                    }
+                }
+            }
+        case actionType.DATA_MODAL_CLOSE:
+            return {
+                ...state,
+                dirtyData: {
+                    ...state.dirtyData,
+                    modal:{
+                        ...state.dirtyData.modal,
+                        open: false,
+                        payload: null
+                    }
+                }
+            }
 
         /* GLOBAL */
         case actionType.PROCEDURE_CLEAR:

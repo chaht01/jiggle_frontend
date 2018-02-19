@@ -4,8 +4,9 @@ import ReactDOM from 'react-dom'
 /* COMPONENT */
 import Input from '../../../../../../components/Input'
 import Button from '../../../../../../components/Button'
-import {Form, Grid, Modal, Header, Icon} from 'semantic-ui-react'
+import {Form, Grid, Modal, Header, Icon, Button as SemanticButton} from 'semantic-ui-react'
 import Handson from '../../../../../../components/Handson'
+import Composition from '../../../../../../components/Composition'
 
 /* STYLE */
 import styled from 'styled-components'
@@ -13,7 +14,8 @@ import styled from 'styled-components'
 /* UTILS */
 import { saveMeta } from '../../sagas/actions'
 import connect from "react-redux/es/connect/connect";
-
+import {TEMPLATE} from "../../config/types";
+import config from '../../components/Sheet/config'
 
 const ConfigPanel = styled.div`
     position: absolute;
@@ -53,10 +55,25 @@ const ConfigLabel = styled.label`
     align-self: center;
 `
 
+const PreRenderComposition = styled(Composition)`
+    background: #17181C;
+`
+const PreRendered = styled.div`
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+`
+
 const mapStateToProps = (state, ownProps) => {
     return {
         meta: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
-        placeholder: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.placeholder
+        placeholder: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.placeholder,
+        templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
+        emphasisTarget: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget,
+        comments: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments,
+        data: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data
     }
 }
 
@@ -77,6 +94,7 @@ class MetaRepresentation extends React.Component{
         this.form = null
         this.preventWheel = this.preventWheel.bind(this)
         this.handleWheelEvent = this.handleWheelEvent.bind(this)
+        this.preRender = this.preRender.bind(this)
     }
     handleWheelEvent(element, e){
         const dY = e.deltaY,
@@ -92,6 +110,9 @@ class MetaRepresentation extends React.Component{
     }
     preventWheel(node){
         ReactDOM.findDOMNode(node).addEventListener('wheel', this.handleWheelEvent.bind(this, ReactDOM.findDOMNode(node)), {passive: false})
+    }
+    preRender(){
+        console.log(config.mask(this.props.data)[TEMPLATE.LINE](this)())
     }
     componentDidMount(){
         this.preventWheel(this.form)
@@ -125,6 +146,11 @@ class MetaRepresentation extends React.Component{
                         <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'producer')}/>
                     </ConfigField>
                 </ConfigForm>
+                <PreRenderComposition>
+                    <PreRendered>
+                        <Icon as={SemanticButton} onClick={this.preRender} color="red" size="huge" name="play"/>
+                    </PreRendered>
+                </PreRenderComposition>
                 <Grid centered>
                     <Grid.Row>
                         {/**

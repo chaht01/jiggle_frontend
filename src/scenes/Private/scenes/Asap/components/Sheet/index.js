@@ -3,12 +3,13 @@ import React from 'react'
 /* COMPONENTS */
 import Handson from '../../../../../../components/Handson'
 import FullPage from '../../../../../../components/Layout/FullPage'
+import ModalHandler from '../ModalHandler'
 
 import styled from 'styled-components'
 import './style.css'
 import _ from 'lodash'
 import connect from 'react-redux/es/connect/connect'
-import {defaultDummyData, getRangeOfValidData, saveData, emphasizeTarget, saveComment, getValidDataWithinRange} from '../../sagas/actions'
+import {defaultDummyData, getRangeOfValidData, saveData, emphasizeTarget, saveComment, getValidDataWithinRange, dataModalOpen} from '../../sagas/actions'
 import config from './config'
 import {TEMPLATE} from "../../config/types";
 
@@ -30,7 +31,7 @@ const mapDispatchToProps = (dispatch) => {
         saveData: (data) => dispatch(saveData(data)),
         emphasizeTarget: (x, y) => dispatch(emphasizeTarget(x, y)),
         saveComment: (comments) => dispatch(saveComment(comments)),
-
+        modalOpen: (bool, payload) => dispatch(dataModalOpen(bool, payload))
     }
 }
 class SheetRepresentation extends React.Component{
@@ -38,33 +39,19 @@ class SheetRepresentation extends React.Component{
         super(props)
         this.state = {
             data: defaultDummyData,
-            labelModal: null,
-            open: false
         }
-        this.modalRef = null
         this.saveData = this.saveData.bind(this)
-        this.saveLabel = this.saveLabel.bind(this)
-        this.setLabelModal = this.setLabelModal.bind(this)
     }
-    saveLabel(comments){
-        this.props.saveComment(comments)
-    }
-    setLabelModal(ref){
-        this.setState({labelModal: ref})
-    }
+
     saveData(){
         const {data} = this.state
         const dataToSave = JSON.parse(JSON.stringify(data))
         this.props.saveData(dataToSave)
-        console.log(config.mask[TEMPLATE.LINE](this)())
-    }
-    componentWillReceiveProps(nextProps) {
-        this.setLabelModal(config.modal[this.props.templateType])
     }
     render(){
         const {width, height, comments} = this.props
-        const sheetConfig = config.sheet[this.props.templateType](this)
-        const ReqModal = this.state.labelModal
+        const sheetConfig = config.sheet(this.state.data)[this.props.templateType](this)
+        const ReqModal = config.modal[this.props.templateType]
 
         return (
             <FullPage>
@@ -93,7 +80,7 @@ class SheetRepresentation extends React.Component{
                     />
                 </SheetContainer>
                 {ReqModal ?
-                    <ReqModal ref={node => this.modalRef = node} saveComment={this.saveLabel} comments={comments}/>
+                    <ModalHandler reqModal={ReqModal}/>
                     : null
                 }
             </FullPage>
