@@ -221,33 +221,95 @@ export const commentValidate = () => {
     }
 }
 
+/*** DATA MODAL ***/
+export const dataModalOpen = (bool, payload) => {
+    return {
+        type: bool ? actionType.DATA_MODAL_OPEN : actionType.DATA_MODAL_CLOSE,
+        payload
+    }
+}
+
 
 
 
 /*** DATA VALIDATION ***/
 
-export const performDataValidation = (data, range, comments) => {
+class ObjectCell {
+    constructor(value){
+        this.value = this.getTrimmed(value)
+        this.emphasis = false
+    }
+    getTrimmed(value){
+        const trimmed = typeof value==='string' ? value.trim() : value
+        return trimmed
+    }
+    saveComment(comment){
+        const trimmed = this.getTrimmed(comment)
+        if([null, undefined, ''].indexOf(trimmed)>-1){
+            delete this.comment
+        }else{
+            this.comment = comment
+        }
+    }
+    getComment(){
+        if(this.isCommented()){
+            return this.comment
+        }else{
+            return undefined
+        }
+    }
+    isCommented(){
+        if(this.hasOwnProperty('comment') && [null, undefined, ''].indexOf(this.getTrimmed(this.comment))<0){
+            return true
+        }else{
+            return false
+        }
+    }
+    saveEmphasis(bool){
+        this.emphasis = !!bool
+    }
+    isPure(){
+        return [null,undefined,''].indexOf(this.value)<0 && !this.isCommented() && !this.emphasis
+    }
+}
+
+
+export const performDataValidation = (data, range, comments, emphasisTarget=null) => {
     try{
-        let dataWithComments = _.cloneDeep(data)
+        let dataWithOpts = _.cloneDeep(data)
+
+        //data cell convert to object cell
+        dataWithOpts = data.map(row => {
+            return row.map(cell => {
+                return new ObjectCell(cell)
+            })
+        })
+
+        //merge comments with data
         comments.forEach(comment => {
-            let value = dataWithComments[comment.row][comment.col]
+            let value = dataWithOpts[comment.row][comment.col].value
             if(typeof value === 'string'){
                 value = value.trim()
             }
             if(['', undefined, null].indexOf(value)==-1){
-                dataWithComments[comment.row][comment.col] = {
-                    value,
-                    comment: comment.value
-                }
+                dataWithOpts[comment.row][comment.col].saveComment(comment.value)
             }
         })
-        const rangedDataWithComments = getValidDataWithinRange(dataWithComments, range)
+
+        //merge emphasisTarget to data
+        if(emphasisTarget!==null && validRange(emphasisTarget)){
+            const [emph_x, emph_y] = [emphasisTarget[0], emphasisTarget[2]]
+            dataWithOpts[emph_y][emph_x].saveEmphasis(true)
+        }
+
+        const rangedDataWithComments = getValidDataWithinRange(dataWithOpts, range)
         const schema = generateSchema(rangedDataWithComments)
         const readyToSend = schemaToRawData(schema)
         return {
             rangedDataWithComments,
             rawData: readyToSend.rawData,
             comments: readyToSend.comments,
+            breakPoint: readyToSend.breakPoint,
             schema,
         }
     }catch (err){
@@ -261,15 +323,16 @@ export const performDataValidation = (data, range, comments) => {
 export const schemaToRawData = (schema) => {
     let ret = {
         rawData: [[]],
-        comments: []
+        comments: [],
+        breakPoint: [-1, -1, -1, -1]
     }
     try{
         let axisColumns,
             axisLabel,
             legends,
             values,
-            comments = []
-
+            comments = [],
+            breakPoint = [-1, -1, -1, -1]
         if(schema.numeric.length===0){ // No way to draw chart
             return ret
         }else{
@@ -280,11 +343,7 @@ export const schemaToRawData = (schema) => {
                 axisColumns = _.cloneDeep(schema.axisColumnNamespace)
                     .map((row, row_idx)=> {
                         return row.map((cell, col_idx) => {
-                            if (isCommentCell(cell)) {
-                                return cell.value
-                            } else {
-                                return cell
-                            }
+                            return cell.value
                         })
                     })
             }
@@ -294,7 +353,7 @@ export const schemaToRawData = (schema) => {
                 axisColumns = collapseMatrix(axisColumns)
             }
 
-            axisLabel = isCommentCell(schema.axisLabel) ? schema.axisLabel.value : (schema.axisLabel || '')
+            axisLabel = schema.axisLabel || ''
             if(schema.legendNamespace.length == 0){
                 legends = schema.dummyLegendNamespace()
             }else{
@@ -302,11 +361,7 @@ export const schemaToRawData = (schema) => {
                 legends = _.cloneDeep(schema.legendNamespace)
                     .map((row, row_idx)=> {
                         return row.map((cell, col_idx) => {
-                            if (isCommentCell(cell)) {
-                                return cell.value
-                            } else {
-                                return cell
-                            }
+                            return cell.value
                         })
                     })
             }
@@ -319,30 +374,29 @@ export const schemaToRawData = (schema) => {
 
             values = schema.numeric.map((row) => {
                 return row.map((cell) => {
-                    let parsed
-                    if(isCommentCell(cell)){
-                        parsed = numeral(cell.value).value()
-                        return (parsed===null || isNaN(parsed)) ? '' :
-                            {
-                                value: parsed,
-                                comment: cell.comment
-                            }
-                    }else{
-                        parsed = numeral(cell).value()
-                        return (parsed===null || isNaN(parsed)) ? '' : parsed
+                    let parsed = numeral(cell.value).value()
+                    cell.value = (parsed===null || isNaN(parsed)) ? '' : parsed
+                    if(parsed===null || isNaN(parsed)){
+                        cell.saveComment('')
                     }
+                    return cell
                 })
             })
 
             const rawDataWithComments = [].concat(transpose(legends)).concat(transpose([].concat(axisColumns).concat(values)))
             ret.rawData = rawDataWithComments.map((row, row_idx)=>{
                 return row.map((cell, col_idx) => {
-                    if(isCommentCell(cell)){
-                        comments.push({
-                            col:col_idx,
-                            row:row_idx,
-                            value: cell.comment
-                        })
+                    if(cell instanceof ObjectCell){
+                        if(cell.isCommented()){
+                            comments.push({
+                                col:col_idx,
+                                row:row_idx,
+                                value: cell.comment
+                            })
+                        }
+                        if(cell.emphasis === true){
+                            breakPoint = [col_idx, col_idx, row_idx, row_idx]
+                        }
                         return cell.value
                     }else{
                         return cell
@@ -350,6 +404,7 @@ export const schemaToRawData = (schema) => {
                 })
             })
             ret.comments = comments
+            ret.breakPoint = breakPoint
             return ret
         }
     }catch(err){
@@ -358,6 +413,7 @@ export const schemaToRawData = (schema) => {
 
         ret.rawData = [[]]
         ret.comments = []
+        ret.breakPoint = [-1, -1, -1, -1]
         return ret
     }
 }
@@ -410,12 +466,6 @@ export const chartSchema = {
     }
 }
 
-export const isCommentCell = (cell) => {
-    if(cell!==null && typeof cell==='object' && cell.hasOwnProperty('value') && cell.hasOwnProperty('comment')){
-        return true
-    }
-    return false
-}
 
 export const generateSchema = (data, direction) => { //data must be comment integrated
     let schema = Object.assign({}, chartSchema)
@@ -451,7 +501,7 @@ export const generateSchema = (data, direction) => { //data must be comment inte
     const vacancy = [undefined, null, '']
     for(let i=0; i<data.length; i++){
         for(let j=0; j<data[i].length; j++){
-            let trimmed = data[i][j]
+            let trimmed = data[i][j].value
             if(typeof trimmed === 'string'){
                 trimmed = trimmed.trim()
             }
@@ -516,12 +566,7 @@ export const generateSchema = (data, direction) => { //data must be comment inte
         if(height===1){
             // 행이 1개뿐이면 그 행이 numerical 인지 아닌지에따라 axis col ns를 정한다
             for(let i=1; i<header.length; i++){ //todo
-                let numericExpected
-                if(isCommentCell(header[i])){
-                    numericExpected = header[i].value
-                }else{
-                    numericExpected = header[i]
-                }
+                let numericExpected = header[i].value
                 if(validator.numeric(numericExpected) === false){
                     headerNaN++
                 }
@@ -530,14 +575,9 @@ export const generateSchema = (data, direction) => { //data must be comment inte
                 axisColumnNamespaceExpectedRange = [0, width-1, 0, 0]
                 numericExpectedRange = [-1, -1, -1, -1] // no numerics
             }else{
-                let numericExpected
-                if(isCommentCell(header[0])){
-                    numericExpected = header[0].value
-                }else{
-                    numericExpected = header[0]
-                }
+                let numericExpected = header[0].value
                 if(validator.numeric(numericExpected) === false){
-                    axisLabel = header[0]
+                    axisLabel = header[0].value
                     numericExpectedRange = [1, width-1, 0, height-1]
                 }else{
                     numericExpectedRange = [0, width-1, 0, height-1]
@@ -547,19 +587,14 @@ export const generateSchema = (data, direction) => { //data must be comment inte
             axisColumnNamespaceExpectedRange = [0, width-1, 0, 0] //The first row should be axis col ns
             numericExpectedRange = [0, width-1, 1, height-1]
             for(let i=1; i<aside.length; i++){
-                let numericExpected
-                if(isCommentCell(aside[i])){
-                    numericExpected = aside[i].value
-                }else{
-                    numericExpected = aside[i]
-                }
+                let numericExpected = aside[i].value
                 if(validator.numeric(numericExpected) === false){
                     asideNaN++
                 }
             }
             if(asideNaN>0){ //exist
                 legendNamespaceExpectedRange = [0, 0, 1, height-1]
-                axisLabel = aside[0]
+                axisLabel = aside[0].value
                 axisColumnNamespaceExpectedRange[0] = 1 //waterfall updated
                 numericExpectedRange[0] = 1
             }
@@ -590,6 +625,7 @@ export const collapseMatrix = (arr) => {
         return a.map((e,j)=>e+' '+c[j])
     })]
 }
+
 export const transpose = (arr) => {
     //check size validation
     if(arr.length == 0){
@@ -623,13 +659,4 @@ export const mergeDataToDummy = (data, startIdx=[0,0]) => {
             return row
         }
     })
-}
-
-
-/*** DATA MODAL ***/
-export const dataModalOpen = (bool, payload) => {
-    return {
-        type: bool ? actionType.DATA_MODAL_OPEN : actionType.DATA_MODAL_CLOSE,
-        payload
-    }
 }

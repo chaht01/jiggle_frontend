@@ -112,7 +112,8 @@ class MetaRepresentation extends React.Component{
         ReactDOM.findDOMNode(node).addEventListener('wheel', this.handleWheelEvent.bind(this, ReactDOM.findDOMNode(node)), {passive: false})
     }
     preRender(){
-        console.log(config.mask(this.props.data)[TEMPLATE.LINE](this)())
+        console.log(this.props.templateType)
+        console.log(config.mask(this.props.data)[this.props.templateType](this)())
     }
     componentDidMount(){
         this.preventWheel(this.form)

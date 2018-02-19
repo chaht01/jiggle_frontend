@@ -36,10 +36,10 @@ const config = {
 
 
                         const range = getRangeOfValidData(data)
-                        let emphasized = this.props.emphasisTarget || [range[1], range[3]]
-                        if (range[0] > emphasized[0] || emphasized[0] > range[1]
-                            || range[2] > emphasized[1] || emphasized[1] > range[3]) {
-                            emphasized = [range[1], range[3]]
+                        let emphasized = this.props.emphasisTarget || [range[1],range[1],range[3],range[3]]
+                        if (range[0] > emphasized[0] || emphasized[1] > range[1]
+                            || range[2] > emphasized[2] || emphasized[3] > range[3]) {
+                            emphasized = [range[1],range[1],range[3],range[3]]
                         }
 
                         const inComments = (col, row) => {
@@ -50,7 +50,7 @@ const config = {
                                 }).length !== 0
                         }
 
-                        if (col === emphasized[0] && row === emphasized[1]) {
+                        if (col === emphasized[0] && row === emphasized[2]) {
                             cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
                                 td.classList.add('emphasisCell')
                                 td.innerText = value
@@ -304,29 +304,32 @@ const config = {
             [TEMPLATE.BAR_EMPHASIS]: (ctx) => function () {
                 let ret = []
                 const range = getRangeOfValidData(data)
-                const {emphasisTarget} = this.props
+                const {emphasisTarget, comments} = this.props
+
                 //TODO validation of props and error handling
-                const validation = performDataValidation(data, range)
-
-
                 let emphasisRange = emphasisTarget
                 if (emphasisRange === null) {
-                    emphasisRange = [range[1], range[3]]
+                    emphasisRange = [range[1], range[1], range[3], range[3]]
                 }
-                const emphasisRowPos = emphasisRange[1]
-                const [offsetX, offsetY] = [range[0], range[2]]
+                const validation = performDataValidation(data, range, comments, emphasisRange)
 
-                // #1
-                ret.push(
-                    validation.rawData.filter((row, row_idx) => {
-                        if (row_idx + offsetY == emphasisRowPos) {
-                            return false
-                        }
-                        return true
-                    })
-                )
 
-                // #2
+                const emphasisRowPos = validation.breakPoint[2]
+
+                if(emphasisRowPos!=-1){
+                    // # emphasis scene
+                    ret.push(
+                        validation.rawData.filter((row, row_idx) => {
+                            if (row_idx == emphasisRowPos) {
+                                return false
+                            }
+                            return true
+                        })
+                    )
+                }
+
+
+                // # else
                 ret.push(validation.rawData)
                 return ret
             }.bind(ctx),

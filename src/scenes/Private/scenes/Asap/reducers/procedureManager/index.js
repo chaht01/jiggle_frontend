@@ -188,7 +188,7 @@ const procedureManager = (state=initialState, action) => {
                     ...state,
                     dirtyData: {
                         ...state.dirtyData,
-                        emphasisTarget: [action.payload.x, action.payload.y]
+                        emphasisTarget: [action.payload.x, action.payload.x, action.payload.y, action.payload.y]
                     }
                 }
             }else{
@@ -203,8 +203,8 @@ const procedureManager = (state=initialState, action) => {
                         if(e===null){
                             return e
                         }
-                        if(range[0]>e[0] || e[0]>range[1]
-                            || range[2]>e[1] || e[1]>range[3]){
+                        if(range[0]>e[0] || e[1]>range[1]
+                            || range[2]>e[2] || e[3]>range[3]){
                             return null
                         }
                         return e
