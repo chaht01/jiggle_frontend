@@ -12,6 +12,7 @@ import animate from '../../../../assets/images/thumbs/example.gif'
 import animate_thumb from '../../../../assets/images/thumbs/example_thumb.png'
 
 import {mergeDataToDummy} from '../../scenes/Asap/sagas/actions'
+import {TEMPLATE} from '../../scenes/Asap/config/types'
 import * as actionType from './types'
 
 
@@ -19,6 +20,7 @@ export function* fetchTemplatesThumbnailsAsync() {
     try{
         const res = yield call(Api.fetchApi, ['/template/all'])
         let thumbnails = res.data
+        thumbnails = thumbnails.concat(thumbnails)
         thumbnails[0] = Object.assign({}, thumbnails[0], {
                 thumb: animate_thumb,
                 animate: animate,
@@ -29,8 +31,22 @@ export function* fetchTemplatesThumbnailsAsync() {
                     ['2014', '1', '4'],
                     ['2015', '2', '5'],
                     ['2016', '3', '6'],
-                ])
+                ]),
+                type: TEMPLATE.LINE
             })
+        thumbnails[1] = Object.assign({}, thumbnails[0], {
+            thumb: animate_thumb,
+            animate: animate,
+            desc: '마지막 요소를 강조합니다',
+            dummy: false,
+            placeholder: mergeDataToDummy([
+                ['', '삼성', 'sk하이닉스'],
+                ['2014', '1', '4'],
+                ['2015', '2', '5'],
+                ['2016', '3', '6'],
+            ]),
+            type: TEMPLATE.BAR_EMPHASIS
+        })
         // const thumbnails = yield Array.from(Array(20).keys())
         // thumbnails[0] = {
         //     thumb: funnyguy,

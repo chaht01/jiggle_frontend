@@ -1,74 +1,356 @@
-import {getRangeOfValidData, emphasizeTarget} from "../../sagas/actions";
+import {TEMPLATE} from '../../config/types'
+import LabelModal from '../LabelModal'
+import BreakModal from '../BreakModal'
+import {getRangeOfValidData, getValidDataWithinRange, performDataValidation} from "../../sagas/actions";
+//TODO: context switching and validation
+
 const config = {
-    bar_emphasis:{
-        contextMenu:{
-            callback: (data, labelModal) =>{
-                return (key, options)=>{
-                    if(key === 'emphasize'){
-                        emphasizeTarget(options.end.col, options.end.row)
+    sheet:{
+        [TEMPLATE.BAR_EMPHASIS]: (ctx)=>{
+            return {
+                contextMenu: {
+                    callback: function(key, options){
+                        if (key === 'emphasize') {
+                            this.props.emphasizeTarget(options.end.col, options.end.row)
+                        }
+                        if (key === 'label') {
+                            const selectedData = this.state.data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
+                            // this.openModal()
+                            this.modalRef.open(selectedData, [options.start.col, options.end.col, options.start.row, options.end.row])
+                        }
+                    }.bind(ctx),
+                    items: {
+                        "hsep4": "---------",
+                        "label": {
+                            name: '라벨 편집'
+                        },
+                        "emphasize": {
+                            name: '강조하기'
+                        },
+
                     }
-                    if(key === 'label'){
-                        const selectedData = data.slice(options.start.row, options.end.row+1).map((row)=>row.slice(options.start.col, options.end.col+1))
-                        labelModal.open(selectedData, [options.start.col, options.end.col, options.start.row, options.end.row])
+                },
+                cells: function(row, col, prop){
+                    let cellProperties = {}
+
+
+                    const range = getRangeOfValidData(this.state.data)
+                    let emphasized = this.props.emphasisTarget || [range[1], range[3]]
+                    if (range[0] > emphasized[0] || emphasized[0] > range[1]
+                        || range[2] > emphasized[1] || emphasized[1] > range[3]) {
+                        emphasized = [range[1], range[3]]
                     }
-                }
-            },
-            items:{
-                "hsep4": "---------",
-                "emphasize": {
-                    name: '강조하기'
-                },
-                "label": {
-                    name: '라벨 편집'
-                },
+
+                    const inComments = (col, row) => {
+                        return this.props.comments.filter((comment) => {
+                                if (col == comment.col && row == comment.row) {
+                                    return true
+                                }
+                            }).length !== 0
+                    }
+
+                    if (col === emphasized[0] && row === emphasized[1]) {
+                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                            td.classList.add('emphasisCell')
+                            td.innerText = value
+                            if(inComments(col, row)){
+                                td.classList.add('commentCell')
+                            }
+                        }
+                    } else {
+
+                        if (range[0] <= col && col <= range[1]
+                            && range[2] <= row && row <= range[3]) {
+                            cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                td.innerText = value
+                                if(inComments(col, row)){
+                                    td.classList.add('commentCell')
+                                }
+                            }
+                        } else {
+                            cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                td.style.background = '#f1f1f5'
+                                td.innerText = value
+                                if(inComments(col, row)){
+                                    td.classList.add('commentCell')
+                                }
+                            }
+                        }
+                    }
+                    return cellProperties
+                }.bind(ctx)
             }
         },
-        cells: (data, emphasisTarget, comments) => {
-            return (row, col, prop) => {
-                let cellProperties = {}
-
-
-                const range = getRangeOfValidData(data)
-                let emphasized = emphasisTarget || [range[1], range[3]]
-                if(range[0]>emphasized[0] || emphasized[0]>range[1]
-                    || range[2]>emphasized[1] || emphasized[1]>range[3]){
-                    emphasized = [range[1], range[3]]
-                }
-
-                if(col === emphasized[0] && row === emphasized[1]){
-                    cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
-                        td.style.background = '#FA4D1E'
-                        td.style.color = "#fff"
-                        td.innerText = value
+        [TEMPLATE.BAR]: (ctx)=>{
+            return {
+                contextMenu: {
+                    callback: function(key, options){
+                        if (key === 'label') {
+                            const selectedData = this.state.data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
+                            this.modalRef.open(selectedData, [options.start.col, options.end.col, options.start.row, options.end.row])
+                        }
+                    }.bind(ctx),
+                    items: {
+                        "hsep4": "---------",
+                        "label": {
+                            name: '라벨 편집'
+                        },
                     }
-                }else{
-                    if(range[0]<=col && col<=range[1]
-                        && range[2]<=row && row<=range[3]){
+                },
+                cells: function(row, col, prop){
+                    let cellProperties = {}
+
+
+                    const range = getRangeOfValidData(this.state.data)
+
+                    const inComments = (col, row) => {
+                        return this.props.comments.filter((comment) => {
+                                if (col == comment.col && row == comment.row) {
+                                    return true
+                                }
+                            }).length !== 0
+                    }
+
+                    if (range[0] <= col && col <= range[1]
+                        && range[2] <= row && row <= range[3]) {
                         cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
                             td.innerText = value
+                            if(inComments(col, row)){
+                                td.classList.add('commentCell')
+                            }
                         }
-                    }else{
+                    } else {
                         cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
                             td.style.background = '#f1f1f5'
                             td.innerText = value
+                            if(inComments(col, row)){
+                                td.classList.add('commentCell')
+                            }
                         }
                     }
-                }
-
-                comments.map((comment)=>{
-                    if(col == comment.col && row == comment.row){
-                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
-                            td.classList.add('commentCell')
-                            td.innerText = value
-                        }
-                    }
-                })
-                return cellProperties
+                    return cellProperties
+                }.bind(ctx)
             }
-        }
-    },
-    bar:{
+        },
+        [TEMPLATE.BAR_GROUPED]: (ctx)=>{
+            return {
+                contextMenu: {
+                    callback: function(key, options){
+                        if (key === 'label') {
+                            const selectedData = this.state.data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
+                            this.modalRef.open(selectedData, [options.start.col, options.end.col, options.start.row, options.end.row])
+                        }
+                    }.bind(ctx),
+                    items: {
+                        "hsep4": "---------",
+                        "label": {
+                            name: '라벨 편집'
+                        },
+                    }
+                },
+                cells: function(row, col, prop){
+                    let cellProperties = {}
 
+
+                    const range = getRangeOfValidData(this.state.data)
+
+                    const inComments = (col, row) => {
+                        return this.props.comments.filter((comment) => {
+                                if (col == comment.col && row == comment.row) {
+                                    return true
+                                }
+                            }).length !== 0
+                    }
+
+                    if (range[0] <= col && col <= range[1]
+                        && range[2] <= row && row <= range[3]) {
+                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                            td.innerText = value
+                            if(inComments(col, row)){
+                                td.classList.add('commentCell')
+                            }
+                        }
+                    } else {
+                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                            td.style.background = '#f1f1f5'
+                            td.innerText = value
+                            if(inComments(col, row)){
+                                td.classList.add('commentCell')
+                            }
+                        }
+                    }
+                    return cellProperties
+                }.bind(ctx)
+            }
+        },
+        [TEMPLATE.LINE_DENSE]: (ctx)=>{
+            return {
+                contextMenu: {
+                    callback: function(key, options){
+                        if (key === 'label') {
+                            const selectedData = this.state.data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
+                            this.modalRef.open(selectedData, [options.start.col, options.end.col, options.start.row, options.end.row])
+                        }
+                    }.bind(ctx),
+                    items: {
+                        "hsep4": "---------",
+                        "label": {
+                            name: '말풍선 지정'
+                        },
+                    }
+                },
+                cells: function(row, col, prop){
+                    let cellProperties = {}
+
+
+                    const range = getRangeOfValidData(this.state.data)
+
+                    const inComments = (col, row) => {
+                        return this.props.comments.filter((comment) => {
+                                if (col == comment.col && row == comment.row) {
+                                    return true
+                                }
+                            }).length !== 0
+                    }
+
+                    if (range[0] <= col && col <= range[1]
+                        && range[2] <= row && row <= range[3]) {
+                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                            td.innerText = value
+                            if(inComments(col, row)){
+                                td.classList.add('commentCell')
+                            }
+                        }
+                    } else {
+                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                            td.style.background = '#f1f1f5'
+                            td.innerText = value
+                            if(inComments(col, row)){
+                                td.classList.add('commentCell')
+                            }
+                        }
+                    }
+                    return cellProperties
+                }.bind(ctx)
+            }
+        },
+        [TEMPLATE.LINE]: (ctx)=>{
+            return {
+                contextMenu: {
+                    callback: function(key, options){
+                        if (key === 'label') {
+                            const selectedData = this.state.data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
+                            this.modalRef.open(selectedData, [options.start.col, options.end.col, options.start.row, options.end.row])
+                        }
+                    }.bind(ctx),
+                    items: {
+                        "hsep4": "---------",
+                        "label": {
+                            name: '말풍선 지정'
+                        },
+                    }
+                },
+                cells: function(row, col, prop){
+                    let cellProperties = {}
+
+
+                    const range = getRangeOfValidData(this.state.data)
+
+                    const inComments = (col, row) => {
+                        return this.props.comments.filter((comment) => {
+                                if (col == comment.col && row == comment.row) {
+                                    return true
+                                }
+                            }).length !== 0
+                    }
+
+                    if (range[0] <= col && col <= range[1]
+                        && range[2] <= row && row <= range[3]) {
+                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                            td.innerText = value
+                            if(inComments(col, row)){
+                                td.classList.add('commentCell')
+                            }
+                        }
+                    } else {
+                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                            td.style.background = '#f1f1f5'
+                            td.innerText = value
+                            if(inComments(col, row)){
+                                td.classList.add('commentCell')
+                            }
+                        }
+                    }
+                    return cellProperties
+                }.bind(ctx)
+            }
+        },
+    },
+    modal:{
+        [TEMPLATE.BAR_EMPHASIS]: LabelModal,
+        [TEMPLATE.BAR]: LabelModal,
+        [TEMPLATE.BAR_GROUPED]: LabelModal,
+        [TEMPLATE.LINE]: BreakModal,
+        [TEMPLATE.LINE_DENSE]: BreakModal,
+    },
+    mask:{
+        [TEMPLATE.BAR_EMPHASIS]: (ctx) => function(){
+            let ret = []
+            const {data} = this.state
+            const range = getRangeOfValidData(this.state.data)
+            const {emphasisTarget} = this.props
+            //TODO validation of props and error handling
+            const validation = performDataValidation(data, range)
+
+
+            let emphasisRange = emphasisTarget
+            if(emphasisRange === null){
+                emphasisRange = [range[1], range[3]]
+            }
+            const emphasisRowPos = emphasisRange[1]
+            const [offsetX, offsetY] = [range[0], range[2]]
+
+            // #1
+            ret.push(
+                validation.rawData.filter((row, row_idx)=>{
+                    if(row_idx + offsetY == emphasisRowPos){
+                        return false
+                    }
+                    return true
+                })
+            )
+
+            // #2
+            ret.push(validation.rawData)
+            return ret
+        }.bind(ctx),
+
+        [TEMPLATE.BAR]: (ctx) => function () {
+            let ret = []
+            const {data} = this.state
+            const range = getRangeOfValidData(data)
+            const {comments} = this.props
+            //TODO validation of props and error handling
+            const validation = performDataValidation(data, range, comments)
+            ret.push(validation.rawData)
+            return ret
+        }.bind(ctx),
+
+        [TEMPLATE.LINE]: (ctx) => function () {
+            let ret = []
+            const {data} = this.state
+            const range = getRangeOfValidData(data)
+            const {comments} = this.props
+            //TODO validation of props and error handling
+            const validation = performDataValidation(data, range, comments)
+            const commentsToSend = validation.comments
+            commentsToSend.sort((a,b)=> a.row - b.row)
+            commentsToSend.forEach((comment)=>{
+                ret.push(validation.rawData.slice(0, comment.row+1))
+            })
+            ret.push(validation.rawData)
+            return ret
+        }.bind(ctx)
     }
 }
 export default config

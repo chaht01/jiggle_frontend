@@ -3,14 +3,14 @@ import React from 'react'
 /* COMPONENTS */
 import Handson from '../../../../../../components/Handson'
 import FullPage from '../../../../../../components/Layout/FullPage'
-import LabelModal from '../LabelModal'
 
 import styled from 'styled-components'
 import './style.css'
 import _ from 'lodash'
 import connect from 'react-redux/es/connect/connect'
 import {defaultDummyData, getRangeOfValidData, saveData, emphasizeTarget, saveComment, getValidDataWithinRange} from '../../sagas/actions'
-
+import config from './config'
+import {TEMPLATE} from "../../config/types";
 
 const SheetContainer = styled.div`
             position: relative;
@@ -20,6 +20,7 @@ const SheetContainer = styled.div`
 
 const mapStateToProps = (state, ownProps) => {
     return {
+        templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
         emphasisTarget: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget,
         comments: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments,
     }
@@ -37,25 +38,34 @@ class SheetRepresentation extends React.Component{
         super(props)
         this.state = {
             data: defaultDummyData,
-            modal:{
-                open: false
-            }
+            labelModal: null,
+            open: false
         }
-        this.labelModal = null
+        this.modalRef = null
         this.saveData = this.saveData.bind(this)
         this.saveLabel = this.saveLabel.bind(this)
+        this.setLabelModal = this.setLabelModal.bind(this)
     }
-
     saveLabel(comments){
         this.props.saveComment(comments)
+    }
+    setLabelModal(ref){
+        this.setState({labelModal: ref})
     }
     saveData(){
         const {data} = this.state
         const dataToSave = JSON.parse(JSON.stringify(data))
         this.props.saveData(dataToSave)
+        console.log(config.mask[TEMPLATE.LINE](this)())
+    }
+    componentWillReceiveProps(nextProps) {
+        this.setLabelModal(config.modal[this.props.templateType])
     }
     render(){
-        const {width, height, emphasisTarget, emphasizeTarget, comments} = this.props
+        const {width, height, comments} = this.props
+        const sheetConfig = config.sheet[this.props.templateType](this)
+        const ReqModal = this.state.labelModal
+
         return (
             <FullPage>
                 <SheetContainer width={width}>
@@ -78,79 +88,14 @@ class SheetRepresentation extends React.Component{
                             height:height,
                             colWidths:80,
                             rowHeights:23,
-                            contextMenu:{
-                                callback: (key, options) => {
-                                    if(key === 'emphasize'){
-                                        emphasizeTarget(options.end.col, options.end.row)
-                                    }
-                                    if(key === 'label'){
-                                        const selectedData = this.state.data.slice(options.start.row, options.end.row+1).map((row)=>row.slice(options.start.col, options.end.col+1))
-                                        this.labelModal.open(selectedData, [options.start.col, options.end.col, options.start.row, options.end.row])
-                                    }
-                                },
-                                items:{
-                                    "hsep4": "---------",
-                                    "emphasize": {
-                                        name: '강조하기'
-                                    },
-                                    "label": {
-                                        name: '라벨 추가'
-                                    },
-                                }
-                            },
-                            cells: (row, col, prop) => {
-                                let cellProperties = {}
-                                const range = getRangeOfValidData(this.state.data)
-                                let emphasized = emphasisTarget || [range[1], range[3]]
-                                if(range[0]>emphasized[0] || emphasized[0]>range[1]
-                                    || range[2]>emphasized[1] || emphasized[1]>range[3]){
-                                    emphasized = [range[1], range[3]]
-                                }
-                                const inComments = (col, row) => {
-                                    return comments.filter((comment) => {
-                                            if (col == comment.col && row == comment.row) {
-                                                return true
-                                            }
-                                        }).length !== 0
-                                }
-
-
-
-                                if (col === emphasized[0] && row === emphasized[1]) {
-                                    cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
-                                        td.style.background = '#FA4D1E'
-                                        td.style.color = "#fff"
-                                        td.innerText = value
-                                        if(inComments(col, row)){
-                                            td.classList.add('commentCell')
-                                        }
-                                    }
-                                } else {
-
-                                    if (range[0] <= col && col <= range[1]
-                                        && range[2] <= row && row <= range[3]) {
-                                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
-                                            td.innerText = value
-                                            if(inComments(col, row)){
-                                                td.classList.add('commentCell')
-                                            }
-                                        }
-                                    } else {
-                                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
-                                            td.style.background = '#f1f1f5'
-                                            td.innerText = value
-                                            if(inComments(col, row)){
-                                                td.classList.add('commentCell')
-                                            }
-                                        }
-                                    }
-                                }
-                                return cellProperties
-                            }
+                            ...sheetConfig
                         }}
                     />
                 </SheetContainer>
-                <LabelModal ref={node => this.labelModal = node} opened={this.state.modal.open} saveComment={this.saveLabel} comments={comments}/>
+                {ReqModal ?
+                    <ReqModal ref={node => this.modalRef = node} saveComment={this.saveLabel} comments={comments}/>
+                    : null
+                }
             </FullPage>
         )
     }
@@ -163,7 +108,8 @@ const Sheet = connect(
     {
         areStatesEqual: (next,prev) => {
             return (
-                next.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget === prev.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget
+                next.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type === prev.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type
+                && next.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget === prev.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget
                 && _.isEqual(next.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments, prev.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments)
             )
         }

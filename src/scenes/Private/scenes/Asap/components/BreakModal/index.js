@@ -20,16 +20,17 @@ LabelEditor.Value = styled.div`
     overflow: hidden;
 `
 
-class BreakModal extends React.Component {
+class LabelModal extends React.Component {
     constructor(props) {
         super(props)
         this.initialState = {
+            open: false,
             selectedData: null,
             range : null,
             comments: []
         }
         this.state = this.initialState
-        this.initState = this.initState.bind(this)
+        this.open = this.open.bind(this)
         this.close = this.close.bind(this)
         this.save = this.save.bind(this)
         this.isValidItem = this.isValidItem.bind(this)
@@ -50,8 +51,6 @@ class BreakModal extends React.Component {
     checkValidation(selectedData) {
         let totalCnt = 0
         let emptyCnt = 0
-        if(selectedData===undefined || selectedData===null)
-            return false
         selectedData.map((row) => {
             row.map((cell) => {
                 totalCnt++
@@ -69,24 +68,15 @@ class BreakModal extends React.Component {
         return true
     }
 
-    componentWillReceiveProps(nextProps){
-        const {data, range, comments} = nextProps
-        this.initState(data, range, comments)
-    }
-
-    componentDidMount(){
-        const {data, range, comments} = this.props
-        this.initState(data, range, comments)
-    }
-
-    initState(data, range, comments){
-        if (this.checkValidation(data)) {
+    open(selectedData, range) {
+        if (this.checkValidation(selectedData)) {
             this.setState({
-                selectedData: data,
+                open: true,
+                selectedData,
                 range,
-                comments: data.map((row, row_idx)=>{
+                comments: selectedData.map((row, row_idx)=>{
                     return row.map((cell, col_idx)=>{
-                        const filtered =comments.filter((comment)=>{
+                        const filtered =this.props.comments.filter((comment)=>{
                             if(range[0]+col_idx == comment.col
                                 && range[2]+row_idx ==comment.row){
                                 return true;
@@ -96,7 +86,7 @@ class BreakModal extends React.Component {
                         if(filtered.length!=0){
                             return filtered[0].value
                         }else{
-                            return data[row_idx][col_idx]
+                            return selectedData[row_idx][col_idx]
                         }
                     })
                 })
@@ -124,7 +114,6 @@ class BreakModal extends React.Component {
 
     close() {
         this.setState(this.initialState)
-        this.props.close()
     }
 
     save() {
@@ -153,12 +142,12 @@ class BreakModal extends React.Component {
 
     render() {
         return (
-            <Modal size='mini' dimmer={'inverted'} open={this.props.opened && this.checkValidation(this.props.data)} onClose={this.close}>
+            <Modal size='mini' open={this.state.open} onClose={this.close}>
                 <Modal.Header>
-                    중단점 편집
+                    말풍선 편집
                 </Modal.Header>
                 <Modal.Content scrolling>
-                    <Header as="h5">해당 값 대신에 보여질 텍스트를 입력하세요</Header>
+                    <Header as="h5">해당 값에서 말풍선이 표시됩니다. 표시 될 문구를 적어주세요</Header>
                     {
                         this.state.selectedData !== null ?
                             <LabelEditor>
@@ -191,4 +180,4 @@ class BreakModal extends React.Component {
     }
 }
 
-export default BreakModal
+export default LabelModal

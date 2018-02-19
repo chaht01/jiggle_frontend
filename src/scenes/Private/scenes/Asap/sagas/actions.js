@@ -225,37 +225,68 @@ export const commentValidate = () => {
 
 
 /*** DATA VALIDATION ***/
-export const collapseMatrix = (arr) => {
-    return [arr.map(row => {
-        let reduced = []
-        row.reduce((a,c,i)=>{
-            if(c=='' || c===null || c==undefined){
-                reduced[i] = a;
-                return a;
-            }else{
-                reduced[i] = c;
-                return c;
+
+export const performDataValidation = (data, range, comments) => {
+    try{
+        let dataWithComments = _.cloneDeep(data)
+        comments.forEach(comment => {
+            let value = dataWithComments[comment.row][comment.col]
+            if(typeof value === 'string'){
+                value = value.trim()
             }
-        },0)
-        return reduced
-    }).reduce((a,c,i)=>{
-        return a.map((e,j)=>e+' '+c[j])
-    })]
+            if(['', undefined, null].indexOf(value)==-1){
+                dataWithComments[comment.row][comment.col] = {
+                    value,
+                    comment: comment.value
+                }
+            }
+        })
+        const rangedDataWithComments = getValidDataWithinRange(dataWithComments, range)
+        const schema = generateSchema(rangedDataWithComments)
+        const readyToSend = schemaToRawData(schema)
+        return {
+            rangedDataWithComments,
+            rawData: readyToSend.rawData,
+            comments: readyToSend.comments,
+            schema,
+        }
+    }catch (err){
+        console.error('Parse Error while generating raw data')
+        console.log(err.stack)
+        return null
+    }
+
 }
+
 export const schemaToRawData = (schema) => {
+    let ret = {
+        rawData: [[]],
+        comments: []
+    }
     try{
         let axisColumns,
             axisLabel,
             legends,
-            values
+            values,
+            comments = []
 
         if(schema.numeric.length===0){ // No way to draw chart
-            return []
+            return ret
         }else{
             if(schema.axisColumnNamespace.length == 0){
                 axisColumns = schema.dummyAxisColumnNamespace()
             }else{
+                //extract value only
                 axisColumns = _.cloneDeep(schema.axisColumnNamespace)
+                    .map((row, row_idx)=> {
+                        return row.map((cell, col_idx) => {
+                            if (isCommentCell(cell)) {
+                                return cell.value
+                            } else {
+                                return cell
+                            }
+                        })
+                    })
             }
 
             if(axisColumns.length>1){
@@ -263,12 +294,21 @@ export const schemaToRawData = (schema) => {
                 axisColumns = collapseMatrix(axisColumns)
             }
 
-
-            axisLabel = schema.axisLabel || ''
+            axisLabel = isCommentCell(schema.axisLabel) ? schema.axisLabel.value : (schema.axisLabel || '')
             if(schema.legendNamespace.length == 0){
                 legends = schema.dummyLegendNamespace()
             }else{
+                //extract value only
                 legends = _.cloneDeep(schema.legendNamespace)
+                    .map((row, row_idx)=> {
+                        return row.map((cell, col_idx) => {
+                            if (isCommentCell(cell)) {
+                                return cell.value
+                            } else {
+                                return cell
+                            }
+                        })
+                    })
             }
 
             const legends_t = transpose(legends)
@@ -279,19 +319,47 @@ export const schemaToRawData = (schema) => {
 
             values = schema.numeric.map((row) => {
                 return row.map((cell) => {
-                    const parsed = numeral(cell).value()
-                    return (parsed===null || isNaN(parsed)) ? '' : parsed
+                    let parsed
+                    if(isCommentCell(cell)){
+                        parsed = numeral(cell.value).value()
+                        return (parsed===null || isNaN(parsed)) ? '' :
+                            {
+                                value: parsed,
+                                comment: cell.comment
+                            }
+                    }else{
+                        parsed = numeral(cell).value()
+                        return (parsed===null || isNaN(parsed)) ? '' : parsed
+                    }
                 })
             })
-            console.log(axisColumns, legends, values)
-            return [].concat(transpose(legends)).concat(transpose([].concat(axisColumns).concat(values)))
+
+            const rawDataWithComments = [].concat(transpose(legends)).concat(transpose([].concat(axisColumns).concat(values)))
+            ret.rawData = rawDataWithComments.map((row, row_idx)=>{
+                return row.map((cell, col_idx) => {
+                    if(isCommentCell(cell)){
+                        comments.push({
+                            col:col_idx,
+                            row:row_idx,
+                            value: cell.comment
+                        })
+                        return cell.value
+                    }else{
+                        return cell
+                    }
+                })
+            })
+            ret.comments = comments
+            return ret
         }
     }catch(err){
         console.error('Parse Error from schema to raw data.')
         console.log(err.stack)
-        return [[]]
-    }
 
+        ret.rawData = [[]]
+        ret.comments = []
+        return ret
+    }
 }
 
 export const chartSchema = {
@@ -341,20 +409,15 @@ export const chartSchema = {
         return [ret]
     }
 }
-export const transpose = (arr) => {
-    //check size validation
-    if(arr.length == 0){
-        return null
-    }
-    const width = arr[0].length
-    if(arr.filter((row) => row.length!=width).length != 0){
-        throw "Irregular # of columns in this array. Check missing entity of array."
-    }
 
-    return arr.reduce(($, row) => row.map((_, i) => [...($[i] || []), row[i]]), [])
+export const isCommentCell = (cell) => {
+    if(cell!==null && typeof cell==='object' && cell.hasOwnProperty('value') && cell.hasOwnProperty('comment')){
+        return true
+    }
+    return false
 }
 
-export const generateSchema = (data, direction) => {
+export const generateSchema = (data, direction) => { //data must be comment integrated
     let schema = Object.assign({}, chartSchema)
     if(data===null || data.length===0 || data[0].length===0){
         return schema
@@ -452,8 +515,14 @@ export const generateSchema = (data, direction) => {
         let headerNaN = 0, asideNaN = 0
         if(height===1){
             // 행이 1개뿐이면 그 행이 numerical 인지 아닌지에따라 axis col ns를 정한다
-            for(let i=1; i<header.length; i++){
-                if(validator.numeric(header[i]) === false){
+            for(let i=1; i<header.length; i++){ //todo
+                let numericExpected
+                if(isCommentCell(header[i])){
+                    numericExpected = header[i].value
+                }else{
+                    numericExpected = header[i]
+                }
+                if(validator.numeric(numericExpected) === false){
                     headerNaN++
                 }
             }
@@ -461,7 +530,13 @@ export const generateSchema = (data, direction) => {
                 axisColumnNamespaceExpectedRange = [0, width-1, 0, 0]
                 numericExpectedRange = [-1, -1, -1, -1] // no numerics
             }else{
-                if(validator.numeric(header[0]) === false){
+                let numericExpected
+                if(isCommentCell(header[0])){
+                    numericExpected = header[0].value
+                }else{
+                    numericExpected = header[0]
+                }
+                if(validator.numeric(numericExpected) === false){
                     axisLabel = header[0]
                     numericExpectedRange = [1, width-1, 0, height-1]
                 }else{
@@ -472,7 +547,13 @@ export const generateSchema = (data, direction) => {
             axisColumnNamespaceExpectedRange = [0, width-1, 0, 0] //The first row should be axis col ns
             numericExpectedRange = [0, width-1, 1, height-1]
             for(let i=1; i<aside.length; i++){
-                if(validator.numeric(aside[i]) === false){
+                let numericExpected
+                if(isCommentCell(aside[i])){
+                    numericExpected = aside[i].value
+                }else{
+                    numericExpected = aside[i]
+                }
+                if(validator.numeric(numericExpected) === false){
                     asideNaN++
                 }
             }
@@ -483,8 +564,8 @@ export const generateSchema = (data, direction) => {
                 numericExpectedRange[0] = 1
             }
         }
-
     }
+
     schema.axisColumnNamespace = getValidDataWithinRange(data, axisColumnNamespaceExpectedRange)
     schema.legendNamespace = getValidDataWithinRange(data, legendNamespaceExpectedRange)
     schema.numeric = getValidDataWithinRange(data, numericExpectedRange)
@@ -492,6 +573,35 @@ export const generateSchema = (data, direction) => {
     return schema
 }
 
+export const collapseMatrix = (arr) => {
+    return [arr.map(row => {
+        let reduced = []
+        row.reduce((a,c,i)=>{
+            if(c=='' || c===null || c==undefined){
+                reduced[i] = a;
+                return a;
+            }else{
+                reduced[i] = c;
+                return c;
+            }
+        },0)
+        return reduced
+    }).reduce((a,c,i)=>{
+        return a.map((e,j)=>e+' '+c[j])
+    })]
+}
+export const transpose = (arr) => {
+    //check size validation
+    if(arr.length == 0){
+        return null
+    }
+    const width = arr[0].length
+    if(arr.filter((row) => row.length!=width).length != 0){
+        throw "Irregular # of columns in this array. Check missing entity of array."
+    }
+
+    return arr.reduce(($, row) => row.map((_, i) => [...($[i] || []), row[i]]), [])
+}
 
 export const mergeDataToDummy = (data, startIdx=[0,0]) => {
     //startIdx [colStart, rowStart]
