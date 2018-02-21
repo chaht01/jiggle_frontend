@@ -10,6 +10,7 @@ import routeConfig from '../../../../../../config/route'
 import {Dimmer, Loader, Segment} from 'semantic-ui-react'
 import FullPage from '../../../../../../components/Layout/FullPage'
 import Composition from '../../../../../../components/Composition'
+import Button from '../../../../../../components/Button'
 import PaddedContainer from '../PaddedContainer'
 
 import styled from 'styled-components'
@@ -30,6 +31,7 @@ const ThumbnailContainer = styled(FullPage)`
 `
 const Thumbnail = styled.div`
     display: block;
+    border: 2px solid ${props => props.selected ? '#FA4D1E' : 'transparent'};
 `
 const ThumbnailDescription = styled.div`
     display: flex;
@@ -95,6 +97,16 @@ const RealThumb = styled.div`
     }
 `
 
+const Footer = styled.div`
+    position: relative;
+    display:flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    bottom: 0;
+    top: auto;
+`
+
 const mapStateToProps = (state, ownProps) => {
     return {
         thumbnails: state.PrivateReducer.templatesThumbnails.list,
@@ -121,12 +133,14 @@ class TemplatesRepresentation extends React.Component{
     constructor(props){
         super(props)
         this.state = {
+            selected: -1,
             loading: this.props.selectedTemplate.loading,
             config: this.props.selectedTemplate.config,
             over: false
         }
         this.scrollable = null
         this.handleOver = this.handleOver.bind(this)
+        this.confirmTemplate = this.confirmTemplate.bind(this)
     }
     handleWheelEvent(element, e){
         const dY = e.deltaY,
@@ -145,6 +159,9 @@ class TemplatesRepresentation extends React.Component{
     }
     handleOver(value){
         this.setState({over:value})
+    }
+    confirmTemplate(){
+        this.props.selectTemplate(this.state.selected, this.props.thumbnails[this.state.selected])
     }
     componentWillMount(){
         this.props.fetchTemplates()
@@ -174,15 +191,15 @@ class TemplatesRepresentation extends React.Component{
                                 const Thumb = withRouter(
                                     ({history, ...rest}) => (
                                         <Thumbnail onClick={() => {
-                                            this.props.selectTemplate(i, template)
-                                        }}>
+                                            this.setState({selected: i})
+                                        }} selected={i===this.state.selected}>
                                             <CompositionExtended>
                                                 {template.thumb ? (template.dummy ? <ThumbJoke src={template.thumb} alt=""/> : <RealThumb thumb={template.thumb} animate={template.animate}/>) : i}
                                                 {this.props.selectedTemplate.idx==i && (this.props.selectedTemplate.loading ?
                                                     <Dimmer active>
                                                         <Loader size='medium'>Loading</Loader>
                                                     </Dimmer>
-                                                : (this.props.selectedTemplate.error ? '':'active'))}
+                                                    : (this.props.selectedTemplate.error ? '':'active'))}
                                             </CompositionExtended>
                                             <ThumbnailDescription>
                                                 {template.desc}
@@ -195,6 +212,14 @@ class TemplatesRepresentation extends React.Component{
                             })
                     }
                 </ThumbnailContainer>
+                <Footer>
+                    <Button onClick={this.confirmTemplate} compact theme={{fg:'#fff', bg:'#FA4D1E'}}>
+                        {this.state.selected!=-1 && this.props.selectedTemplate.loading ?
+                            <Loader active inline size='mini'/>
+                            : '확인'
+                        }
+                    </Button>
+                </Footer>
             </PaddedContainer>
 
         )

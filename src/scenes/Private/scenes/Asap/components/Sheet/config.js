@@ -312,8 +312,6 @@ const config = {
                     emphasisRange = [range[1], range[1], range[3], range[3]]
                 }
                 const validation = performDataValidation(data, range, comments, emphasisRange)
-
-
                 const emphasisRowPos = validation.breakPoint[2]
 
                 if(emphasisRowPos!=-1){

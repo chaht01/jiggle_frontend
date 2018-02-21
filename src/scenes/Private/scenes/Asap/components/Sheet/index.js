@@ -38,7 +38,7 @@ class SheetRepresentation extends React.Component{
     constructor(props){
         super(props)
         this.state = {
-            data: defaultDummyData,
+            data: _.cloneDeep(defaultDummyData),
         }
         this.saveData = this.saveData.bind(this)
     }
@@ -54,7 +54,7 @@ class SheetRepresentation extends React.Component{
         const ReqModal = config.modal[this.props.templateType]
 
         return (
-            <FullPage>
+            <React.Fragment>
                 <SheetContainer width={width}>
                     <Handson
                         settings={{
@@ -83,7 +83,7 @@ class SheetRepresentation extends React.Component{
                     <ModalHandler reqModal={ReqModal}/>
                     : null
                 }
-            </FullPage>
+            </React.Fragment>
         )
     }
 }

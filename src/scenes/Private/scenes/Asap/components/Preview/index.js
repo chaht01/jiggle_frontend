@@ -4,25 +4,23 @@ import Button from '../../../../../../components/Button'
 import FullPage from '../../../../../../components/Layout/FullPage'
 import Composition from '../../../../../../components/Composition'
 import PaddedContainer from '../PaddedContainer'
-import _ from 'lodash'
 
 import styled from 'styled-components'
-import {parseBar} from "d3-reusable/src/parser/bar-parser";
+import parseBar from 'd3-reusable/src/parser/bar-parser'
 import BarFactory from "d3-reusable/src/factory/bar-factory";
+import {getChildG} from 'd3-reusable/src/factory/common-factory'
 import Resizeable from '../../../../components/Resizeable'
 
-import {getValidDataWithinRange, generateSchema, schemaToRawData} from '../../sagas/actions'
-
-import sampleImg from '../../../../../../assets/images/thumbs/greenboy.jpeg'
 import connect from "react-redux/es/connect/connect";
+import * as numeral from "numeral";
+
+
+
 const PreviewContainer = styled.div`
     height: 60vh;
     width: ${60*16/9}vh;
 `
-const CenteredFullPage = styled(FullPage)`
-    display: flex;
-    justify-content: center;
-`
+
 const PreviewThumbnails = styled(Composition)`
     background: #fff;
 `
@@ -79,37 +77,8 @@ function getDataUri(url, callback) {
 
 const mapStateToProps = (state, ownProps) => {
     return {
-        data: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data,
-        emphasisTarget: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget,
-        range: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.range,
-        template: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config
-    }
-}
-
-const mergeProps = (stateProps, dispatchProps, ownProps) => {
-    return {
-        masked: ((data, emphasisTarget, range)=>{
-            let ret = []
-            if(emphasisTarget === null){
-                emphasisTarget = [range[1], range[3]]
-            }
-            const rangedData = getValidDataWithinRange(data, range)
-            const schema = generateSchema(rangedData)
-            const rawData = schemaToRawData(schema)
-            const emphasisRowPos = emphasisTarget[1]
-            const [offsetX, offsetY] = [range[0], range[2]]
-            ret.push(
-                rawData.filter((row, row_idx)=>{
-                    if(row_idx + offsetY == emphasisRowPos){
-                        return false
-                    }
-                    return true
-                })
-            )
-            ret.push(rawData)
-            return ret
-        })(stateProps.data, stateProps.emphasisTarget, stateProps.range),
-        template: stateProps.template
+        mask: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
+        meta: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
     }
 }
 
@@ -117,6 +86,7 @@ class PreviewRepresentation extends React.Component{
     constructor(props){
         super(props)
         this.state = {
+            imageContainer: null,
             focusedIdx: -1,
             event: {
                 x: 0,
@@ -149,10 +119,10 @@ class PreviewRepresentation extends React.Component{
             this.setState((prevState) => {
                 return {
                     images: prevState.images.map((img,i)=>{
-                            return {
-                                ...img,
-                                href: dataUri
-                            }
+                        return {
+                            ...img,
+                            href: dataUri
+                        }
                     })
                 }
             })
@@ -165,6 +135,7 @@ class PreviewRepresentation extends React.Component{
         this.clearChart = this.clearChart.bind(this)
         this.renderImages = this.renderImages.bind(this)
         this.images = []
+        this.finalNode = null
     }
     renderGIF(){
         this.clearChart()
@@ -196,71 +167,95 @@ class PreviewRepresentation extends React.Component{
     clearChart(){
         for(let i=0; i<this.renderNode.childNodes.length; i++){
             this.renderNode.childNodes[i].remove()
-
         }
     }
 
     renderImages(){
         return this.state.images.map((image, i) => {
             return(
-                <Resizeable key={i}
-                            idx={i}
-                            ref={node => this.images.push(node)}
-                            focused={i === this.state.focusedIdx}
-                            focus={this.focusImage}
-                            setAnchorIdx={this.setAnchorIdx}
-                            anchorIdx={this.state.anchorIdx}
-                            diff={this.state.diff}
-                            deleteSelf={this.deleteImage}
-                            {...image}/>)
+            //     React.createElement(Resizeable,
+            //         ((ctx)=>{
+            //             return {
+            //                 key: i,
+            //                 idx: i,
+            //                 ref: node => ctx.images.push(node),
+            //                 focused: i === ctx.state.focusedIdx,
+            //
+            //                 focus: ctx.focusImage,
+            //
+            //                 setAnchorIdx: ctx.setAnchorIdx,
+            //                 anchorIdx: ctx.state.anchorIdx,
+            //                 diff: ctx.state.diff,
+            //                 deleteSelf: ctx.deleteImage,
+            //                 ...image
+            //
+            //             }
+            //         })(this))
+            // )
+            <Resizeable key={i}
+                        idx={i}
+                        ref={node => this.images.push(node)}
+                        focused={i === this.state.focusedIdx}
+                        focus={this.focusImage}
+                        setAnchorIdx={this.setAnchorIdx}
+                        anchorIdx={this.state.anchorIdx}
+                        diff={this.state.diff}
+                        deleteSelf={this.deleteImage}
+                        {...image}/>)
 
         })
     }
     init(recentProps){
-        let isValid = true
-        const props = recentProps || this.props
-        for(let i=0; i<props.masked.length; i++){
-            if(props.masked[i].length == 0){
-                isValid = false
-                break;
-            }
+        this.setState({imageContainer:null})
+        if(recentProps.mask.length == 0){
+            return
         }
+        const width = numeral(getComputedStyle(ReactDOM.findDOMNode(this.renderNode)).width).value()
+        const {mask, meta} = recentProps
+        const settings = [{
+            type: "vertical",
+            rawData: mask[0],
+            duration: 1500,
+            width_svg: width,
+            height_svg: width*9/16,
+            title: meta.title,
+            subtitle: meta.subtitle,
+            reference: meta.reference,
+            madeBy: meta.producer,
+        }, {
+            type: "vertical",
+            rawData: mask[1],
+            duration: 1500,
+            delay: 1500,
+            width_svg: width,
+            height_svg: width*9/16,
+            title: meta.title,
+            subtitle: meta.subtitle,
+            reference: meta.reference,
+            madeBy: meta.producer,
+        }]
 
-        if(isValid){
-            this.clearChart()
-            const settings = [{
-                rawData: props.masked[0],
-                duration: 1500,
-                delay: 1800,
-                delayType: "delayInOrder",
-                width_svg: 960,
-                height_svg: 960*9/16,
-            }, {
-                rawData: props.masked[1],
-                focusType: "end",
-                duration: 1500,
-                delayType: "delayInOrder",
-                width_svg: 960,
-                height_svg: 960*9/16,
-            }]
+        this.charts = settings.map((setting) => {
+            return Object.assign({}, this.props.template, setting)
+        })
+        this.charts.forEach(chart => parseBar(chart));
+        this.factory = new BarFactory();
 
-            this.charts = settings.map((setting) => {
-                return Object.assign({}, props.template, setting)
-            })
+        const renderTransition = this.factory.renderTransition()
+        renderTransition(this.renderNode, this.charts)
 
-            this.charts.forEach(chart => parseBar(chart));
-            this.factory = new BarFactory();
-            const renderStatic = this.factory.renderChart()
-            const gParent =renderStatic(this.renderNode, this.charts[1])
-            this.gChildren = this.factory.getChildG(gParent)
-            this.gChildren['graph'].style.cssText = "user-select:none; pointer-events:none;"
-        }
-
+        const renderStatic = this.factory.renderChart()
+        const gParent =renderStatic(this.renderNode, this.charts[this.charts.length-1])
+        this.gChildren = getChildG(gParent)
+        this.gChildren['graph'].style.cssText = "user-select:none; pointer-events:none;"
+        this.setState({imageContainer: this.gChildren['image']})
+        this.gChildren['image'].innerHTML = "<use href='#images'/>"
     }
     componentDidMount(){
         this.init(this.props)
     }
     componentWillReceiveProps(nextProps){
+        console.log(nextProps)
         this.init(nextProps)
     }
     updateTransformer(){
@@ -288,13 +283,14 @@ class PreviewRepresentation extends React.Component{
     render(){
         return (
             <PaddedContainer>
-                <CenteredFullPage>
+                <FullPage>
                     <PreviewContainer>
                         <PreviewThumbnails>
                             <svg style={{width:'100%', height:'100%'}} ref={node => this.node = node}
                                  onMouseDown={(e)=>{
                                      e.persist()
                                      this.setState({x:e.clientX, y: e.clientY})
+                                     console.log(e.clientX, e.clientY)
                                      if(e.target == this.node){
                                          this.focusImage(-1)
                                      }
@@ -304,6 +300,7 @@ class PreviewRepresentation extends React.Component{
                                          const diffX = e.clientX - this.state.x
                                          const diffY = e.clientY - this.state.y
                                          this.setState({diff:{x: diffX, y: diffY}})
+                                         console.log(this.state)
                                      }
                                  }}
                                  onMouseUp={(e)=> {
@@ -314,33 +311,51 @@ class PreviewRepresentation extends React.Component{
                                  }}
                             >
                                 {/* 차트 */}
-                                {this.gChildren && this.gChildren['image'] ?
-                                    <ImageContainer images={this.renderImages} container={this.gChildren['image']}/>
-                                :null}
 
-                                <g ref={node => this.renderNode = node}></g>
+                                <g ref={node => this.renderNode = node}>
+                                    <g id="images" ref={node => this.finalNode = node}>
+                                        {this.state.imageContainer ?
+                                            <ImageContainer images={this.renderImages} container={
+                                                this.state.imageContainer
+                                            }/>
+                                            :null}
+                                    </g>
+                                </g>
+
+
                             </svg>
 
                             <GifViewer id="gif"/>
                         </PreviewThumbnails>
                     </PreviewContainer>
+
                     <Footer renderGIF={this.renderGIF}/>
-                </CenteredFullPage>
+                </FullPage>
             </PaddedContainer>
 
         )
     }
 }
 
+
 class ImageContainer extends React.Component{
     constructor(props){
         super(props)
     }
+    componentDidMount(){
+
+    }
+    componentWillReceiveProps(nextProps){
+    }
     render(){
-        return ReactDOM.createPortal(
-            this.props.images(),
-            this.props.container
+        return(
+            ReactDOM.createPortal(
+                this.props.images(),
+                this.props.container
+            )
         )
+
+
     }
 }
 
@@ -349,12 +364,6 @@ class ImageContainer extends React.Component{
 const Preview = connect(
     mapStateToProps,
     null,
-    mergeProps,
-    {
-        areMergedPropsEqual: (next,prev) => {
-            return  _.isEqual(next.masked, prev.masked)
-        }
-    }
 )(PreviewRepresentation)
 
 export default Preview

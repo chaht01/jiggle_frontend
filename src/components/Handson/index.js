@@ -96,7 +96,7 @@ class Handson extends React.Component {
     `
         return(
             <ScrollContainer width={this.props.width} height={this.props.height}>
-                <HotTable settings={Object.assign({}, this.props.settings, {contextMenu:this.contextMenu})} ref={(container)=> this.container = container}/>
+                <HotTable settings={Object.assign({}, this.props.settings, {contextMenu:this.props.settings.contextMenu ? this.contextMenu : false})} ref={(container)=> this.container = container}/>
             </ScrollContainer>
         )
     }

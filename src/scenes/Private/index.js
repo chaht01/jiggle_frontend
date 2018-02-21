@@ -94,7 +94,7 @@ const AutoSaver = ({loading, ...rest}) => {
         border-radius: 100px;
         padding: .4rem ${loading ? '.4rem' : '1rem'};
         font-size: 14px;
-        border: 1px solid #61C584;
+        border: ${props => props.loading ? '1px solid #61C584' : 'none'};
         transition: all .5s;
         margin-right: 1rem;
     `
@@ -104,7 +104,7 @@ const AutoSaver = ({loading, ...rest}) => {
                 loading ?
                     <Loader size='mini' active inline />
                     :
-                    '저장완료'
+                    <span>저장완료 <Icon name='check'/></span>
             }
         </StyledAutoSaver>
     )

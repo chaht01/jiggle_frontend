@@ -229,6 +229,20 @@ export const dataModalOpen = (bool, payload) => {
     }
 }
 
+/*** MASK SAVE ***/
+export const saveMask = (mask) => {
+    return {
+        type: actionType.MASK_SAVE,
+        payload: mask
+    }
+}
+
+export const clearMask = (mask) => {
+    return {
+        type: actionType.MASK_SAVE,
+    }
+}
+
 
 
 
@@ -297,7 +311,7 @@ export const performDataValidation = (data, range, comments, emphasisTarget=null
         })
 
         //merge emphasisTarget to data
-        if(emphasisTarget!==null && validRange(emphasisTarget)){
+        if(emphasisTarget!==null && validRange(emphasisTarget) && !_.isEqual(emphasisTarget, [-1, -1, -1, -1])){
             const [emph_x, emph_y] = [emphasisTarget[0], emphasisTarget[2]]
             dataWithOpts[emph_y][emph_x].saveEmphasis(true)
         }
@@ -314,7 +328,7 @@ export const performDataValidation = (data, range, comments, emphasisTarget=null
         }
     }catch (err){
         console.error('Parse Error while generating raw data')
-        console.log(err.stack)
+        console.error(err.stack)
         return null
     }
 
@@ -409,7 +423,7 @@ export const schemaToRawData = (schema) => {
         }
     }catch(err){
         console.error('Parse Error from schema to raw data.')
-        console.log(err.stack)
+        console.error(err.stack)
 
         ret.rawData = [[]]
         ret.comments = []
@@ -646,7 +660,7 @@ export const mergeDataToDummy = (data, startIdx=[0,0]) => {
         return _.cloneDeep(defaultDummyData)
     }
 
-    return defaultDummyData.map((row, row_idx)=> {
+    return _.cloneDeep(defaultDummyData).map((row, row_idx)=> {
         if(startIdx[1]<=row_idx && row_idx-startIdx[1]<data.length){
             return row.map((cell, col_idx) => {
                 if(startIdx[0]<=col_idx && col_idx-startIdx[0]<data[0].length){

@@ -25,7 +25,7 @@ class DefaultSheetRepresentation extends React.Component{
     constructor(props){
         super(props)
         this.state = {
-            data: defaultDummyData,
+            data: _.cloneDeep(defaultDummyData),
             modal:{
                 open: false
             }

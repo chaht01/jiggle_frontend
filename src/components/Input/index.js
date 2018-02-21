@@ -6,7 +6,7 @@ import styled, {ThemeProvider} from 'styled-components'
 import {Input as SemanticInput } from 'semantic-ui-react'
 
 const theme = {
-    fg: '#222', //foreground color(text)
+    fg: '#18181b', //foreground color(text)
     pc: '#65696A', //placeholder color
     bg: '#fff', //background color
     bc: '#FA4D1E' //border color

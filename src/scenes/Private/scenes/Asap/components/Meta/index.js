@@ -7,12 +7,13 @@ import Button from '../../../../../../components/Button'
 import {Form, Grid, Modal, Header, Icon, Button as SemanticButton} from 'semantic-ui-react'
 import Handson from '../../../../../../components/Handson'
 import Composition from '../../../../../../components/Composition'
+import Player from '../Player'
 
 /* STYLE */
 import styled from 'styled-components'
 
 /* UTILS */
-import { saveMeta } from '../../sagas/actions'
+import { saveMeta, saveMask } from '../../sagas/actions'
 import connect from "react-redux/es/connect/connect";
 import {TEMPLATE} from "../../config/types";
 import config from '../../components/Sheet/config'
@@ -21,12 +22,12 @@ const ConfigPanel = styled.div`
     position: absolute;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     left: auto;
     right: 0;
     top: 0;
     width: 360px;
     height: 100%;
-    padding-bottom: 1rem;
     background: #2b2d2f;
     -webkit-box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
     -moz-box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
@@ -38,12 +39,16 @@ const ConfigForm = styled(Form)`
 `
 const ConfigField = styled(Form.Field)`
     display: grid;
-    grid-template-columns: 4.5rem 1fr;
-    grid-row-gap: 1rem;
-    padding: 1rem 1rem 1rem 2rem !important;
+    grid-template-columns: 4.5rem auto;
+    grid-column-gap: 1rem;
+    grid-row-gap: 36px;
+    padding: ${props => {
+        const padding = props.padding ? props.padding  : '31px'
+        return padding+' 1rem '+padding+' 2rem !important;'
+    }}
     border-bottom: 1px solid #333738 !important;
     margin-bottom: 0 !important;
-    color: #65696A;
+    color: #848484;
     &:last-of-type{
         border-bottom: none !important;   
         margin-bottom: 1rem !important;
@@ -51,26 +56,19 @@ const ConfigField = styled(Form.Field)`
 `
 
 const ConfigLabel = styled.label`
-    color: #65696A !important;
+    color: #848484 !important;
     align-self: center;
 `
 
-const PreRenderComposition = styled(Composition)`
-    background: #17181C;
-`
-const PreRendered = styled.div`
-    display:flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
+const PreRender = styled.div`
+    padding: 1rem;
 `
 
 const mapStateToProps = (state, ownProps) => {
     return {
         meta: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
-        placeholder: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.placeholder,
         templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
+        template: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config,
         emphasisTarget: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget,
         comments: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments,
         data: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data
@@ -83,7 +81,8 @@ const mapDispatchToProps = (dispatch) => {
             let obj = {}
             obj[key] = e.target.value
             return dispatch(saveMeta(obj))
-        }
+        },
+        saveMask: (mask) => dispatch(saveMask(mask))
     }
 }
 
@@ -122,77 +121,43 @@ class MetaRepresentation extends React.Component{
         this.preventWheel(this.form)
     }
     render(){
-        const {meta, placeholder, saveMeta} = this.props
+        const {meta, saveMeta} = this.props
         return(
             <ConfigPanel>
                 <ConfigForm ref={node => this.form = node}>
-                    <ConfigField inline>
+                    <ConfigField inline padding="36px">
                         <ConfigLabel>제목</ConfigLabel>
-                        <Input invert square={true} placeholder={meta.title} onChange={(e) => saveMeta(e, 'title')}/>
-                        <ConfigLabel>부제목</ConfigLabel>
-                        <Input invert square={true} placeholder={meta.subtitle} onChange={(e) => saveMeta(e, 'subtitle')}/>
+                        <Input invert size='small' square={true} placeholder={meta.title} onChange={(e) => saveMeta(e, 'title')}/>
                     </ConfigField>
                     <ConfigField inline>
+                        <ConfigLabel>부제목</ConfigLabel>
+                        <Input invert size='small' square={true} placeholder={meta.subtitle} onChange={(e) => saveMeta(e, 'subtitle')}/>
+                    </ConfigField>
+                    <ConfigField inline padding="18px">
                         <ConfigLabel>X축</ConfigLabel>
-                        <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'xAxis')}/>
+                        <Input invert fluid size='small' square={true} placeholder='' onChange={(e) => saveMeta(e, 'xAxis')}/>
+                    </ConfigField>
+                    <ConfigField inline padding="18px">
                         <ConfigLabel>Y축</ConfigLabel>
-                        <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'yAxis')}/>
+                        <Input invert fluid size='small' square={true} placeholder='' onChange={(e) => saveMeta(e, 'yAxis')}/>
                     </ConfigField>
                     <ConfigField inline>
                         <ConfigLabel>자료 출처</ConfigLabel>
-                        <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'reference')}/>
+                        <Input invert size='small' square={true} placeholder='' onChange={(e) => saveMeta(e, 'reference')}/>
                     </ConfigField>
                     <ConfigField inline>
                         <ConfigLabel>만든이</ConfigLabel>
-                        <Input invert square={true} placeholder='' onChange={(e) => saveMeta(e, 'producer')}/>
+                        <Input invert size='small' square={true} placeholder='' onChange={(e) => saveMeta(e, 'producer')}/>
                     </ConfigField>
                 </ConfigForm>
-                <PreRenderComposition>
-                    <PreRendered>
-                        <Icon as={SemanticButton} onClick={this.preRender} color="red" size="huge" name="play"/>
-                    </PreRendered>
-                </PreRenderComposition>
-                <Grid centered>
-                    <Grid.Row>
-                        {/**
-                         * Placeholder data
-                         */}
-                        <Modal trigger={<Button compact theme={{fg:'#fff', bg:'#FA4D1E'}}>프리뷰 확인</Button>}
-                               basic size='small'
-                        >
-                            <Header icon='table' content='예시 데이터' />
-                            <Modal.Content>
-                                <Handson settings={{
-                                    data:placeholder,
-                                    colHeaders:true,
-                                    rowHeaders:true,
-                                    width: 830,
-                                    height: 400,
-                                    readOnly: true,
-                                    allowInsertRow: false,
-                                    allowInsertColumn: false,
-                                    autoInsertRow: false,
-                                    cells: (row, col, prop) => {
-                                        let cellProperties = {}
-                                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
-                                            const trimmed = value ? value.trim() : value
-                                            if(['', undefined, null].indexOf(trimmed)==-1){
-                                                td.innerText = value
-                                                td.style.color = '#000'
-                                            }else{
-                                                td.style.background = '#f1f1f5'
-                                            }
-                                        }
-                                        return cellProperties
-                                    }
-                                }}/>
-                            </Modal.Content>
-                            <Modal.Actions>
-                                <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}}>확인</Button>
-                            </Modal.Actions>
-                        </Modal>
-                    </Grid.Row>
-                </Grid>
+                <PreRender>
+                    <Player getMask={()=>config.mask(this.props.data)[this.props.templateType](this)()}
+                            saveMask={this.props.saveMask}
+                            template={this.props.template}
+                            type={this.props.templateType}
+                            comments={this.props.comments}
+                            meta={this.props.meta}/>
+                </PreRender>
             </ConfigPanel>
         )
     }
