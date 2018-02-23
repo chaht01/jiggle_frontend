@@ -302,7 +302,10 @@ const config = {
     mask:(data)=> {
         return {
             [TEMPLATE.BAR_EMPHASIS]: (ctx) => function () {
-                let ret = []
+                let ret = {
+                    mask: [],
+                    comments: []
+                }
                 const range = getRangeOfValidData(data)
                 const {emphasisTarget, comments} = this.props
 
@@ -312,11 +315,12 @@ const config = {
                     emphasisRange = [range[1], range[1], range[3], range[3]]
                 }
                 const validation = performDataValidation(data, range, comments, emphasisRange)
+                ret.comments = validation.comments
                 const emphasisRowPos = validation.breakPoint[2]
 
                 if(emphasisRowPos!=-1){
                     // # emphasis scene
-                    ret.push(
+                    ret.mask.push(
                         validation.rawData.filter((row, row_idx) => {
                             if (row_idx == emphasisRowPos) {
                                 return false
@@ -328,22 +332,29 @@ const config = {
 
 
                 // # else
-                ret.push(validation.rawData)
+                ret.mask.push(validation.rawData)
                 return ret
             }.bind(ctx),
 
             [TEMPLATE.BAR]: (ctx) => function () {
-                let ret = []
+                let ret = {
+                    mask:[],
+                    comments:[]
+                }
                 const range = getRangeOfValidData(data)
                 const {comments} = this.props
                 //TODO validation of props and error handling
                 const validation = performDataValidation(data, range, comments)
-                ret.push(validation.rawData)
+                ret.mask.push(validation.rawData)
+                ret.comments = validation.comments
                 return ret
             }.bind(ctx),
 
             [TEMPLATE.LINE]: (ctx) => function () {
-                let ret = []
+                let ret = {
+                    mask:[],
+                    comments:[]
+                }
                 const range = getRangeOfValidData(data)
                 const {comments} = this.props
                 //TODO validation of props and error handling
@@ -351,9 +362,13 @@ const config = {
                 const commentsToSend = validation.comments
                 commentsToSend.sort((a, b) => a.row - b.row)
                 commentsToSend.forEach((comment) => {
-                    ret.push(validation.rawData.slice(0, comment.row + 1))
+                    ret.mask.push(validation.rawData.slice(0, comment.row + 1))
                 })
-                ret.push(validation.rawData)
+                ret.mask.push(validation.rawData)
+                ret.comments = validation.comments.map((c)=>{
+                    c.comment = c.value
+                    return c
+                })
                 return ret
             }.bind(ctx)
         }

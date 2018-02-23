@@ -1988,7 +1988,7 @@ d3-request@1.0.6:
 
 "d3-reusable@git+http://github.com/Jiwoopark0508/project-md.git#dev":
   version "0.1.0"
-  resolved "git+http://github.com/Jiwoopark0508/project-md.git#89626326656f31608691518c64f5068385198587"
+  resolved "git+http://github.com/Jiwoopark0508/project-md.git#2227b0bf584eb304764ec436d21bad5fba257911"
   dependencies:
     "@vx/axis" "0.0.153"
     "@vx/glyph" "^0.0.153"

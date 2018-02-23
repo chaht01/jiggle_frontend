@@ -40,18 +40,11 @@ class Handson extends React.Component {
     updateContextMenu(props){
         const defaultContextMenu = {
             items: {
-                "row_above": {
-                    name: "위에 행 추가"
-                },
                 "row_below": {
-                    name: "아래 행 추가"
-                },
-                "hsep1": "---------",
-                "col_left": {
-                    name: "왼쪽 열 추가"
+                    name: "행 추가"
                 },
                 "col_right": {
-                    name: "오른쪽 열 추가"
+                    name: "열 추가"
                 },
                 "hsep2": "---------",
                 "remove_row": {
@@ -59,16 +52,6 @@ class Handson extends React.Component {
                 },
                 "remove_col": {
                     name: "열 지우기"
-                },
-                "hsep3": "---------",
-                "undo": {
-                    name: "되돌리기"
-                },
-                "redo": {
-                    name: "다시하기"
-                },
-                "make_read_only": {
-                    name: "선택영역을 읽기전용으로"
                 },
             }
         }

@@ -33,7 +33,7 @@ const initialDirtyDataState = {
     modal: initialDataModal,
     range:initialRange,
     emphasisTarget: null,
-    safeMask: [],
+    safeMask: null,
     error: null
 }
 const initialAppearanceState = null

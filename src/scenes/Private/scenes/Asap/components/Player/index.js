@@ -4,19 +4,17 @@ import {TEMPLATE} from '../../config/types'
 import Composition from '../../../../../../components/Composition'
 import Button from '../../../../../../components/Button'
 import parseBar from 'd3-reusable/src/parser/bar-parser'
-import {lineParser} from 'd3-reusable/src/parser/line-parser'
 import BarFactory from "d3-reusable/src/factory/bar-factory"
 import LargeDataLineFactory from "../../../../../../components/project-md/src/factory/large-line-factory"
 import {Button as SemanticButton, Icon} from 'semantic-ui-react'
 import styled from 'styled-components'
 import numeral from 'numeral'
 import * as _ from "lodash";
+import {getFactory} from '../../config/common'
+
+
+
 const PreRenderComposition = styled(Composition)`
-position:fixed;
-left:0;
-top:0;
-width: 1080px;
-height: 600px;
     background: #17181C;
 `
 const PreRendered = styled.div`
@@ -27,6 +25,10 @@ const PreRendered = styled.div`
     height: 100%;
     z-index:3;
     &:hover{
+`
+const PreRenderedSvg = styled.svg`
+    overflow: visible;
+    transform: scale(${props => props.container/props.width});
 `
 const PlayerController = styled.div`
     position: absolute;
@@ -88,54 +90,22 @@ class Player extends React.Component{
             const props = recentProps || this.props
             const getMask = this.props.getMask
             try{
-                const mask = getMask()
-
+                const {mask, comments} = getMask()
                 for(let i=0; i<mask.length; i++){
                     if(mask[i].length == 0){
                         isValid = false
                         break;
                     }
                 }
-                console.log(mask)
                 if(isValid){
-                    const width = this.state.width|| numeral(getComputedStyle(ReactDOM.findDOMNode(this.renderNode)).width).value()
+                    const width = this.state.width || numeral(getComputedStyle(ReactDOM.findDOMNode(this.renderNode)).width).value()
                     const meta = this.props.meta
-                    let settings = []
-                    if(this.props.type == TEMPLATE.BAR_EMPHASIS){
-                        settings = [defaultSettings(width, mask[0], meta), defaultSettings(width, mask[1], meta)]
-                    }else if(this.props.type == TEMPLATE.LINE){
-                        settings = []
-                        mask.map(m => {
-                            const settingsForLine = Object.assign({}, defaultSettings(width, m, meta))
-                            settings.push(settingsForLine)
-                        })
-                    }
+                    const {type, template:templateConfig} = this.props
+                    const {charts, factory} = getFactory(type, mask, meta, templateConfig, width, comments)
 
-
-                    this.charts = settings.map((setting) => {
-                        return Object.assign({}, this.props.template, setting)
-                    })
-                    console.log(this.charts)
-                    if(this.props.type == TEMPLATE.BAR_EMPHASIS) {
-                        this.charts.forEach(chart => parseBar(chart));
-                        this.factory = new BarFactory();
-                    }else if(this.props.type == TEMPLATE.LINE){
-                        // this.charts = lineParser(this.charts)
-                        this.charts = this.charts.map(chart => {
-                            chart.graph_colors = ['blue', 'red', 'blue', 'red', 'blue', 'red']
-                            return chart
-                        })
-                        this.factory = new LargeDataLineFactory();
-                    }
-
-
-                    const renderTransition = this.factory.renderTransition()
-                    renderTransition(this.renderNode, this.charts)
-                    this.props.saveMask(mask)
-                    // const renderStatic = this.factory.renderChart()
-                    // const gParent =renderStatic(this.renderNode, this.charts[1])
-                    // this.gChildren = this.factory.getChildG(gParent)
-                    // this.gChildren['graph'].style.cssText = "user-select:none; pointer-events:none;"
+                    const renderTransition = factory.renderTransition()
+                    renderTransition(this.renderNode, charts)
+                    this.props.saveMask(getMask())
                 }else{
                     this.handleError()
                 }
@@ -153,7 +123,7 @@ class Player extends React.Component{
         return (
             <PreRenderComposition>
                 <PreRendered>
-                    <svg width={this.state.width} height={this.state.width*9/16} ref={node => this.renderNode = node}>
+                    <svg style={{transform:`scale(${324/this.state.width})`, overflow:'visible', fill:'#fff'}} width={this.state.width} height={this.state.width*9/16} ref={node => this.renderNode = node}>
 
                     </svg>
 

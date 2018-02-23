@@ -183,7 +183,10 @@ class Resizeable extends React.Component{
                                          }}/>
                     ))}
                     {this.state.appearance.width > closeSize && this.state.appearance.height > closeSize &&
-                    <g onClick={()=>deleteSelf(idx)}>
+                    <g onClick={(e)=>{
+                        deleteSelf(idx)
+                        e.stopPropagation()
+                    }}>
                         <ellipse stroke="#fff" fill="#999999" strokeWidth="1.5"
                                  cx={this.state.appearance.x + this.state.appearance.width - closeSize / 2 - closeOffset}
                                  cy={this.state.appearance.y + closeSize / 2 + closeOffset} rx={closeSize / 2}
