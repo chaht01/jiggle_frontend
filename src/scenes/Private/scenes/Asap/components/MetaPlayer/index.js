@@ -1,17 +1,10 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
-import {TEMPLATE} from '../../config/types'
 import Composition from '../../../../../../components/Composition'
 import Button from '../../../../../../components/Button'
-import parseBar from 'd3-reusable/src/parser/bar-parser'
-import BarFactory from "d3-reusable/src/factory/bar-factory"
-import LargeDataLineFactory from "../../../../../../components/project-md/src/factory/large-line-factory"
 import {Button as SemanticButton, Icon} from 'semantic-ui-react'
 import styled from 'styled-components'
-import numeral from 'numeral'
-import * as _ from "lodash";
 import {getFactory} from '../../config/common'
-import Player from '../Player'
+import factory from '../../config/factory'
 
 
 
@@ -55,58 +48,77 @@ class MetaPlayer extends React.Component{
         this.state = {
             played: false,
             error: false,
+            width: 1080
         }
         this.play = this.play.bind(this)
-        this.handleError = this.handleError.bind(this)
-        this.handleSuccess = this.handleSuccess.bind(this)
     }
     handleError(){
         this.setState({played:false, error:true})
     }
-    handleSuccess(mask){
-        this.props.saveMask(mask)
-    }
     play(){
-        this.setState({played:true, error:false})
+        this.setState({played:true, error:false}, ()=>{
+            let isValid = true
+            try {
+                const {
+                    data,
+                    comments: rawComment,
+                    emphasisTarget,
+                    templateType,
+                    template:templateConfig,
+                    meta,
+                } = this.props
+                const chartMaterials = factory.mask(data, rawComment, emphasisTarget)[templateType]()
+                const {mask, comments, breakPoint} = chartMaterials
+                for (let i = 0; i < mask.length; i++) {
+                    if (mask[i].length == 0) {
+                        isValid = false
+                        break;
+                    }
+                }
+                if (isValid) {
+                    const width = this.state.width
+                    const {charts, factory} = getFactory(templateType, mask, meta, templateConfig, width, comments)
+
+                    const renderTransition = factory.renderTransition()
+                    renderTransition(this.renderNode, charts)
+                    this.props.saveMask(chartMaterials)
+                }else{
+                    this.handleError()
+                }
+            }catch (err){
+                console.error('Cannot render preview')
+                console.error(err.stack)
+                this.handleError()
+            }
+        })
     }
     componentWillReceiveProps(nextProps){
         this.setState({played:false, error: false})
     }
-    shouldComponentUpdate(np, ns){
-        if(_.isEqual(np, this.props) && _.isEqual(ns, this.state)){
-            return false
-        }
-        return true
-    }
     render(){
-        const {
-            data,
-            comments,
-            emphasisTarget,
-            templateType,
-            template,
-            meta,
-        } = this.props
         return (
-            <Player {...{data,
-                comments,
-                emphasisTarget,
-                templateType,
-                template,
-                meta}}
-                width={328}
-                onError={this.handleError}
-                onSuccess={this.handleSuccess}
-            >
-                {
+            <PreRenderComposition>
+                <PreRendered>
+                    <svg style={{transform:`scale(${328/this.state.width})`, overflow:'visible', fill:'#fff'}} width={this.state.width} height={this.state.width*9/16} ref={node => this.renderNode = node}>
+
+                    </svg>
+
+                </PreRendered>
                 <PlayerController played={this.state.played} error={this.state.error}>
                     {this.state.error ?  '표현할 수 없는 데이터입니다' : ''}
-                </PlayerController>
-                }
-            </Player>
+                    {this.state.error ? null :
+                        <Button rounded inverted icon size="small" onClick={this.play} compact theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}>
+                            {this.state.played ? <Icon name='repeat'/> : <Icon name='play'/>}
+                        </Button>
+                    }
 
+                </PlayerController>
+
+            </PreRenderComposition>
         )
     }
 }
 
 export default MetaPlayer
+
+
