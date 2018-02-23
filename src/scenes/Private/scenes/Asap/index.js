@@ -27,6 +27,7 @@ const mapStateToProps = (state, ownProps) => {
     return {
         selectedTemplate: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate,
         dirtyData: state.PrivateReducer.AsapReducer.procedureManager.dirtyData,
+        mask: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
     }
 }
 
@@ -52,7 +53,7 @@ class AsapRepresentation extends React.Component{
         clearAsap()
     }
     render(){
-        const {selectTemplate, selectedTemplate, dirtyData} = this.props
+        const {selectTemplate, selectedTemplate, dirtyData, mask} = this.props
         return (
             <StyledSectionScroll>
                 <SectionScrollSpy items={['애니메이션 선택', '데이터 입력', '프리뷰']} spyHeight={'80px'}>
@@ -66,8 +67,9 @@ class AsapRepresentation extends React.Component{
                     <DataConfigView/>
                 </SectionScrollSection> }
                 { selectedTemplate.config!=null
-                    &&
-                    <SectionScrollSection>
+                    && mask!==null
+                    && mask.mask.length >0
+                    &&<SectionScrollSection>
                         <Preview/>
                     </SectionScrollSection>
                 }

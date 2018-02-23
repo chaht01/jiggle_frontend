@@ -32,3 +32,6 @@ export const DATA_MODAL_CLOSE = "DATA_MODAL_CLOSE"
 export const MASK_SAVE = "MASK_SAVE"
 export const MASK_CLEAR = "MASK_CLEAR"
 
+export const COLOR_SAVE = "COLOR_SAVE"
+export const COLOR_CLEAR = "COLOR_CLEAR"
+

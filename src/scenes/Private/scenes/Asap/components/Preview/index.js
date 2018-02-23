@@ -28,7 +28,6 @@ class Preview extends React.Component{
                     base64: ''
                 }
                 this.getDataUri(file.preview, (dataUri)=> {
-                    console.log(dataUri)
                     image.base64 = dataUri
                 })
                 return image

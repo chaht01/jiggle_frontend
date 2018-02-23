@@ -7,7 +7,7 @@ import Button from '../../../../../../components/Button'
 import {Form, Grid, Modal, Header, Icon, Button as SemanticButton} from 'semantic-ui-react'
 import Handson from '../../../../../../components/Handson'
 import Composition from '../../../../../../components/Composition'
-import Player from '../Player'
+import MetaPlayer from '../MetaPlayer'
 
 /* STYLE */
 import styled from 'styled-components'
@@ -16,7 +16,7 @@ import styled from 'styled-components'
 import { saveMeta, saveMask } from '../../sagas/actions'
 import connect from "react-redux/es/connect/connect";
 import {TEMPLATE} from "../../config/types";
-import config from '../../components/Sheet/config'
+import config from '../../config/factory'
 
 const ConfigPanel = styled.div`
     position: absolute;
@@ -93,7 +93,6 @@ class MetaRepresentation extends React.Component{
         this.form = null
         this.preventWheel = this.preventWheel.bind(this)
         this.handleWheelEvent = this.handleWheelEvent.bind(this)
-        this.preRender = this.preRender.bind(this)
     }
     handleWheelEvent(element, e){
         const dY = e.deltaY,
@@ -109,10 +108,6 @@ class MetaRepresentation extends React.Component{
     }
     preventWheel(node){
         ReactDOM.findDOMNode(node).addEventListener('wheel', this.handleWheelEvent.bind(this, ReactDOM.findDOMNode(node)), {passive: false})
-    }
-    preRender(){
-        console.log(this.props.templateType)
-        console.log(config.mask(this.props.data)[this.props.templateType](this)())
     }
     componentDidMount(){
         this.preventWheel(this.form)
@@ -151,12 +146,15 @@ class MetaRepresentation extends React.Component{
                     </ConfigField>
                 </ConfigForm>
                 <PreRender>
-                    <Player getMask={()=>config.mask(this.props.data)[this.props.templateType](this)()}
-                            saveMask={this.props.saveMask}
+                    <MetaPlayer
+                            data={this.props.data}
+                            emphasisTarget={this.props.emphasisTarget}
                             template={this.props.template}
-                            type={this.props.templateType}
+                            templateType={this.props.templateType}
                             comments={this.props.comments}
-                            meta={this.props.meta}/>
+                            meta={this.props.meta}
+                            saveMask={this.props.saveMask}
+                    />
                 </PreRender>
             </ConfigPanel>
         )

@@ -243,6 +243,19 @@ export const clearMask = (mask) => {
     }
 }
 
+/*** APPEARANCE SAVE ***/
+export const saveColor = (color) => {
+    return{
+        type: actionType.COLOR_SAVE,
+        payload: color
+    }
+}
+export const clearColor = (color) => {
+    return {
+        type: actionType.COLOR_CLEAR
+    }
+}
+
 
 
 

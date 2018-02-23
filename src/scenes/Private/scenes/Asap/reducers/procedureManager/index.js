@@ -36,7 +36,9 @@ const initialDirtyDataState = {
     safeMask: null,
     error: null
 }
-const initialAppearanceState = null
+const initialAppearanceState = {
+    color: null
+}
 const initialState = {
     selectedTemplate: initialTemplateState,
     dirtyData: initialDirtyDataState,
@@ -279,7 +281,19 @@ const procedureManager = (state=initialState, action) => {
                     safeMask: []
                 }
             }
-
+        case actionType.COLOR_SAVE:
+            return {
+                ...state,
+                appearance:{
+                    ...state.appearance,
+                    color: action.payload
+                }
+            }
+        case actionType.COLOR_CLEAR:
+            return {
+                ...state,
+                appearance: initialAppearanceState
+            }
         /* GLOBAL */
         case actionType.PROCEDURE_CLEAR:
             return initialState

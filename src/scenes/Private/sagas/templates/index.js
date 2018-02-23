@@ -30,7 +30,15 @@ export function* fetchTemplatesThumbnailsAsync() {
         const res = yield call(Api.fetchApi, ['/template/all'])
         let thumbnails = res.data
         thumbnails = thumbnails.map((template) => {
-            return Object.assign({}, template, {type: getTypeFromName(template.name)})
+            return Object.assign({}, template, {
+                type: getTypeFromName(template.name),
+                placeholder: mergeDataToDummy([
+                            ['', '삼성', 'sk하이닉스'],
+                            ['2014', '1', '4'],
+                            ['2015', '2', '5'],
+                            ['2016', '3', '6'],
+                        ])
+            })
         })
         // thumbnails[0] = Object.assign({}, thumbnails[0], {
         //         thumb: animate_thumb,

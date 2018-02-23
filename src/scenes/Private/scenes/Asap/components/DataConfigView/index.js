@@ -48,10 +48,14 @@ class DataConfigViewRepresentation extends React.Component{
         }
     }
     componentDidMount(){
+        console.log(this.props.placeholder)
         this.size = {
             width: 830,
             height: 400
         }
+    }
+    componentWillReceiveProps(nextProps){
+        console.log(nextProps.placeholder)
     }
     render(){
         const {placeholder} = this.props

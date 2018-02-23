@@ -10,7 +10,7 @@ import './style.css'
 import _ from 'lodash'
 import connect from 'react-redux/es/connect/connect'
 import {defaultDummyData, getRangeOfValidData, saveData, emphasizeTarget, saveComment, getValidDataWithinRange, dataModalOpen} from '../../sagas/actions'
-import config from './config'
+import factory from '../../config/factory'
 import {TEMPLATE} from "../../config/types";
 
 const SheetContainer = styled.div`
@@ -50,8 +50,8 @@ class SheetRepresentation extends React.Component{
     }
     render(){
         const {width, height, comments} = this.props
-        const sheetConfig = config.sheet(this.state.data)[this.props.templateType](this)
-        const ReqModal = config.modal[this.props.templateType]
+        const sheetConfig = factory.sheet(this.state.data)[this.props.templateType](this)
+        const ReqModal = factory.modal[this.props.templateType]
 
         return (
             <React.Fragment>

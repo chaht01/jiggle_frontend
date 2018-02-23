@@ -1,10 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import styled from 'styled-components'
-import { CustomPicker, CirclePicker } from 'react-color'
 import Dropzone from 'react-dropzone'
 import StackGrid from 'react-stack-grid'
 import Checkbox from '../../../../../../components/Checkbox'
+import { saveColor } from '../../sagas/actions'
+import { colorsByType, Swatch } from '../../config/common'
+import connect from "react-redux/es/connect/connect";
+import {TEMPLATE} from "../../config/types";
 
 const Panel = styled.div`
     position: absolute;
@@ -61,10 +64,14 @@ const Color = styled.div`
     width: 40px;
     height: 40px;
     flex-shrink: none;
-    margin: 0 10px 10px 0;
+    margin: 4px;
     border-radius: 10px;
-    background: #DFE0E1;
-    box-shadow: 0px 2px 18px -1px rgba(0,0,0,0.6);
+    background: #fff;
+    box-shadow: ${props => {
+        const [r,g,b] = Swatch.hexToRgb(props.color)
+        return props.active ? 
+            'rgba('+r+', '+g+', '+b+', 0.75) 0px 0px 0px 3px;' 
+            : '0px 2px 18px -1px rgba(0,0,0,0.6)'}};
     &:after{
         position: absolute;
         width: 26px;
@@ -178,12 +185,53 @@ ImageGrid.Item = styled.div`
     }
 `
 
-class AppearanceController extends React.Component{
+const Tab = styled.div`
+    display: flex;
+    align-items: center;
+    height: 40px;
+`
+Tab.Item = styled.a`
+    display: flex;
+    cursor: pointer;
+    height:100%;
+    color: ${props => props.active ? '#fff' : '#848484'};
+    &:hover{
+        color: #fff;
+    }
+    font-size: 0.8rem;
+    justify-content:center;
+    align-items: center;
+    text-decoration: none;
+    padding: 0 .5rem;
+`
+
+
+
+const mapStateToProps = (state, ownProps) => {
+    return {
+        templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
+        mask: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
+    }
+}
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        saveColor: (color) => dispatch(saveColor(color))
+    }
+}
+
+class AppearanceControllerRepresentation extends React.Component{
     constructor(props){
         super(props)
         this.state = {
-            // files: [],
+            colorTabs: []
         }
+        const colorObj = colorsByType(this.props.templateType)
+        this.state.colorTabs = this.buildColorTab(colorObj)
+
+        this.props.saveColor(this.getPalette())
+
+
         this.bgColors = null
         this.keyColors = null
         this.gallery = null
@@ -191,6 +239,68 @@ class AppearanceController extends React.Component{
         this.preventWheel = this.preventWheel.bind(this)
         this.handleWheelEvent = this.handleWheelEvent.bind(this)
         this.attachPreview = this.attachPreview.bind(this)
+        this.activeTab = this.activeTab.bind(this)
+        this.selectColor = this.selectColor.bind(this)
+        this.getSelectedColor = this.getSelectedColor.bind(this)
+    }
+    buildColorTab(colorObj){
+        const keyMap = {
+            emphasis: '강조',
+            single: '단일',
+            similar: '유사',
+            contrast: '대비'
+        }
+        let colorTabs = []
+        Object.keys(colorObj).forEach(function(key,index) {
+            const tab = {
+                label: keyMap[key],
+                active: index == 0, // if tab is activated
+                selected: index==0 ? 0: -1, //selected Color idx
+                colors: colorObj[key]
+            }
+            colorTabs.push(tab)
+        })
+        return colorTabs
+    }
+    activeTab(idx){
+        this.setState((prevState)=>{
+            let newTabs = prevState.colorTabs.slice()
+            return {
+                colorTabs: newTabs.map((tab,t_idx) => {
+                    tab.active = idx == t_idx
+                    return tab
+                })
+            }
+        })
+    }
+    getSelectedColor(){
+        const activatedTab = this.state.colorTabs.filter((tab, t_idx)=> tab.active)[0]
+        return activatedTab.colors.filter((color, c_idx)=> c_idx == activatedTab.selected)[0]
+    }
+    getPalette(color){
+        if(this.props.mask === null || this.props.mask.length==0){
+            return []
+        }
+        const {mask} = this.props.mask
+        if(color===undefined || color===null || !(color instanceof Swatch)){
+            color = this.getSelectedColor()
+        }
+
+        let paletteLen = mask[mask.length-1].length-1
+        return color.getPalette(paletteLen, true)
+    }
+    selectColor(idx){
+        this.setState((prevState)=> {
+            let newTabs = prevState.colorTabs.slice()
+            return {
+                colorTabs: newTabs.map((tab, t_idx) => {
+                    tab.selected = tab.active ? idx : -1
+                    return tab
+                })
+            }
+        }, ()=>{
+            this.props.saveColor(this.getPalette())
+        })
     }
     handleWheelEvent(element, e){
         const dY = e.deltaY,
@@ -223,40 +333,44 @@ class AppearanceController extends React.Component{
         this.preventWheel(this.keyColors)
         this.preventWheel(this.gallery)
     }
+    componentWillReceiveProps(nextProps){
+        this.setState({
+            colorTabs: this.buildColorTab(colorsByType(nextProps.templateType))
+        })
+    }
     render(){
         return (
             <Panel>
                 <Palette height="135">
                     <Palette.Title>배경테마</Palette.Title>
                     <Palette.Colors ref={node => this.bgColors = node}>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
+
                     </Palette.Colors>
                 </Palette>
                 <Palette height="190">
                     <Palette.Title>
                         <span>그래프 색상</span>
-                        <StyledCheckbox reverse={true} label='컬러 대비' onChange={(e,value) => console.log(value.checked)}/>
+                        {/*<StyledCheckbox reverse={true} label='컬러 대비' onChange={(e,value) => console.log(value.checked)}/>*/}
                     </Palette.Title>
+                    <Tab>
+                        {this.state.colorTabs.map((tab, i)=> {
+                            return (
+                                <Tab.Item key={i} active={tab.active} onClick={()=>this.activeTab(i)}>{tab.label}</Tab.Item>
+                            )
+                        })}
+                    </Tab>
                     <Palette.Colors ref={node => this.keyColors = node}>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
-                        <Color color="#428bca"/>
+                        {
+                            this.state.colorTabs.filter(tab => tab.active)[0].colors.map((color, c_i) => {
+                                const selected = this.state.colorTabs.filter(tab => tab.active)[0].selected == c_i
+                                return(
+                                    <Color key={c_i}
+                                           active={selected}
+                                           color={color.start}
+                                           onClick={()=>this.selectColor(c_i)}/>
+                                )
+                            })
+                        }
                     </Palette.Colors>
                 </Palette>
                 <ImageSection>
@@ -295,4 +409,10 @@ class AppearanceController extends React.Component{
         )
     }
 }
+
+const AppearanceController = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(AppearanceControllerRepresentation)
+
 export default AppearanceController

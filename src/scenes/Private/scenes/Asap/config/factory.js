@@ -1,10 +1,10 @@
-import {TEMPLATE} from '../../config/types'
-import LabelModal from '../LabelModal'
-import BreakModal from '../BreakModal'
-import {getRangeOfValidData, getValidDataWithinRange, performDataValidation} from "../../sagas/actions";
+import {TEMPLATE} from './types'
+import LabelModal from '../components/LabelModal'
+import BreakModal from '../components/BreakModal'
+import {getRangeOfValidData, getValidDataWithinRange, performDataValidation} from "../sagas/actions";
 //TODO: context switching and validation
 
-const config = {
+const factory = {
     sheet: (data) => {
         return {
             [TEMPLATE.BAR_EMPHASIS]: (ctx) => {
@@ -299,15 +299,15 @@ const config = {
         [TEMPLATE.LINE]: BreakModal,
         [TEMPLATE.LINE_DENSE]: BreakModal,
     },
-    mask:(data)=> {
+    mask:(data, comments=[], emphasisTarget=[-1,-1,-1,-1])=> {
         return {
-            [TEMPLATE.BAR_EMPHASIS]: (ctx) => function () {
+            [TEMPLATE.BAR_EMPHASIS]: () => {
                 let ret = {
                     mask: [],
-                    comments: []
+                    comments: [],
+                    breakPoint: -1
                 }
                 const range = getRangeOfValidData(data)
-                const {emphasisTarget, comments} = this.props
 
                 //TODO validation of props and error handling
                 let emphasisRange = emphasisTarget
@@ -333,30 +333,30 @@ const config = {
 
                 // # else
                 ret.mask.push(validation.rawData)
-                return ret
-            }.bind(ctx),
 
-            [TEMPLATE.BAR]: (ctx) => function () {
+                ret.breakPoint = validation.breakPoint[2]
+                return ret
+            },
+
+            [TEMPLATE.BAR]: () => {
                 let ret = {
                     mask:[],
                     comments:[]
                 }
                 const range = getRangeOfValidData(data)
-                const {comments} = this.props
                 //TODO validation of props and error handling
                 const validation = performDataValidation(data, range, comments)
                 ret.mask.push(validation.rawData)
                 ret.comments = validation.comments
                 return ret
-            }.bind(ctx),
+            },
 
-            [TEMPLATE.LINE]: (ctx) => function () {
+            [TEMPLATE.LINE]: () => {
                 let ret = {
                     mask:[],
                     comments:[]
                 }
                 const range = getRangeOfValidData(data)
-                const {comments} = this.props
                 //TODO validation of props and error handling
                 const validation = performDataValidation(data, range, comments)
                 const commentsToSend = validation.comments
@@ -370,8 +370,8 @@ const config = {
                     return c
                 })
                 return ret
-            }.bind(ctx)
+            }
         }
     }
 }
-export default config
+export default factory

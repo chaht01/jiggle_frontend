@@ -8,12 +8,12 @@ import PaddedContainer from '../PaddedContainer'
 import styled from 'styled-components'
 import parseBar from 'd3-reusable/src/parser/bar-parser'
 import BarFactory from "d3-reusable/src/factory/bar-factory";
-import {getChildG} from 'd3-reusable/src/factory/common-factory'
+import {getChildG} from 'd3-reusable/src/common/utils'
 import Resizeable from '../../../../components/Resizeable'
 
 import connect from "react-redux/es/connect/connect";
 import * as numeral from "numeral";
-import {getFactory} from "../../config/common";
+import {getFactory, colorsByType, getDefaultSwatch} from "../../config/common";
 
 
 
@@ -70,29 +70,13 @@ const Footer = ({activeAnchorLength, direction, renderGIF, ...rest}) => {
     )
 }
 
-function getDataUri(url, callback) {
-    var image = new Image();
-    image.crossOrigin = "Anonymous";
-
-    image.onload = function () {
-        var canvas = document.createElement('canvas');
-        canvas.width = this.naturalWidth; // or 'width' if you want a special/scaled size
-        canvas.height = this.naturalHeight; // or 'height' if you want a special/scaled size
-
-        canvas.getContext('2d').drawImage(this, 0, 0);
-
-        callback(canvas.toDataURL('image/png'));
-    };
-
-    image.src = url;
-}
-
 const mapStateToProps = (state, ownProps) => {
     return {
         mask: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
         meta: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
         templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
         template: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config,
+        color: state.PrivateReducer.AsapReducer.procedureManager.appearance.color
     }
 }
 
@@ -158,22 +142,24 @@ class PreviewPlayerRepresentation extends React.Component{
 
 
     init(recentProps){
+        console.log(recentProps)
         const {meta} = recentProps
         if(recentProps.mask === null){
             return
         }
-        const {mask, comments} = recentProps.mask
+        const {mask, comments, breakPoint} = recentProps.mask
+
         if(!mask || !comments || mask.length==0){
             return
         }
-
         const width = numeral(getComputedStyle(ReactDOM.findDOMNode(this.renderNode)).width).value()
-
         const {templateType:type, template:templateConfig} = recentProps
-        const {charts, factory} = getFactory(type, mask, meta, templateConfig, width, comments)
+        const color = recentProps.color || getDefaultSwatch(type).getPalette(mask.length-1)
+        const {charts, factory} = getFactory(type, mask, meta, templateConfig, width, color, comments, breakPoint)
 
         const renderChart = factory.renderChart()
-        const gParent = this.state.focusedIdx==-1 ? renderChart(this.renderNode, charts[charts.length-1], this.state.images.map((image)=>{
+        const gParent = this.state.focusedIdx==-1 ?
+            renderChart(this.renderNode, charts[charts.length-1], this.state.images.map((image)=>{
                 const hello = image.href
                 return Object.assign({}, image, {
                     mimeType: hello.slice(hello.indexOf(':')+1,hello.indexOf(';')),
