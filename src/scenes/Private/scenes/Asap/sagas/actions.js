@@ -125,9 +125,13 @@ export const saveData = (data) => {
     }
 }
 
-export const saveDataSuccess = () => {
+export const saveDataSuccess = (data, range) => {
     return {
-        type: actionType.CHART_DATA_POST_SUCCESS
+        type: actionType.CHART_DATA_POST_SUCCESS,
+        payload: {
+            data,
+            range
+        }
     }
 }
 
@@ -430,7 +434,7 @@ export const schemaToRawData = (schema) => {
                             comments.push({
                                 col:col_idx,
                                 row:row_idx,
-                                value: cell.comment
+                                comment: cell.comment
                             })
                         }
                         if(cell.emphasis === true){

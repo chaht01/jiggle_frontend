@@ -14,6 +14,7 @@
     "axios": "^0.17.1",
     "d3": "^4.13.0",
     "d3-reusable": "git+http://github.com/Jiwoopark0508/project-md.git#dev",
+    "downloadjs": "^1.4.7",
     "lodash": "^4.17.4",
     "mathjs": "^3.20.2",
     "moment": "^2.20.1",

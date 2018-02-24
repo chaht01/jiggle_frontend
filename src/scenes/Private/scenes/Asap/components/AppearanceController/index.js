@@ -298,18 +298,19 @@ class AppearanceControllerRepresentation extends React.Component{
 
         return colorToPalette(color, templateType, mask)
     }
-    selectColor(idx){
+    selectColor(idx, color){
         this.setState((prevState)=> {
             let newTabs = prevState.colorTabs.slice()
             return {
+                ...prevState,
                 colorTabs: newTabs.map((tab, t_idx) => {
                     tab.selected = tab.active ? idx : -1
                     return tab
                 })
             }
-        }, ()=>{
-            this.props.saveColor(this.getPalette())
-        })
+        }, ()=>this.props.saveColor(this.getPalette(color)))
+
+
     }
     selectTheme(idx){
         this.setState((prevState)=>{
@@ -403,7 +404,7 @@ class AppearanceControllerRepresentation extends React.Component{
                                     <Color key={c_i}
                                            active={selected}
                                            color={color.start}
-                                           onClick={()=>this.selectColor(c_i)}/>
+                                           onClick={()=>this.selectColor(c_i, color)}/>
                                 )
                             })
                         }

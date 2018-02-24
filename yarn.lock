@@ -2000,7 +2000,7 @@ d3-request@1.0.6:
 
 "d3-reusable@git+http://github.com/Jiwoopark0508/project-md.git#dev":
   version "0.1.0"
-  resolved "git+http://github.com/Jiwoopark0508/project-md.git#5fb59154c448fa57e92a8473baa0ebb859ba705d"
+  resolved "git+http://github.com/Jiwoopark0508/project-md.git#cd49704aa4feef844a7d8f28022f7fd8b93da496"
   dependencies:
     "@vx/axis" "0.0.153"
     "@vx/glyph" "^0.0.153"
@@ -2383,6 +2383,10 @@ dotenv-expand@4.0.1:
 dotenv@4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-4.0.0.tgz#864ef1379aced55ce6f95debecdce179f7a0cd1d"
+
+downloadjs@^1.4.7:
+  version "1.4.7"
+  resolved "https://registry.yarnpkg.com/downloadjs/-/downloadjs-1.4.7.tgz#f69f96f940e0d0553dac291139865a3cd0101e3c"
 
 duplexer3@^0.1.4:
   version "0.1.4"

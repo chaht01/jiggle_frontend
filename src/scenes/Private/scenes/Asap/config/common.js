@@ -173,7 +173,7 @@ export const getDefaultSwatch = (type) => {
 
 
 export const defaultSettings = (width, mask, meta, color) => {
-    const {title, subtitle, reference, madeBy} = meta
+    const {title, subtitle, reference, madeBy, unit} = meta
     return _.cloneDeep({
         rawData: mask,
         width_svg: width,
@@ -182,11 +182,13 @@ export const defaultSettings = (width, mask, meta, color) => {
         title,
         subtitle,
         reference,
-        madeBy
+        madeBy,
+        unit
     })
 }
 
 export const getFactory = (type, mask, meta, templateConfig, width, color, theme, comments=[], breakPoint=-1) => {
+    console.log(color)
     let settings = []
     let charts = []
     let factory = null
@@ -222,8 +224,9 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, theme
             break;
     }
     console.log(theme)
+    console.log(comments, mask)
     charts = settings.map((setting) => {
-        return Object.assign({}, templateConfig, theme, setting)
+        return Object.assign({}, templateConfig, {theme}, {label:comments}, setting)
     })
 
     switch (type){
@@ -242,19 +245,9 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, theme
             factory = new GroupedBarFactory();
             break;
         case TEMPLATE.LINE:
-            charts = charts.map(chart => {
-                chart.graph_colors = ['blue', 'red', 'blue', 'red', 'blue', 'red']
-                chart.label = comments
-                return chart
-            })
             factory = new SmallDataLineFactory();
             break;
         case TEMPLATE.LINE_DENSE:
-            charts = charts.map(chart => {
-                chart.graph_colors = ['blue', 'red', 'blue', 'red', 'blue', 'red']
-                chart.label = comments
-                return chart
-            })
             factory = new LargeDataLineFactory();
             break;
     }

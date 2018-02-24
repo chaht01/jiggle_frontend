@@ -8,15 +8,17 @@ import {Form, Grid, Modal, Header, Icon, Button as SemanticButton} from 'semanti
 import Handson from '../../../../../../components/Handson'
 import Composition from '../../../../../../components/Composition'
 import MetaPlayer from '../MetaPlayer'
+import Workspace from '../Workspace'
 
 /* STYLE */
 import styled from 'styled-components'
 
 /* UTILS */
-import { saveMeta, saveMask } from '../../sagas/actions'
+import { saveMeta } from '../../sagas/actions'
 import connect from "react-redux/es/connect/connect";
 import {TEMPLATE} from "../../config/types";
 import config from '../../config/factory'
+import * as _ from "lodash";
 
 const ConfigPanel = styled.div`
     position: absolute;
@@ -69,13 +71,6 @@ const PreRender = styled.div`
 const mapStateToProps = (state, ownProps) => {
     return {
         meta: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
-        templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
-        template: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config,
-        emphasisTarget: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget,
-        comments: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments,
-        data: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data,
-        color: state.PrivateReducer.AsapReducer.procedureManager.appearance.color,
-        theme: state.PrivateReducer.AsapReducer.procedureManager.appearance.theme
     }
 }
 
@@ -86,7 +81,6 @@ const mapDispatchToProps = (dispatch) => {
             obj[key] = e.target.value
             return dispatch(saveMeta(obj))
         },
-        saveMask: (mask) => dispatch(saveMask(mask))
     }
 }
 
@@ -97,6 +91,7 @@ class MetaRepresentation extends React.Component{
         this.form = null
         this.preventWheel = this.preventWheel.bind(this)
         this.handleWheelEvent = this.handleWheelEvent.bind(this)
+        this.saveMeta = _.throttle(this.saveMeta.bind(this), 250)
     }
     handleWheelEvent(element, e){
         const dY = e.deltaY,
@@ -110,6 +105,9 @@ class MetaRepresentation extends React.Component{
         }
         e.stopPropagation();
     }
+    saveMeta(e, field){
+        this.props.saveMeta(e, field)
+    }
     preventWheel(node){
         ReactDOM.findDOMNode(node).addEventListener('wheel', this.handleWheelEvent.bind(this, ReactDOM.findDOMNode(node)), {passive: false})
     }
@@ -120,46 +118,59 @@ class MetaRepresentation extends React.Component{
         this.preventWheel(this.form)
     }
     render(){
-        const {meta, saveMeta} = this.props
+        const {meta} = this.props
+        const {saveMeta} = this
+        const throttle_delay = 250
         return(
             <ConfigPanel>
                 <ConfigForm ref={node => this.form = node}>
                     <ConfigField inline padding="36px">
                         <ConfigLabel>제목</ConfigLabel>
-                        <Input invert size='small' square={true} placeholder={meta.title} onChange={(e) => saveMeta(e, 'title')}/>
+                        <Input invert size='small' square={true} placeholder={meta.title}
+                               onChange={(e) => {
+                                   e.persist()
+                                   saveMeta(e, 'title')
+                               }}/>
                     </ConfigField>
                     <ConfigField inline>
                         <ConfigLabel>부제목</ConfigLabel>
-                        <Input invert size='small' square={true} placeholder={meta.subtitle} onChange={(e) => saveMeta(e, 'subtitle')}/>
+                        <Input invert size='small' square={true} placeholder={meta.subtitle}
+                               onChange={(e) => {
+                                   e.persist()
+                                   saveMeta(e, 'subtitle')
+                               }}/>
                     </ConfigField>
                     <ConfigField inline padding="18px">
-                        <ConfigLabel>X축</ConfigLabel>
-                        <Input invert fluid size='small' square={true} placeholder='' onChange={(e) => saveMeta(e, 'xAxis')}/>
-                    </ConfigField>
-                    <ConfigField inline padding="18px">
-                        <ConfigLabel>Y축</ConfigLabel>
-                        <Input invert fluid size='small' square={true} placeholder='' onChange={(e) => saveMeta(e, 'yAxis')}/>
+                        <ConfigLabel>단위</ConfigLabel>
+                        <Input invert fluid size='small' square={true} placeholder=''
+                               onChange={(e) => {
+                                   e.persist()
+                                   saveMeta(e, 'unit')
+                               }}/>
                     </ConfigField>
                     <ConfigField inline>
                         <ConfigLabel>자료 출처</ConfigLabel>
-                        <Input invert size='small' square={true} placeholder='' onChange={(e) => saveMeta(e, 'reference')}/>
+                        <Input invert size='small' square={true} placeholder=''
+                               onChange={(e) => {
+                                   e.persist()
+                                   saveMeta(e, 'reference')
+                               }}/>
                     </ConfigField>
                     <ConfigField inline>
                         <ConfigLabel>만든이</ConfigLabel>
-                        <Input invert size='small' square={true} placeholder='' onChange={(e) => saveMeta(e, 'producer')}/>
+                        <Input invert size='small' square={true} placeholder=''
+                               onChange={(e) => {
+                                   e.persist()
+                                   saveMeta(e, 'madeBy')
+                               }}/>
                     </ConfigField>
                 </ConfigForm>
                 <PreRender>
-                    <MetaPlayer
-                        data={this.props.data}
-                        emphasisTarget={this.props.emphasisTarget}
-                        template={this.props.template}
-                        templateType={this.props.templateType}
-                        comments={this.props.comments}
-                        meta={this.props.meta}
-                        color={this.props.color}
-                        theme={this.props.theme}
-                        saveMask={this.props.saveMask}
+                    <Workspace
+                        errorVisible={true}
+                        background="#18171C"
+                        width={328}
+                        transitionActive={true}
                     />
                 </PreRender>
             </ConfigPanel>

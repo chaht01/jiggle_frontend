@@ -11,6 +11,7 @@ import parseBar from 'd3-reusable/src/parser/bar-parser'
 import BarFactory from "d3-reusable/src/factory/bar-factory";
 import {getChildG} from 'd3-reusable/src/common/utils'
 import Resizeable from '../../../../components/Resizeable'
+import Workspace from '../Workspace'
 
 import connect from "react-redux/es/connect/connect";
 import * as numeral from "numeral";
@@ -56,22 +57,18 @@ const ResizeHandleSVG = styled.svg`
     position: absolute;
     left: 0;
     top:0;
-    right:0;
-    bottom:0;
-    width: 100%;
-    height: 100%;
+    width: ${props => props.originWidth}px;
+    height: ${props => props.originWidth*9/16}px;
+    transform: scale(${props => props.renderWidth/props.originWidth});
+    transform-origin: 0 0;
     z-index: ${props => props.active ? '1': 'auto'}
 `
 
-
-const Footer = ({activeAnchorLength, direction, renderGIF, ...rest}) => {
-    return (
-        <FooterStyled>
-            <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}} disabled={true}>추가작업</Button>
-            <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}} onClick={(e)=>renderGIF()}>렌더 & 저장하기</Button>
-        </FooterStyled>
-    )
-}
+const RelativeWorkspace = styled(Workspace)`
+    position: relative;
+    width: 100%;
+    height: 100%;
+`
 
 const mapStateToProps = (state, ownProps) => {
     return {
@@ -88,6 +85,7 @@ class PreviewPlayerRepresentation extends React.Component{
     constructor(props){
         super(props)
         this.state = {
+            width: 0,
             focusedIdx: -1,
             event: {
                 x: 0,
@@ -105,11 +103,13 @@ class PreviewPlayerRepresentation extends React.Component{
         this.setAnchorIdx = this.setAnchorIdx.bind(this)
         this.updateTransformer = this.updateTransformer.bind(this)
         this.deleteImage = this.deleteImage.bind(this)
-        this.clearChart = this.clearChart.bind(this)
     }
     renderGIF(){
-        this.clearChart()
-        this.factory.recordTransition(this.node, [...this.charts])
+        if(this.renderNode!==null){
+            console.log(this.renderNode)
+            this.renderNode.getWrappedInstance().renderGIF()
+            // this.renderNode.renderGIF()
+        }
     }
     setAnchorIdx(idx, cb){
         this.setState({
@@ -123,7 +123,6 @@ class PreviewPlayerRepresentation extends React.Component{
             if( typeof cb == 'function'){
                 cb()
             }
-            this.init(this.props)
         })
     }
     deleteImage(idx){
@@ -138,65 +137,11 @@ class PreviewPlayerRepresentation extends React.Component{
             this.focusImage(-1)
         })
     }
-    clearChart(){
-        for(let i=0; i<this.renderNode.childNodes.length; i++){
-            this.renderNode.childNodes[i].remove()
-        }
-    }
 
-
-    init(recentProps){
-        const {meta} = recentProps
-        if(recentProps.mask === null){
-            return
-        }
-        const {mask, comments, breakPoint} = recentProps.mask
-
-        if(!mask || !comments || mask.length==0){
-            return
-        }
-        const width = numeral(getComputedStyle(ReactDOM.findDOMNode(this.renderNode)).width).value()
-        const {templateType:type, template:templateConfig, theme} = recentProps
-        const color = recentProps.color || getDefaultSwatch(type).getPalette(mask[mask.length-1].length-1)
-        const {charts, factory} = getFactory(type, mask, meta, templateConfig, width, color, theme, comments, breakPoint)
-
-        const renderChart = factory.renderChart()
-        const gParentOrPromise = this.state.focusedIdx==-1 ?
-            renderChart(this.renderNode, charts[charts.length-1], this.state.images.map((image)=>{
-                const hello = image.href
-                return Object.assign({}, image, {
-                    mimeType: hello.slice(hello.indexOf(':')+1,hello.indexOf(';')),
-                    base64: hello.slice(hello.indexOf(',')+1)
-                })
-            })) : renderChart(this.renderNode, charts[charts.length-1])
-        if(gParentOrPromise instanceof Promise){
-            gParentOrPromise.then(({gParent}) =>{
-                if(gParent!==undefined && gParent!==null){
-                    this.gChildren = getChildG(d3.select(gParent))
-                    console.log(gParent, this.gChildren)
-                    this.gChildren['image'].childNodes.forEach((child, i) => {
-                        child.addEventListener('click',()=>{
-                            this.focusImage(i)
-                        })
-                    })
-                    this.updateTransformer()
-                }
-            })
-        }else{
-            this.gChildren = getChildG(gParentOrPromise)
-            // this.gChildren['graph'].style.cssText = "user-select:none; pointer-events:none;"
-            this.gChildren['image'].childNodes.forEach((child, i) => {
-                child.addEventListener('click',()=>{
-                    this.focusImage(i)
-                })
-            })
-            this.updateTransformer()
-        }
-
-    }
     componentDidMount(){
-        this.init(this.props)
+        this.setState({width: numeral(getComputedStyle(ReactDOM.findDOMNode(this.renderNode)).width).value()})
     }
+
     componentWillReceiveProps(nextProps){
         if(nextProps.attachIdx>-1){
             const uri = nextProps.images[nextProps.attachIdx]
@@ -214,10 +159,6 @@ class PreviewPlayerRepresentation extends React.Component{
                 }
             }, this.props.clearAttachCall)
         }
-
-
-        if(!_.isEqual(nextProps, this.props))
-            this.init(nextProps)
     }
     updateTransformer(){
         const focusedIdx = this.state.focusedIdx
@@ -248,7 +189,17 @@ class PreviewPlayerRepresentation extends React.Component{
                     <FullPage>
                         <PreviewContainer>
                             <PreviewThumbnails>
-                                <ResizeHandleSVG active={this.state.focusedIdx>-1} innerRef={node => this.node = node}
+                                <RelativeWorkspace
+                                    innerRef={node => this.renderNode = node}
+                                    width={this.state.width}
+                                    images={this.state.images}
+                                    imageVisible={this.state.focusedIdx==-1}
+                                    transitionActive={false}
+                                />
+                                <ResizeHandleSVG active={this.state.focusedIdx>-1}
+                                                 innerRef={node => this.node = node}
+                                                 originWidth={1080}
+                                                 renderWidth={this.state.width}
                                                  onMouseDown={(e)=>{
                                                      e.persist()
                                                      this.setState({x:e.clientX, y: e.clientY})
@@ -276,6 +227,8 @@ class PreviewPlayerRepresentation extends React.Component{
                                                 <Resizeable key={i}
                                                             idx={i}
                                                             ref={`image_${i}`}
+                                                            visible={this.state.focusedIdx!=-1}
+                                                            scale={this.state.width/1080}
                                                             focused={i === this.state.focusedIdx}
                                                             focus={this.focusImage}
                                                             setAnchorIdx={this.setAnchorIdx}
@@ -287,49 +240,17 @@ class PreviewPlayerRepresentation extends React.Component{
                                         })
                                     }
                                 </ResizeHandleSVG>
-                                <svg style={{position:'relative', width:'100%', height:'100%'}} ref={node => this.renderNode = node}>
-                                    {/* bro's chart */}
-                                </svg>
                             </PreviewThumbnails>
                         </PreviewContainer>
-
-                        <Footer renderGIF={this.renderGIF}/>
                     </FullPage>
                 </PaddedContainer>
                 <SectionFooter>
-                    <Button compact size='small' theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '7.5rem'}}>저장하기</Button>
+                    <Button compact size='small' theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '7.5rem'}} onClick={this.renderGIF}>저장하기</Button>
                 </SectionFooter>
             </React.Fragment>
         )
     }
 }
-
-
-class ResizeImages extends React.Component {
-    constructor(props){
-        super(props)
-    }
-    render(){
-        const {images, focusedIdx, focusImage, setAnchorIdx, anchorIdx, diff, deleteImage} = this.props
-        return(
-            images.map((image, i) => {
-                return(
-                    <Resizeable key={i}
-                                idx={i}
-                                focused={i === focusedIdx}
-                                focus={focusImage}
-                                setAnchorIdx={setAnchorIdx}
-                                anchorIdx={anchorIdx}
-                                diff={diff}
-                                deleteSelf={deleteImage}
-                                {...image}/>)
-
-            })
-
-        )
-    }
-}
-
 
 const PreviewPlayer = connect(
     mapStateToProps,

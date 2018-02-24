@@ -3,6 +3,7 @@ import {Modal, Button, Input, Header} from 'semantic-ui-react'
 import styled from 'styled-components'
 import connect from "react-redux/es/connect/connect";
 import {saveComment} from "../../sagas/actions";
+import profile from '../../../../../../assets/images/modal/e-39.png'
 
 const LabelEditor = styled.div`
     display: grid;
@@ -20,6 +21,79 @@ LabelEditor.Value = styled.div`
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+`
+
+const StyledModal = styled(Modal)`
+    width: 523px !important;
+    padding: 36px 2rem 29px;
+    text-align: center;
+    margin-left: 0 !important;
+    transform: translateX(-50%);
+`
+StyledModal.Close = styled.a`
+    position: absolute;
+    cursor: pointer;
+    display: block;
+    width: ${15*Math.sqrt(2)}px;
+    height: ${15*Math.sqrt(2)}px;
+    transform: rotate(45deg);
+    right: 0;
+    top: 0;
+    margin-top: 30px;
+    margin-right: 31px;
+    &:before, &:after{
+        display:block;
+        position:absolute;
+        content:'';
+        width: 100%;
+        height: 2px;
+        left: 50%;
+        top: 50%;
+        background: #A5ABB8;
+        transition: all .2s;
+        transform: translate(-50%, -50%);
+    }
+    &:before{
+        transform: translate(-50%, -50%) rotate(90deg);
+    }
+    &:hover{
+        &:before,&:after{
+            background: #878d9a;
+        }
+    }
+    
+`
+StyledModal.Profile = styled.img`
+    position: relative;
+    display: block;
+    width: 122px;
+    height: 122px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 28px;
+    text-align: center;
+`
+StyledModal.Header = styled.div`
+    margin-bottom: 15px;
+    font-weight: 700;
+    font-size: 27px;
+    color: #2b2b2b;
+    text-align: center;
+`
+StyledModal.Description = styled.div`
+    margin-bottom: 15px;
+    font-weight: 400;
+    font-size: 18px;
+    color: #494949;
+    text-align: center;
+`
+StyledModal.Content = styled(Modal.Content)`
+    padding: 16px 0 31px;
+`
+StyledModal.Actions = styled.div`
+    display: flex;
+    justify-content: center;
+    text-align: center;
 `
 
 const mapStateToProps = (state, ownProps) => {
@@ -156,12 +230,16 @@ class LabelModalRepresentation extends React.Component {
     render() {
         console.log('Label!')
         return (
-            <Modal size='mini' open={this.props.open} onClose={this.close}>
-                <Modal.Header>
+            <StyledModal open={this.props.open} onClose={this.close}>
+                <StyledModal.Close onClick={this.close}/>
+                <StyledModal.Profile src={profile}/>
+                <StyledModal.Header>
                     라벨 편집
-                </Modal.Header>
-                <Modal.Content scrolling>
-                    <Header as="h5">해당 값 대신에 보여질 텍스트를 입력하세요</Header>
+                </StyledModal.Header>
+                <StyledModal.Description>
+                    해당 값에서 라벨이 표시됩니다. 표시될 문구를 적어주세요.
+                </StyledModal.Description>
+                <StyledModal.Content>
                     {
                         this.state.selectedData !== null ?
                             <LabelEditor>
@@ -179,17 +257,14 @@ class LabelModalRepresentation extends React.Component {
                             </LabelEditor>
                             : null
                     }
-                </Modal.Content>
-                <Modal.Actions>
-                    <Button compact onClick={this.close}>
-                        취소
-                    </Button>
+                </StyledModal.Content>
+                <StyledModal.Actions>
                     <Button compact onClick={() => {
                         this.save()
                         this.close()
                     }} positive icon='checkmark' labelPosition='right' content='확인'/>
-                </Modal.Actions>
-            </Modal>
+                </StyledModal.Actions>
+            </StyledModal>
         )
     }
 }

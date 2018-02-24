@@ -557,10 +557,7 @@ const factory = {
                     ret.mask.push(validation.rawData.slice(0, comment.row + 1))
                 })
                 ret.mask.push(validation.rawData)
-                ret.comments = validation.comments.map((c)=>{
-                    c.comment = c.value
-                    return c
-                })
+                ret.comments = validation.comments
                 return ret
             },
 

@@ -41,7 +41,7 @@ class Resizeable extends React.Component{
                         x: this.props.x,
                         y: this.props.y,
                         width: this.props.width,
-                        height: this.props.height
+                        height: this.props.height,
                     }
                 })
             }
@@ -55,69 +55,69 @@ class Resizeable extends React.Component{
                     width: Math.max(0,(prevAppearance.width||defaultAppearance.width) - diff.x),
                     height: Math.max(0,(prevAppearance.height||defaultAppearance.height) - diff.y),
                     x: (prevAppearance.x||defaultAppearance.x) + (Math.max(0,(prevAppearance.width||defaultAppearance.width) - diff.x)==0 ? 0 : diff.x),
-                    y: (prevAppearance.y||defaultAppearance.y) + (Math.max(0,(prevAppearance.height||defaultAppearance.height) - diff.y)==0 ? 0 : diff.y)
+                    y: (prevAppearance.y||defaultAppearance.y) + (Math.max(0,(prevAppearance.height||defaultAppearance.height) - diff.y)==0 ? 0 : diff.y),
                 }
             case 1:
                 return {
                     width: Math.max(0, (prevAppearance.width||defaultAppearance.width)),
                     height: Math.max(0, (prevAppearance.height||defaultAppearance.height) - diff.y),
                     x: (prevAppearance.x||defaultAppearance.x),
-                    y: (prevAppearance.y||defaultAppearance.y) + (Math.max(0, (prevAppearance.height||defaultAppearance.height) - diff.y)==0 ? 0 : diff.y)
+                    y: (prevAppearance.y||defaultAppearance.y) + (Math.max(0, (prevAppearance.height||defaultAppearance.height) - diff.y)==0 ? 0 : diff.y),
                 }
             case 2:
                 return {
                     width: Math.max(0,(prevAppearance.width||defaultAppearance.width) + diff.x),
                     height: Math.max(0, (prevAppearance.height||defaultAppearance.height) - diff.y),
                     x: (prevAppearance.x||defaultAppearance.x),
-                    y: (prevAppearance.y||defaultAppearance.y) + (Math.max(0, (prevAppearance.height||defaultAppearance.height) - diff.y)==0 ? 0 : diff.y)
+                    y: (prevAppearance.y||defaultAppearance.y) + (Math.max(0, (prevAppearance.height||defaultAppearance.height) - diff.y)==0 ? 0 : diff.y),
                 }
             case 3:
                 return {
                     width: Math.max(0, (prevAppearance.width||defaultAppearance.width) + diff.x),
                     height: Math.max(0, (prevAppearance.height||defaultAppearance.height)),
                     x: (prevAppearance.x||defaultAppearance.x),
-                    y: (prevAppearance.y||defaultAppearance.y)
+                    y: (prevAppearance.y||defaultAppearance.y),
                 }
             case 4:
                 return {
                     width: Math.max(0, (prevAppearance.width||defaultAppearance.width) + diff.x),
                     height: Math.max(0, (prevAppearance.height||defaultAppearance.height) + diff.y),
                     x: (prevAppearance.x||defaultAppearance.x),
-                    y: (prevAppearance.y||defaultAppearance.y)
+                    y: (prevAppearance.y||defaultAppearance.y),
                 }
             case 5:
                 return {
                     width: Math.max(0, (prevAppearance.width||defaultAppearance.width)),
                     height: Math.max(0, (prevAppearance.height||defaultAppearance.height) + diff.y),
                     x: (prevAppearance.x||defaultAppearance.x),
-                    y: (prevAppearance.y||defaultAppearance.y)
+                    y: (prevAppearance.y||defaultAppearance.y),
                 }
             case 6:
                 return {
                     width: Math.max(0, (prevAppearance.width||defaultAppearance.width) - diff.x),
                     height: Math.max(0, (prevAppearance.height||defaultAppearance.height) + diff.y),
                     x: (prevAppearance.x||defaultAppearance.x) + (Math.max(0, (prevAppearance.width||defaultAppearance.width) - diff.x)==0 ? 0 : diff.x),
-                    y: (prevAppearance.y||defaultAppearance.y)
+                    y: (prevAppearance.y||defaultAppearance.y),
                 }
             case 7:
                 return {
                     width: Math.max(0, (prevAppearance.width||defaultAppearance.width) - diff.x),
                     height: Math.max(0, (prevAppearance.height||defaultAppearance.height)),
                     x: (prevAppearance.x||defaultAppearance.x) + (Math.max(0, (prevAppearance.width||defaultAppearance.width) - diff.x)==0 ? 0 : diff.x),
-                    y: (prevAppearance.y||defaultAppearance.y)
+                    y: (prevAppearance.y||defaultAppearance.y),
                 }
             case 8:
                 return {
                     width: Math.max(0, (prevAppearance.width||defaultAppearance.width)),
                     height: Math.max(0, (prevAppearance.height||defaultAppearance.height)),
                     x: (prevAppearance.x||defaultAppearance.x) + (Math.max(0, (prevAppearance.width||defaultAppearance.width))==0 ? 0 : diff.x),
-                    y: (prevAppearance.y||defaultAppearance.y) + (Math.max(0, (prevAppearance.height||defaultAppearance.height))==0 ? 0 : diff.y)
+                    y: (prevAppearance.y||defaultAppearance.y) + (Math.max(0, (prevAppearance.height||defaultAppearance.height))==0 ? 0 : diff.y),
                 }
         }
     }
 
     render(){
-        const {focused, focus, idx, setAnchorIdx, deleteSelf} = this.props
+        const {focused, focus, idx, setAnchorIdx, deleteSelf, visible} = this.props
         const focusSelf = (e, idx) => {
             focus(idx)
             e.stopPropagation()
@@ -161,7 +161,9 @@ class Resizeable extends React.Component{
         return(
             <g className="resizeable" onClick={(e)=>focusSelf(e, idx)}
                ref={(node) => this.node = node}>
-                <image {...this.state.appearance} href={this.props.href}/>
+                <image {...this.state.appearance} href={this.props.href}
+                       opacity={visible?1:0}
+                />
                 {focused &&
                 <g>
                     <Transformable {...this.state.appearance}

@@ -7,6 +7,7 @@ import styled from 'styled-components'
 const FullPageScrollable = styled(FullPage)`
     position: relative;
     overflow: auto;
+    overflow-x: hidden;
 `
 
 class SectionScrollContainer extends React.Component{
