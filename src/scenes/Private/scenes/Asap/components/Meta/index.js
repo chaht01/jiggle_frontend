@@ -29,10 +29,11 @@ const ConfigPanel = styled.div`
     width: 360px;
     height: 100%;
     background: #2b2d2f;
+    padding-bottom: 50px;
     -webkit-box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
     -moz-box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
     box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
-    z-index: 1000;
+    z-index: 201;
 `
 const ConfigForm = styled(Form)`
     overflow: auto;
@@ -58,6 +59,7 @@ const ConfigField = styled(Form.Field)`
 const ConfigLabel = styled.label`
     color: #848484 !important;
     align-self: center;
+    font-weight: 300 !important;
 `
 
 const PreRender = styled.div`
@@ -71,7 +73,8 @@ const mapStateToProps = (state, ownProps) => {
         template: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config,
         emphasisTarget: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget,
         comments: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments,
-        data: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data
+        data: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data,
+        color: state.PrivateReducer.AsapReducer.procedureManager.appearance.color
     }
 }
 
@@ -147,13 +150,14 @@ class MetaRepresentation extends React.Component{
                 </ConfigForm>
                 <PreRender>
                     <MetaPlayer
-                            data={this.props.data}
-                            emphasisTarget={this.props.emphasisTarget}
-                            template={this.props.template}
-                            templateType={this.props.templateType}
-                            comments={this.props.comments}
-                            meta={this.props.meta}
-                            saveMask={this.props.saveMask}
+                        data={this.props.data}
+                        emphasisTarget={this.props.emphasisTarget}
+                        template={this.props.template}
+                        templateType={this.props.templateType}
+                        comments={this.props.comments}
+                        meta={this.props.meta}
+                        color={this.props.color}
+                        saveMask={this.props.saveMask}
                     />
                 </PreRender>
             </ConfigPanel>

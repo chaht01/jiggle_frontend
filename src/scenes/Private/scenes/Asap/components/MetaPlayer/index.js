@@ -3,7 +3,7 @@ import Composition from '../../../../../../components/Composition'
 import Button from '../../../../../../components/Button'
 import {Button as SemanticButton, Icon} from 'semantic-ui-react'
 import styled from 'styled-components'
-import {getFactory} from '../../config/common'
+import {getFactory, getDefaultSwatch, colorToPalette} from '../../config/common'
 import factory from '../../config/factory'
 
 
@@ -77,8 +77,8 @@ class MetaPlayer extends React.Component{
                 }
                 if (isValid) {
                     const width = this.state.width
-                    const {charts, factory} = getFactory(templateType, mask, meta, templateConfig, width, comments)
-
+                    const color = this.props.color || colorToPalette(getDefaultSwatch(templateType), templateType, mask)
+                    const {charts, factory} = getFactory(templateType, mask, meta, templateConfig, width, color, comments, breakPoint)
                     const renderTransition = factory.renderTransition()
                     renderTransition(this.renderNode, charts)
                     this.props.saveMask(chartMaterials)
@@ -100,14 +100,12 @@ class MetaPlayer extends React.Component{
             <PreRenderComposition>
                 <PreRendered>
                     <svg style={{transform:`scale(${328/this.state.width})`, overflow:'visible', fill:'#fff'}} width={this.state.width} height={this.state.width*9/16} ref={node => this.renderNode = node}>
-
                     </svg>
-
                 </PreRendered>
                 <PlayerController played={this.state.played} error={this.state.error}>
                     {this.state.error ?  '표현할 수 없는 데이터입니다' : ''}
                     {this.state.error ? null :
-                        <Button rounded inverted icon size="small" onClick={this.play} compact theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}>
+                        <Button rounded inverted icon size="massive" onClick={this.play} compact theme={{fg:'#FA4D1E', bg:'transparent'}}>
                             {this.state.played ? <Icon name='repeat'/> : <Icon name='play'/>}
                         </Button>
                     }

@@ -4,6 +4,7 @@ import Button from '../../../../../../components/Button'
 import FullPage from '../../../../../../components/Layout/FullPage'
 import Composition from '../../../../../../components/Composition'
 import PaddedContainer from '../PaddedContainer'
+import SectionFooter from '../SectionFooter'
 
 import styled from 'styled-components'
 import parseBar from 'd3-reusable/src/parser/bar-parser'
@@ -72,6 +73,7 @@ const Footer = ({activeAnchorLength, direction, renderGIF, ...rest}) => {
 
 const mapStateToProps = (state, ownProps) => {
     return {
+        data: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data,
         mask: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
         meta: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
         templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
@@ -142,7 +144,6 @@ class PreviewPlayerRepresentation extends React.Component{
 
 
     init(recentProps){
-        console.log(recentProps)
         const {meta} = recentProps
         if(recentProps.mask === null){
             return
@@ -154,10 +155,12 @@ class PreviewPlayerRepresentation extends React.Component{
         }
         const width = numeral(getComputedStyle(ReactDOM.findDOMNode(this.renderNode)).width).value()
         const {templateType:type, template:templateConfig} = recentProps
-        const color = recentProps.color || getDefaultSwatch(type).getPalette(mask.length-1)
+        const color = recentProps.color || getDefaultSwatch(type).getPalette(mask[mask.length-1].length-1)
+        console.log(type, mask, meta, templateConfig, width, color, comments, breakPoint)
         const {charts, factory} = getFactory(type, mask, meta, templateConfig, width, color, comments, breakPoint)
 
         const renderChart = factory.renderChart()
+        console.log(charts, factory)
         const gParent = this.state.focusedIdx==-1 ?
             renderChart(this.renderNode, charts[charts.length-1], this.state.images.map((image)=>{
                 const hello = image.href
@@ -166,9 +169,9 @@ class PreviewPlayerRepresentation extends React.Component{
                     base64: hello.slice(hello.indexOf(',')+1)
                 })
             })) : renderChart(this.renderNode, charts[charts.length-1])
-
+        console.log(gParent)
         this.gChildren = getChildG(gParent)
-        this.gChildren['graph'].style.cssText = "user-select:none; pointer-events:none;"
+        // this.gChildren['graph'].style.cssText = "user-select:none; pointer-events:none;"
         this.gChildren['image'].childNodes.forEach((child, i) => {
             child.addEventListener('click',()=>{
                 this.focusImage(i)
@@ -202,7 +205,6 @@ class PreviewPlayerRepresentation extends React.Component{
         const focusedIdx = this.state.focusedIdx
         const focusedAnchorIdx = this.state.anchorIdx
         this.setState((prevState)=>{
-            console.log(this.refs)
             return {
                 images: prevState.images.map((image, i)=>{
                     if(i != focusedIdx){
@@ -223,59 +225,63 @@ class PreviewPlayerRepresentation extends React.Component{
 
     render(){
         return (
-            <PaddedContainer>
-                <FullPage>
-                    <PreviewContainer>
-                        <PreviewThumbnails>
-                            <ResizeHandleSVG active={this.state.focusedIdx>-1} innerRef={node => this.node = node}
-                                             onMouseDown={(e)=>{
-                                                 e.persist()
-                                                 this.setState({x:e.clientX, y: e.clientY})
-                                                 if(e.target == this.node){
-                                                     this.focusImage(-1)
-                                                 }
-                                             }}
-                                             onMouseMove={(e)=>{
-                                                 if(this.state.focusedIdx>-1 && this.state.anchorIdx>-1){
-                                                     const diffX = e.clientX - this.state.x
-                                                     const diffY = e.clientY - this.state.y
-                                                     this.setState({diff:{x: diffX, y: diffY}})
-                                                 }
-                                             }}
-                                             onMouseUp={(e)=> {
-                                                 this.updateTransformer()
-                                             }}
-                                             onMouseLeave={(e)=>{
-                                                 this.updateTransformer()
-                                             }}
-                            >
-                                {
-                                    this.state.images.map((image, i) => {
-                                        return(
-                                            <Resizeable key={i}
-                                                        idx={i}
-                                                        ref={`image_${i}`}
-                                                        focused={i === this.state.focusedIdx}
-                                                        focus={this.focusImage}
-                                                        setAnchorIdx={this.setAnchorIdx}
-                                                        anchorIdx={this.state.anchorIdx}
-                                                        diff={this.state.diff}
-                                                        deleteSelf={this.deleteImage}
-                                                        {...image}/>)
+            <React.Fragment>
+                <PaddedContainer>
+                    <FullPage>
+                        <PreviewContainer>
+                            <PreviewThumbnails>
+                                <ResizeHandleSVG active={this.state.focusedIdx>-1} innerRef={node => this.node = node}
+                                                 onMouseDown={(e)=>{
+                                                     e.persist()
+                                                     this.setState({x:e.clientX, y: e.clientY})
+                                                     if(e.target == this.node){
+                                                         this.focusImage(-1)
+                                                     }
+                                                 }}
+                                                 onMouseMove={(e)=>{
+                                                     if(this.state.focusedIdx>-1 && this.state.anchorIdx>-1){
+                                                         const diffX = e.clientX - this.state.x
+                                                         const diffY = e.clientY - this.state.y
+                                                         this.setState({diff:{x: diffX, y: diffY}})
+                                                     }
+                                                 }}
+                                                 onMouseUp={(e)=> {
+                                                     this.updateTransformer()
+                                                 }}
+                                                 onMouseLeave={(e)=>{
+                                                     this.updateTransformer()
+                                                 }}
+                                >
+                                    {
+                                        this.state.images.map((image, i) => {
+                                            return(
+                                                <Resizeable key={i}
+                                                            idx={i}
+                                                            ref={`image_${i}`}
+                                                            focused={i === this.state.focusedIdx}
+                                                            focus={this.focusImage}
+                                                            setAnchorIdx={this.setAnchorIdx}
+                                                            anchorIdx={this.state.anchorIdx}
+                                                            diff={this.state.diff}
+                                                            deleteSelf={this.deleteImage}
+                                                            {...image}/>)
 
-                                    })
-                                }
-                            </ResizeHandleSVG>
-                            <svg style={{position:'relative', width:'100%', height:'100%'}} ref={node => this.renderNode = node}>
-                                {/* bro's chart */}
-                            </svg>
-                        </PreviewThumbnails>
-                    </PreviewContainer>
+                                        })
+                                    }
+                                </ResizeHandleSVG>
+                                <svg style={{position:'relative', width:'100%', height:'100%'}} ref={node => this.renderNode = node}>
+                                    {/* bro's chart */}
+                                </svg>
+                            </PreviewThumbnails>
+                        </PreviewContainer>
 
-                    <Footer renderGIF={this.renderGIF}/>
-                </FullPage>
-            </PaddedContainer>
-
+                        <Footer renderGIF={this.renderGIF}/>
+                    </FullPage>
+                </PaddedContainer>
+                <SectionFooter>
+                    <Button compact size='small' theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '7.5rem'}}>저장하기</Button>
+                </SectionFooter>
+            </React.Fragment>
         )
     }
 }

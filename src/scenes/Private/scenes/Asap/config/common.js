@@ -1,8 +1,11 @@
 import parseBar from 'd3-reusable/src/parser/bar-parser'
+import horizontalBarParser from 'd3-reusable/src/parser/horizontal-bar-parser'
 import groupedBarParser from 'd3-reusable/src/parser/grouped-bar-parser'
 import BarFactory from "d3-reusable/src/factory/bar-factory"
+import HorizontalBarFactory from "d3-reusable/src/factory/horizontal-bar-factory"
 import GroupedBarFactory from "d3-reusable/src/factory/grouped-bar-factory"
 import LargeDataLineFactory from "../../../../../components/project-md/src/factory/large-line-factory"
+import SmallDataLineFactory from "../../../../../components/project-md/src/factory/small-line-factory"
 import {TEMPLATE} from './types'
 import * as _ from "lodash";
 
@@ -119,11 +122,33 @@ export class Swatch {
     }
 }
 
+export const colorToPalette = (color, type, masks, rgbTween=true) => {
+    if(!(color instanceof Swatch)){
+        return []
+    }
+    let len = 1
+    switch (type){
+        case TEMPLATE.BAR:
+        case TEMPLATE.BAR_HORIZONTAL:
+        case TEMPLATE.BAR_EMPHASIS:
+        case TEMPLATE.BAR_HORIZONTAL_EMPHASIS:
+            len = masks[masks.length-1].length-1 // # of axis col
+            break
+        case TEMPLATE.BAR_GROUPED:
+        case TEMPLATE.LINE:
+        case TEMPLATE.LINE_DENSE:
+            len = masks[masks.length-1][0].length-1 // # of legends
+            break
+    }
+    return color.getPalette(len, rgbTween)
+}
+
 export const colorsByType = (type) => {
     let ret = {} // key: contrast, similar, single, emphasis
     switch (type){
         case TEMPLATE.BAR:
         case TEMPLATE.BAR_GROUPED:
+        case TEMPLATE.BAR_HORIZONTAL:
         case TEMPLATE.LINE:
             ret.similar = [new Swatch('#dd6b4b', '#e5a248'), new Swatch('#7d9ec9', '#416299'), new Swatch('#5a72b7', '#5a9baf')]
             ret.contrast = [new Swatch('#dd6b4b', '#4299bc'), new Swatch('#7d9ec9', '#835f96'), new Swatch('#5a72b7', '#e5a248')]
@@ -133,6 +158,7 @@ export const colorsByType = (type) => {
             ret.single = [new Swatch('#dd6b4b', '#dd6b4b', 1), new Swatch('#7d9ec9', '#7d9ec9', 1), new Swatch('#5a72b7', '#5a72b7', 1)]
             break
         case TEMPLATE.BAR_EMPHASIS:
+        case TEMPLATE.BAR_HORIZONTAL_EMPHASIS:
             ret.emphasis = [new Swatch('#dd6b4b', '#b5b5b5', 2), new Swatch('#7d9ec9', '#b5b5b5', 2), new Swatch('#5a72b7', '#b5b5b5', 2)]
             break
     }
@@ -166,15 +192,21 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, comme
     let factory = null
     switch (type){
         case TEMPLATE.BAR:
-            settings = [defaultSettings(width, mask[0], meta, color), defaultSettings(width, mask[1], meta, color)]
+        case TEMPLATE.BAR_HORIZONTAL:
+            settings = [defaultSettings(width, mask[0], meta, color)]
             break;
         case TEMPLATE.BAR_EMPHASIS:
-            settings = [defaultSettings(width, mask[0], meta, [color[0]]), defaultSettings(width, mask[1], meta, [color[0]])]
-            settings[1].colorToFocus = color[1]
-            console.log(color)
-            settings[1].indexToFocus = [breakPoint]
+        case TEMPLATE.BAR_HORIZONTAL_EMPHASIS:
+            settings = mask.map(m => {
+                return defaultSettings(width, m, meta, [color[1]])
+            })
+            if(settings.length>1){
+                settings[1].colorToFocus = color[0]
+                settings[1].indexToFocus = [breakPoint-1]
+            }
             break;
         case TEMPLATE.BAR_GROUPED:
+            settings = [defaultSettings(width, mask[0], meta, color)]
             break;
         case TEMPLATE.LINE:
             settings = mask.map(m => {
@@ -183,6 +215,10 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, comme
             })
             break;
         case TEMPLATE.LINE_DENSE:
+            settings = mask.map(m => {
+                const settingsForLine = Object.assign({}, defaultSettings(width, m, meta, color), {delay:1000, duration:1000})
+                return settingsForLine
+            })
             break;
     }
 
@@ -192,11 +228,14 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, comme
 
     switch (type){
         case TEMPLATE.BAR:
-
-            break;
         case TEMPLATE.BAR_EMPHASIS:
             charts.forEach(chart => parseBar(chart));
             factory = new BarFactory();
+            break;
+        case TEMPLATE.BAR_HORIZONTAL:
+        case TEMPLATE.BAR_HORIZONTAL_EMPHASIS:
+            charts.forEach(chart => horizontalBarParser(chart));
+            factory = new HorizontalBarFactory();
             break;
         case TEMPLATE.BAR_GROUPED:
             charts.forEach(chart => groupedBarParser(chart));
@@ -208,9 +247,15 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, comme
                 chart.label = comments
                 return chart
             })
-            factory = new LargeDataLineFactory();
+            factory = new SmallDataLineFactory();
             break;
         case TEMPLATE.LINE_DENSE:
+            charts = charts.map(chart => {
+                chart.graph_colors = ['blue', 'red', 'blue', 'red', 'blue', 'red']
+                chart.label = comments
+                return chart
+            })
+            factory = new LargeDataLineFactory();
             break;
     }
     console.log(charts)

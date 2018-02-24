@@ -5,9 +5,10 @@ import Dropzone from 'react-dropzone'
 import StackGrid from 'react-stack-grid'
 import Checkbox from '../../../../../../components/Checkbox'
 import { saveColor } from '../../sagas/actions'
-import { colorsByType, Swatch } from '../../config/common'
+import { colorsByType, colorToPalette, Swatch } from '../../config/common'
 import connect from "react-redux/es/connect/connect";
-import {TEMPLATE} from "../../config/types";
+import {TEMPLATE, THEME} from "../../config/types";
+import * as _ from "lodash";
 
 const Panel = styled.div`
     position: absolute;
@@ -20,11 +21,11 @@ const Panel = styled.div`
     width: 360px;
     height: 100%;
     background: #2b2d2f;
-    padding: 15px 0 0 0;
+    padding: 15px 0 50px 0;
     -webkit-box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
     -moz-box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
     box-shadow: 0px 9px 13px -5px rgba(0,0,0,0.33);
-    z-index: 1000;
+    z-index: 201;
 `
 Panel.Section = styled.div`
     padding: 30px 0 0 2rem;
@@ -66,7 +67,7 @@ const Color = styled.div`
     flex-shrink: none;
     margin: 4px;
     border-radius: 10px;
-    background: #fff;
+    background: #e0e0e0;
     box-shadow: ${props => {
         const [r,g,b] = Swatch.hexToRgb(props.color)
         return props.active ? 
@@ -211,6 +212,7 @@ const mapStateToProps = (state, ownProps) => {
     return {
         templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
         mask: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
+        theme: state.PrivateReducer.AsapReducer.procedureManager.appearance.theme,
     }
 }
 
@@ -224,7 +226,14 @@ class AppearanceControllerRepresentation extends React.Component{
     constructor(props){
         super(props)
         this.state = {
-            colorTabs: []
+            colorTabs: [],
+            theme: Object.assign({}, THEME, (()=>{
+                return {
+                    selected: Object.keys(THEME).filter((theme_key)=>{
+                        return _.isEqual(THEME[theme_key], this.props.theme)
+                    })[0]
+                }
+            })())
         }
         const colorObj = colorsByType(this.props.templateType)
         this.state.colorTabs = this.buildColorTab(colorObj)
@@ -282,12 +291,12 @@ class AppearanceControllerRepresentation extends React.Component{
             return []
         }
         const {mask} = this.props.mask
+        const {templateType} = this.props
         if(color===undefined || color===null || !(color instanceof Swatch)){
             color = this.getSelectedColor()
         }
 
-        let paletteLen = mask[mask.length-1].length-1
-        return color.getPalette(paletteLen, true)
+        return colorToPalette(color, templateType, mask)
     }
     selectColor(idx){
         this.setState((prevState)=> {
@@ -334,9 +343,12 @@ class AppearanceControllerRepresentation extends React.Component{
         this.preventWheel(this.gallery)
     }
     componentWillReceiveProps(nextProps){
-        this.setState({
-            colorTabs: this.buildColorTab(colorsByType(nextProps.templateType))
-        })
+        if(!_.isEqual(this.props.templateType, nextProps.templateType)){
+            this.setState({
+                colorTabs: this.buildColorTab(colorsByType(nextProps.templateType))
+            }, () => this.props.saveColor(this.getPalette()))
+        }
+
     }
     render(){
         return (
@@ -344,7 +356,6 @@ class AppearanceControllerRepresentation extends React.Component{
                 <Palette height="135">
                     <Palette.Title>배경테마</Palette.Title>
                     <Palette.Colors ref={node => this.bgColors = node}>
-
                     </Palette.Colors>
                 </Palette>
                 <Palette height="190">

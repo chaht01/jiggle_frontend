@@ -1,6 +1,7 @@
 import * as actionType from '../../sagas/types'
 import {defaultDummyData} from '../../sagas/actions'
 import * as _ from "lodash";
+import {THEME} from '../../config/types'
 
 const initialTemplateState = {
     loading: false,
@@ -37,7 +38,8 @@ const initialDirtyDataState = {
     error: null
 }
 const initialAppearanceState = {
-    color: null
+    color: null, // set init value null due to it has dependency on template type
+    theme: _.cloneDeep(THEME.LIGHT)
 }
 const initialState = {
     selectedTemplate: initialTemplateState,

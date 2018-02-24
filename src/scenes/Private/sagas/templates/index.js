@@ -18,10 +18,20 @@ import * as actionType from './types'
 
 export const getTypeFromName = (name) => {
     switch (name) {
-        case 'Single Bar':
+        case 'Single Focus Bar':
             return TEMPLATE.BAR_EMPHASIS
-        case 'Line':
+        case 'Horizontal Single Focus Bar':
+            return TEMPLATE.BAR_HORIZONTAL_EMPHASIS
+        case 'Single Not Focus Bar':
+            return TEMPLATE.BAR
+        case 'Horizontal Single Not Focus Bar':
+            return TEMPLATE.BAR_HORIZONTAL
+        case 'Grouped Bar':
+            return TEMPLATE.BAR_GROUPED
+        case 'Small Data Line':
             return TEMPLATE.LINE
+        case 'Large Data Line':
+            return TEMPLATE.LINE_DENSE
     }
 }
 
@@ -40,69 +50,7 @@ export function* fetchTemplatesThumbnailsAsync() {
                         ])
             })
         })
-        // thumbnails[0] = Object.assign({}, thumbnails[0], {
-        //         thumb: animate_thumb,
-        //         animate: animate,
-        //         desc: '마지막 요소를 강조합니다',
-        //         dummy: false,
-        //         placeholder: mergeDataToDummy([
-        //             ['', '삼성', 'sk하이닉스'],
-        //             ['2014', '1', '4'],
-        //             ['2015', '2', '5'],
-        //             ['2016', '3', '6'],
-        //         ]),
-        //         type: TEMPLATE.LINE
-        //     })
-        // thumbnails[1] = Object.assign({}, thumbnails[0], {
-        //     thumb: animate_thumb,
-        //     animate: animate,
-        //     desc: '마지막 요소를 강조합니다',
-        //     dummy: false,
-        //     placeholder: mergeDataToDummy([
-        //         ['', '삼성', 'sk하이닉스'],
-        //         ['2014', '1', '4'],
-        //         ['2015', '2', '5'],
-        //         ['2016', '3', '6'],
-        //     ]),
-        //     type: TEMPLATE.BAR_EMPHASIS
-        // })
-        // const thumbnails = yield Array.from(Array(20).keys())
-        // thumbnails[0] = {
-        //     thumb: funnyguy,
-        //     desc: '음악.. 그것은 유일하게 허락된 마약..',
-        //     dummy: true
-        // }
-        // thumbnails[1] = {
-        //     thumb: cryinggirl,
-        //     desc: '싫어! 너가해!',
-        //     dummy: true
-        // }
-        // thumbnails[2] = {
-        //     thumb: chairman,
-        //     desc: '여러분, 우리, 함께',
-        //     dummy: true
-        // }
-        // thumbnails[3] = {
-        //     thumb: greenboy,
-        //     desc: '그린가이맨',
-        //     dummy: true
-        // }
-        // thumbnails[4] = {
-        //     thumb: templestay,
-        //     desc: '파계승 2명',
-        //     dummy: true
-        // }
-        // thumbnails[5] = {
-        //     thumb: animate_thumb,
-        //     animate: animate,
-        //     desc: '마지막 요소를 강조합니다',
-        //     dummy: false
-        // }
-        // thumbnails[6] = {
-        //     thumb: webtoonslave,
-        //     desc: '웹툰 작가(노예)',
-        //     dummy: true
-        // }
+
         yield put({
             type: actionType.TEMPLATES_THUMBNAILS_FETCH_SUCCESS,
             payload: thumbnails

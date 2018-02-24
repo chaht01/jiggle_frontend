@@ -7,6 +7,7 @@ import Handson from '../../../../../../components/Handson'
 import FullPage from '../../../../../../components/Layout/FullPage'
 import Button from '../../../../../../components/Button'
 import PaddedContainer from '../PaddedContainer'
+import SectionFooter from '../SectionFooter'
 
 import Meta from '../Meta'
 import numeral from 'numeral'
@@ -34,6 +35,7 @@ const Footer = styled.div`
 const mapStateToProps = (state, ownProps) => {
     return {
         placeholder: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.placeholder,
+        safeMask: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
     }
 }
 
@@ -46,65 +48,77 @@ class DataConfigViewRepresentation extends React.Component{
             width: 0,
             height: 0,
         }
+        this.next = this.next.bind(this)
     }
     componentDidMount(){
-        console.log(this.props.placeholder)
         this.size = {
             width: 830,
             height: 400
         }
     }
-    componentWillReceiveProps(nextProps){
-        console.log(nextProps.placeholder)
+    next(){
+        if(this.props.safeMask!==null){
+            this.props.activateSection(2)
+        }
+
     }
+    componentWillReceiveProps(nextProps){
+        // if(nextProps.safeMask!==null){
+        //     setTimeout(this.next, 250)
+        // }
+    }
+
     render(){
         const {placeholder} = this.props
         return (
-            <PaddedContainer>
-                <FullPage>
-                    <Sheet width="830" height="400"/>
-                    <SheetOpts>
-                        <Modal trigger={<Button compact size='small' rounded inverted theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}>예시데이터 확인</Button>}
-                               basic size='fullscreen'>
-                            <Header icon='table' content='예시 데이터' />
-                            <Modal.Content>
-                                <Handson settings={{
-                                    data:placeholder,
-                                    colHeaders:true,
-                                    rowHeaders:true,
-                                    width: 400,
-                                    height: 400,
-                                    readOnly: true,
-                                    contextMenu:false,
-                                    allowInsertRow: false,
-                                    allowInsertColumn: false,
-                                    autoInsertRow: false,
-                                    cells: (row, col, prop) => {
-                                        let cellProperties = {}
-                                        cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
-                                            const trimmed = value ? value.trim() : value
-                                            if(['', undefined, null].indexOf(trimmed)==-1){
-                                                td.innerText = value
-                                                td.style.color = '#000'
-                                            }else{
-                                                td.style.background = '#f1f1f5'
+            <React.Fragment>
+                <PaddedContainer>
+                    <FullPage>
+                        <Sheet width="830" height="400"/>
+                        <SheetOpts>
+                            <Modal trigger={<Button compact size='small' rounded inverted theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}>예시데이터 확인</Button>}
+                                   basic size='fullscreen'>
+                                <Header icon='table' content='예시 데이터' />
+                                <Modal.Content>
+                                    <Handson settings={{
+                                        data:placeholder,
+                                        colHeaders:true,
+                                        rowHeaders:true,
+                                        width: 400,
+                                        height: 400,
+                                        readOnly: true,
+                                        contextMenu:false,
+                                        allowInsertRow: false,
+                                        allowInsertColumn: false,
+                                        autoInsertRow: false,
+                                        cells: (row, col, prop) => {
+                                            let cellProperties = {}
+                                            cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                                const trimmed = value ? value.trim() : value
+                                                if(['', undefined, null].indexOf(trimmed)==-1){
+                                                    td.innerText = value
+                                                    td.style.color = '#000'
+                                                }else{
+                                                    td.style.background = '#f1f1f5'
+                                                }
                                             }
+                                            return cellProperties
                                         }
-                                        return cellProperties
-                                    }
-                                }}/>
-                            </Modal.Content>
-                            <Modal.Actions>
-                                <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}}>확인</Button>
-                            </Modal.Actions>
-                        </Modal>
-                    </SheetOpts>
+                                    }}/>
+                                </Modal.Content>
+                                <Modal.Actions>
+                                    <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}}>확인</Button>
+                                </Modal.Actions>
+                            </Modal>
+                        </SheetOpts>
 
-                </FullPage>
-                <Footer>
-                    <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}}>확인</Button>
-                </Footer>
-            </PaddedContainer>
+                    </FullPage>
+                </PaddedContainer>
+                <SectionFooter>
+                    <Button compact size='small' theme={{fg:'#fff', bg:'#2C2D2F'}} style={{width: '7.5rem'}}>데이터 입력방법</Button>
+                    <Button compact size='small' theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '7.5rem'}} onClick={this.next} disabled={this.props.safeMask===null}>확인</Button>
+                </SectionFooter>
+            </React.Fragment>
         )
     }
 

@@ -34,4 +34,6 @@ export const MASK_CLEAR = "MASK_CLEAR"
 
 export const COLOR_SAVE = "COLOR_SAVE"
 export const COLOR_CLEAR = "COLOR_CLEAR"
+export const THEME_SAVE = "THEME_SAVE"
+export const THEME_CLEAR = "THEME_CLEAR"
 

@@ -12,6 +12,7 @@ import FullPage from '../../../../../../components/Layout/FullPage'
 import Composition from '../../../../../../components/Composition'
 import Button from '../../../../../../components/Button'
 import PaddedContainer from '../PaddedContainer'
+import SectionFooter from '../SectionFooter'
 
 import styled from 'styled-components'
 import connect from "react-redux/es/connect/connect";
@@ -97,16 +98,6 @@ const RealThumb = styled.div`
     }
 `
 
-const Footer = styled.div`
-    position: relative;
-    display:flex;
-    width: 100%;
-    justify-content: center;
-    align-items: center;
-    bottom: 0;
-    top: auto;
-`
-
 const mapStateToProps = (state, ownProps) => {
     return {
         thumbnails: state.PrivateReducer.templatesThumbnails.list,
@@ -180,48 +171,49 @@ class TemplatesRepresentation extends React.Component{
     }
     render(){
         return (
-            <PaddedContainer>
-                <ThumbnailContainer ref={(container)=> this.scrollable = container}>
-                    {
-                        this.props.loading ?
-                            <Dimmer active>
-                                <Loader />
-                            </Dimmer> :
-                            this.props.thumbnails.map((template, i) => {
-                                const Thumb = withRouter(
-                                    ({history, ...rest}) => (
-                                        <Thumbnail onClick={() => {
-                                            this.setState({selected: i})
-                                        }} selected={i===this.state.selected}>
-                                            <CompositionExtended>
-                                                {template.thumb ? (template.dummy ? <ThumbJoke src={template.thumb} alt=""/> : <RealThumb thumb={template.thumb} animate={template.animate}/>) : i}
-                                                {this.props.selectedTemplate.idx==i && (this.props.selectedTemplate.loading ?
-                                                    <Dimmer active>
-                                                        <Loader size='medium'>Loading</Loader>
-                                                    </Dimmer>
-                                                    : (this.props.selectedTemplate.error ? '':'active'))}
-                                            </CompositionExtended>
-                                            <ThumbnailDescription>
-                                                {template.desc}
-                                            </ThumbnailDescription>
-                                        </Thumbnail>
-                                    ))
-                                return (
-                                    <Thumb key={i}/>
-                                )
-                            })
-                    }
-                </ThumbnailContainer>
-                <Footer>
-                    <Button onClick={this.confirmTemplate} compact theme={{fg:'#fff', bg:'#FA4D1E'}}>
+            <React.Fragment>
+                <PaddedContainer>
+                    <ThumbnailContainer ref={(container)=> this.scrollable = container}>
+                        {
+                            this.props.loading ?
+                                <Dimmer active>
+                                    <Loader />
+                                </Dimmer> :
+                                this.props.thumbnails.map((template, i) => {
+                                    const Thumb = withRouter(
+                                        ({history, ...rest}) => (
+                                            <Thumbnail onClick={() => {
+                                                this.setState({selected: i})
+                                            }} selected={i===this.state.selected}>
+                                                <CompositionExtended>
+                                                    {template.thumb ? (template.dummy ? <ThumbJoke src={template.thumb} alt=""/> : <RealThumb thumb={template.thumb} animate={template.animate}/>) : template.name}
+                                                    {this.props.selectedTemplate.idx==i && (this.props.selectedTemplate.loading ?
+                                                        <Dimmer active>
+                                                            <Loader size='medium'>Loading</Loader>
+                                                        </Dimmer>
+                                                        : (this.props.selectedTemplate.error ? '':'active'))}
+                                                </CompositionExtended>
+                                                <ThumbnailDescription>
+                                                    {template.desc}
+                                                </ThumbnailDescription>
+                                            </Thumbnail>
+                                        ))
+                                    return (
+                                        <Thumb key={i}/>
+                                    )
+                                })
+                        }
+                    </ThumbnailContainer>
+                </PaddedContainer>
+                <SectionFooter>
+                    <Button onClick={this.confirmTemplate} compact size="small" theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '7.5rem'}} disabled={this.state.selected==-1}>
                         {this.state.selected!=-1 && this.props.selectedTemplate.loading ?
                             <Loader active inline size='mini'/>
                             : '확인'
                         }
                     </Button>
-                </Footer>
-            </PaddedContainer>
-
+                </SectionFooter>
+            </React.Fragment>
         )
     }
 }

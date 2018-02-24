@@ -12,7 +12,7 @@ const Spy = styled.div`
     width: 100%;    
     height: ${props => props.height};
     background: rgba(15, 16, 17, ${props => props.direction=='idle' ? 1 : 0.5});
-    z-index:1000;
+    z-index:200;
     transition: all .5s;
     box-shadow: 0 12px 49px -18px rgba(0,0,0,${props => props.direction != 'idle' ? 0.3 : 0});
     
