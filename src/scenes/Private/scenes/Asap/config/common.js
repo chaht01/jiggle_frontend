@@ -186,7 +186,7 @@ export const defaultSettings = (width, mask, meta, color) => {
     })
 }
 
-export const getFactory = (type, mask, meta, templateConfig, width, color, comments=[], breakPoint=-1) => {
+export const getFactory = (type, mask, meta, templateConfig, width, color, theme, comments=[], breakPoint=-1) => {
     let settings = []
     let charts = []
     let factory = null
@@ -221,9 +221,9 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, comme
             })
             break;
     }
-
+    console.log(theme)
     charts = settings.map((setting) => {
-        return Object.assign({}, templateConfig, setting)
+        return Object.assign({}, templateConfig, theme, setting)
     })
 
     switch (type){

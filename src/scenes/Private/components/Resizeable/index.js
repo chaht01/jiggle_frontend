@@ -3,14 +3,14 @@ import styled from 'styled-components'
 
 const Transformable = styled.rect`
     cursor:pointer;
-    stroke: blue;
+    stroke: #FC4C1E;
     fill:transparent;
     stroke-width:2;       
 `
 const TransformAnchor = styled.rect`
     cursor: ${props => props.cursor};
     fill: #fff;
-    stroke: blue;
+    stroke: #FC4C1E;
     stroke-width:1;
 `
 class Resizeable extends React.Component{

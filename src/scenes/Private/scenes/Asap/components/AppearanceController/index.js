@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import Dropzone from 'react-dropzone'
 import StackGrid from 'react-stack-grid'
 import Checkbox from '../../../../../../components/Checkbox'
-import { saveColor } from '../../sagas/actions'
+import { saveColor, saveTheme} from '../../sagas/actions'
 import { colorsByType, colorToPalette, Swatch } from '../../config/common'
 import connect from "react-redux/es/connect/connect";
 import {TEMPLATE, THEME} from "../../config/types";
@@ -218,7 +218,8 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        saveColor: (color) => dispatch(saveColor(color))
+        saveColor: (color) => dispatch(saveColor(color)),
+        saveTheme: (theme) => dispatch(saveTheme(theme)),
     }
 }
 
@@ -227,13 +228,12 @@ class AppearanceControllerRepresentation extends React.Component{
         super(props)
         this.state = {
             colorTabs: [],
-            theme: Object.assign({}, THEME, (()=>{
-                return {
-                    selected: Object.keys(THEME).filter((theme_key)=>{
-                        return _.isEqual(THEME[theme_key], this.props.theme)
-                    })[0]
-                }
-            })())
+            theme: {
+                colors: Object.keys(THEME).map((key) => {
+                    return THEME[key]
+                }),
+                selected: Object.keys(THEME).map(key => _.isEqual(THEME[key], this.props.theme)).indexOf(true)
+            }
         }
         const colorObj = colorsByType(this.props.templateType)
         this.state.colorTabs = this.buildColorTab(colorObj)
@@ -311,6 +311,19 @@ class AppearanceControllerRepresentation extends React.Component{
             this.props.saveColor(this.getPalette())
         })
     }
+    selectTheme(idx){
+        this.setState((prevState)=>{
+            return {
+                ...prevState,
+                theme: {
+                    ...prevState.theme,
+                    selected: idx
+                }
+            }
+        }, ()=>{
+            this.props.saveTheme(this.state.theme.colors[idx])
+        })
+    }
     handleWheelEvent(element, e){
         const dY = e.deltaY,
             currScrollPos = element.scrollTop,
@@ -356,6 +369,18 @@ class AppearanceControllerRepresentation extends React.Component{
                 <Palette height="135">
                     <Palette.Title>배경테마</Palette.Title>
                     <Palette.Colors ref={node => this.bgColors = node}>
+                        {
+                            this.state.theme.colors.map((theme, theme_idx) => {
+                                const selected = theme_idx === this.state.theme.selected
+                                return (
+                                    <Color key={theme_idx}
+                                           color={theme.backgroundColor}
+                                           active={selected}
+                                           onClick={()=>this.selectTheme(theme_idx)}
+                                    />
+                                )
+                            })
+                        }
                     </Palette.Colors>
                 </Palette>
                 <Palette height="190">

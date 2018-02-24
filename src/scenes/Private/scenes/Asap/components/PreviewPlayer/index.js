@@ -15,6 +15,8 @@ import Resizeable from '../../../../components/Resizeable'
 import connect from "react-redux/es/connect/connect";
 import * as numeral from "numeral";
 import {getFactory, colorsByType, getDefaultSwatch} from "../../config/common";
+import * as d3 from 'd3'
+import * as _ from "lodash";
 
 
 
@@ -73,12 +75,12 @@ const Footer = ({activeAnchorLength, direction, renderGIF, ...rest}) => {
 
 const mapStateToProps = (state, ownProps) => {
     return {
-        data: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data,
         mask: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
         meta: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
         templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
         template: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config,
-        color: state.PrivateReducer.AsapReducer.procedureManager.appearance.color
+        color: state.PrivateReducer.AsapReducer.procedureManager.appearance.color,
+        theme: state.PrivateReducer.AsapReducer.procedureManager.appearance.theme
     }
 }
 
@@ -154,14 +156,12 @@ class PreviewPlayerRepresentation extends React.Component{
             return
         }
         const width = numeral(getComputedStyle(ReactDOM.findDOMNode(this.renderNode)).width).value()
-        const {templateType:type, template:templateConfig} = recentProps
+        const {templateType:type, template:templateConfig, theme} = recentProps
         const color = recentProps.color || getDefaultSwatch(type).getPalette(mask[mask.length-1].length-1)
-        console.log(type, mask, meta, templateConfig, width, color, comments, breakPoint)
-        const {charts, factory} = getFactory(type, mask, meta, templateConfig, width, color, comments, breakPoint)
+        const {charts, factory} = getFactory(type, mask, meta, templateConfig, width, color, theme, comments, breakPoint)
 
         const renderChart = factory.renderChart()
-        console.log(charts, factory)
-        const gParent = this.state.focusedIdx==-1 ?
+        const gParentOrPromise = this.state.focusedIdx==-1 ?
             renderChart(this.renderNode, charts[charts.length-1], this.state.images.map((image)=>{
                 const hello = image.href
                 return Object.assign({}, image, {
@@ -169,15 +169,30 @@ class PreviewPlayerRepresentation extends React.Component{
                     base64: hello.slice(hello.indexOf(',')+1)
                 })
             })) : renderChart(this.renderNode, charts[charts.length-1])
-        console.log(gParent)
-        this.gChildren = getChildG(gParent)
-        // this.gChildren['graph'].style.cssText = "user-select:none; pointer-events:none;"
-        this.gChildren['image'].childNodes.forEach((child, i) => {
-            child.addEventListener('click',()=>{
-                this.focusImage(i)
+        if(gParentOrPromise instanceof Promise){
+            gParentOrPromise.then(({gParent}) =>{
+                if(gParent!==undefined && gParent!==null){
+                    this.gChildren = getChildG(d3.select(gParent))
+                    console.log(gParent, this.gChildren)
+                    this.gChildren['image'].childNodes.forEach((child, i) => {
+                        child.addEventListener('click',()=>{
+                            this.focusImage(i)
+                        })
+                    })
+                    this.updateTransformer()
+                }
             })
-        })
-        this.updateTransformer()
+        }else{
+            this.gChildren = getChildG(gParentOrPromise)
+            // this.gChildren['graph'].style.cssText = "user-select:none; pointer-events:none;"
+            this.gChildren['image'].childNodes.forEach((child, i) => {
+                child.addEventListener('click',()=>{
+                    this.focusImage(i)
+                })
+            })
+            this.updateTransformer()
+        }
+
     }
     componentDidMount(){
         this.init(this.props)
@@ -199,7 +214,10 @@ class PreviewPlayerRepresentation extends React.Component{
                 }
             }, this.props.clearAttachCall)
         }
-        this.init(nextProps)
+
+
+        if(!_.isEqual(nextProps, this.props))
+            this.init(nextProps)
     }
     updateTransformer(){
         const focusedIdx = this.state.focusedIdx

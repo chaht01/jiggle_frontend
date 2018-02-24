@@ -11,14 +11,18 @@ export const TEMPLATE = {
 export const THEME = {
     DARK: {
         colorPrimary : "#ffffff",
-        colorSecondary : "#DBDBDB",
-        colorTernary : "#7f7f7f",
-        backgroundColor : "#232323"
+        colorSecondary : "#d9dadb",
+        colorTernary : "#ffffff",
+        backgroundColor : "#2c2d2e",
+        colorStripe1: "#333435",
+        colorStripe2: "#2c2d2e"
     },
     LIGHT: {
         colorPrimary : "#000000",
         colorSecondary : "#4B4949",
         colorTernary : "#7f7f7f",
-        backgroundColor : "#F4F4F4"
+        backgroundColor : "#f3f4f5",
+        colorStripe1: "#e6e7e8",
+        colorStripe2: "#f3f4f5"
     }
 }

@@ -37,9 +37,11 @@ const initialDirtyDataState = {
     safeMask: null,
     error: null
 }
+const initialColor = null
+const initialTheme = _.cloneDeep(THEME.LIGHT)
 const initialAppearanceState = {
-    color: null, // set init value null due to it has dependency on template type
-    theme: _.cloneDeep(THEME.LIGHT)
+    color: initialColor, // set init value null due to it has dependency on template type
+    theme: initialTheme
 }
 const initialState = {
     selectedTemplate: initialTemplateState,
@@ -293,8 +295,24 @@ const procedureManager = (state=initialState, action) => {
             }
         case actionType.COLOR_CLEAR:
             return {
+                ...state.appearance,
+                color: initialColor
+            }
+        case actionType.THEME_SAVE:
+            return {
                 ...state,
-                appearance: initialAppearanceState
+                appearance:{
+                    ...state.appearance,
+                    theme: action.payload
+                }
+            }
+        case actionType.THEME_CLEAR:
+            return {
+                ...state,
+                appearance: {
+                    ...state.appearance,
+                    theme: initialTheme
+                }
             }
         /* GLOBAL */
         case actionType.PROCEDURE_CLEAR:

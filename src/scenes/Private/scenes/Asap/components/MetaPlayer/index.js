@@ -66,9 +66,10 @@ class MetaPlayer extends React.Component{
                     templateType,
                     template:templateConfig,
                     meta,
+                    theme,
                 } = this.props
                 const chartMaterials = factory.mask(data, rawComment, emphasisTarget)[templateType]()
-                const {mask, comments, breakPoint} = chartMaterials
+                const {mask, comments, breakPoint = [-1,-1,-1,-1]} = chartMaterials
                 for (let i = 0; i < mask.length; i++) {
                     if (mask[i].length == 0) {
                         isValid = false
@@ -78,7 +79,7 @@ class MetaPlayer extends React.Component{
                 if (isValid) {
                     const width = this.state.width
                     const color = this.props.color || colorToPalette(getDefaultSwatch(templateType), templateType, mask)
-                    const {charts, factory} = getFactory(templateType, mask, meta, templateConfig, width, color, comments, breakPoint)
+                    const {charts, factory} = getFactory(templateType, mask, meta, templateConfig, width, color, theme, comments, breakPoint)
                     const renderTransition = factory.renderTransition()
                     renderTransition(this.renderNode, charts)
                     this.props.saveMask(chartMaterials)

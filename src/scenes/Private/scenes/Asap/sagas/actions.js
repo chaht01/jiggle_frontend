@@ -250,9 +250,21 @@ export const saveColor = (color) => {
         payload: color
     }
 }
-export const clearColor = (color) => {
+export const clearColor = () => {
     return {
         type: actionType.COLOR_CLEAR
+    }
+}
+
+export const saveTheme = (theme) => {
+    return {
+        type: actionType.THEME_SAVE,
+        payload: theme
+    }
+}
+export const clearTheme = () => {
+    return {
+        type: actionType.THEME_CLEAR
     }
 }
 

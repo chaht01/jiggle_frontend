@@ -74,7 +74,8 @@ const mapStateToProps = (state, ownProps) => {
         emphasisTarget: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget,
         comments: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments,
         data: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.data,
-        color: state.PrivateReducer.AsapReducer.procedureManager.appearance.color
+        color: state.PrivateReducer.AsapReducer.procedureManager.appearance.color,
+        theme: state.PrivateReducer.AsapReducer.procedureManager.appearance.theme
     }
 }
 
@@ -157,6 +158,7 @@ class MetaRepresentation extends React.Component{
                         comments={this.props.comments}
                         meta={this.props.meta}
                         color={this.props.color}
+                        theme={this.props.theme}
                         saveMask={this.props.saveMask}
                     />
                 </PreRender>
