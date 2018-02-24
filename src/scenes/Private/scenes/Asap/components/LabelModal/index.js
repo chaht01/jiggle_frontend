@@ -228,7 +228,6 @@ class LabelModalRepresentation extends React.Component {
     }
 
     render() {
-        console.log('Label!')
         return (
             <StyledModal open={this.props.open} onClose={this.close}>
                 <StyledModal.Close onClick={this.close}/>

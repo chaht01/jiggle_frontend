@@ -106,7 +106,6 @@ class PreviewPlayerRepresentation extends React.Component{
     }
     renderGIF(){
         if(this.renderNode!==null){
-            console.log(this.renderNode)
             this.renderNode.getWrappedInstance().renderGIF()
             // this.renderNode.renderGIF()
         }

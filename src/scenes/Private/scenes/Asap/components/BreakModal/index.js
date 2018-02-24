@@ -227,7 +227,6 @@ class BreakModalRepresentation extends React.Component {
     }
 
     render() {
-        console.log('Break!')
         return (
             <StyledModal open={this.props.open} onClose={this.close}>
                 <StyledModal.Close onClick={this.close}/>

@@ -36,7 +36,6 @@ export function* saveDataAsync({payload: {data, range}}) {
 
         yield call(delay, 1000) // throttle user's event with 1 seconds
         const sliced = yield data.slice(range[2], range[3]+1).map((row)=>row.slice(range[0], range[1]+1))
-        yield call(console.log, sliced)
         yield put(saveDataSuccess(data, range))
 
     }catch (error){

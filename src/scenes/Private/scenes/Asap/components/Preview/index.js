@@ -14,7 +14,6 @@ class Preview extends React.Component{
             attachIdx: -1
         }
         this.saveFile = this.saveFile.bind(this)
-        this.getImages = this.getImages.bind(this)
         this.clearAttachCall = this.clearAttachCall.bind(this)
         this.triggerAttachCall = this.triggerAttachCall.bind(this)
     }
@@ -39,13 +38,6 @@ class Preview extends React.Component{
                 files: newFiles,
                 previews: newPreviews
             }
-        })
-    }
-    getImages(){
-        this.state.files.map(file => {
-            this.getDataUri(file.preview, (dataUri)=>{
-                console.log(dataUri)
-            });
         })
     }
     getDataUri(url, callback) {

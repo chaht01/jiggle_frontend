@@ -188,7 +188,6 @@ export const defaultSettings = (width, mask, meta, color) => {
 }
 
 export const getFactory = (type, mask, meta, templateConfig, width, color, theme, comments=[], breakPoint=-1) => {
-    console.log(color)
     let settings = []
     let charts = []
     let factory = null
@@ -223,8 +222,6 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, theme
             })
             break;
     }
-    console.log(theme)
-    console.log(comments, mask)
     charts = settings.map((setting) => {
         return Object.assign({}, templateConfig, {theme}, {label:comments}, setting)
     })
@@ -251,6 +248,5 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, theme
             factory = new LargeDataLineFactory();
             break;
     }
-    console.log(charts)
     return {charts, factory}
 }
