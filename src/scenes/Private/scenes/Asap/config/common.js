@@ -4,8 +4,8 @@ import groupedBarParser from 'd3-reusable/src/parser/grouped-bar-parser'
 import BarFactory from "d3-reusable/src/factory/bar-factory"
 import HorizontalBarFactory from "d3-reusable/src/factory/horizontal-bar-factory"
 import GroupedBarFactory from "d3-reusable/src/factory/grouped-bar-factory"
-import LargeDataLineFactory from "../../../../../components/project-md/src/factory/large-line-factory"
-import SmallDataLineFactory from "../../../../../components/project-md/src/factory/small-line-factory"
+import LargeDataLineFactory from "../../../../../components/core/src/factory/large-line-factory"
+import SmallDataLineFactory from "../../../../../components/core/src/factory/small-line-factory"
 import {TEMPLATE} from './types'
 import * as _ from "lodash";
 
