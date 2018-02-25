@@ -47,6 +47,7 @@ export default class SectionScroll extends React.Component{
         this.checkValidSectionIdx = this.checkValidSectionIdx.bind(this)
         this.checkAnchorIndex = this.checkAnchorIndex.bind(this)
         this.getPropsToSend = this.getPropsToSend.bind(this)
+        this.finished = this.finished.bind(this)
     }
 
     /**
@@ -161,13 +162,14 @@ export default class SectionScroll extends React.Component{
      */
     activateSection(index){
         if(this.checkValidSectionIdx(index)){
-            this.setState(()=>{
+            this.finished(() => this.setState(()=>{
                 return {
                     nextSection: index
                 }
             }, () => {
                 this.handleSection()
-            })
+            }))
+
         }
     }
 
@@ -259,6 +261,25 @@ export default class SectionScroll extends React.Component{
     }
 
     /**
+     * clear up scroll animate action with setState
+     */
+    finished(cb){
+        const container = this.state.self || ReactDOM.findDOMNode(this.container)
+        this.state.animatingId.forEach(id => cancelAnimationFrame(id))
+        this.setState((prevState, props) => {
+            return {
+                animatingId: [],
+                direction: 'idle',
+                isWheelEvents: false,
+                activeSection: Math.round(container.scrollTop/prevState.screenHeight),
+            }
+        }, () => {
+            if(typeof cb === 'function')
+                cb()
+        })
+    }
+
+    /**
      * trigger scroll animation
      * @param destination {Object}
      * @param duration {Number}
@@ -267,21 +288,7 @@ export default class SectionScroll extends React.Component{
     triggerScrollAnimate(destination, duration=1000, easing='easeInOutCubic') {
         const container = this.state.self || ReactDOM.findDOMNode(this.container)
         const startTime = 'now' in window.performance ? performance.now() : new Date().getTime()
-
-
-        const finished = () => {
-            this.state.animatingId.forEach(id => cancelAnimationFrame(id))
-            this.setState((prevState, props) => {
-                return {
-                    animatingId: [],
-                    direction: 'idle',
-                    isWheelEvents: false,
-                    activeSection: Math.round(container.scrollTop/prevState.screenHeight),
-                }
-            }, () => {
-            })
-        }
-        this.scroll(container, destination, startTime, duration, easing, finished)
+        this.scroll(container, destination, startTime, duration, easing, this.finished)
     }
 
     /**
