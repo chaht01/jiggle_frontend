@@ -69,7 +69,7 @@ export default class SectionScroll extends React.Component{
             return {
                 screenHeight: container.clientHeight,
                 self: container,
-                activeSection: parseInt(container.scrollTop/prevState.screenHeight),
+                activeSection: Math.round(container.scrollTop/prevState.screenHeight),
                 delta: 0
             }
         }, () => {
@@ -98,7 +98,7 @@ export default class SectionScroll extends React.Component{
             // Update current activeSection sync with current scroll bar position
             const container = ReactDOM.findDOMNode(this.container)
             return {
-                activeSection: parseInt(prevState.self.scrollTop/container.clientHeight)
+                activeSection: Math.round(prevState.self.scrollTop/container.clientHeight)
             }
         }, () => {
             ReactDOM.findDOMNode(this.container).removeEventListener('wheel', this.disableScroll) // remove block function of wheel event
@@ -243,7 +243,7 @@ export default class SectionScroll extends React.Component{
         }
 
         container.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start))
-        if (container.scrollTop-destinationOffsetToScroll === 0) {
+        if (container.scrollTop-destinationOffsetToScroll === 0 || time==1) {
             if (callback) {
                 callback()
             }
@@ -276,7 +276,7 @@ export default class SectionScroll extends React.Component{
                     animatingId: [],
                     direction: 'idle',
                     isWheelEvents: false,
-                    activeSection: parseInt(container.scrollTop/prevState.screenHeight),
+                    activeSection: Math.round(container.scrollTop/prevState.screenHeight),
                 }
             }, () => {
             })
@@ -288,7 +288,7 @@ export default class SectionScroll extends React.Component{
      * anchor index synchronized with current scroll position
      */
     checkAnchorIndex() {
-        this.anchorIdx = parseInt((this.state.self.scrollTop+this.state.screenHeight/2)/this.state.screenHeight)
+        this.anchorIdx = Math.round((this.state.self.scrollTop+this.state.screenHeight/2)/this.state.screenHeight)
     }
 
     /**
