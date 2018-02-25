@@ -57,10 +57,6 @@ const ResizeHandleSVG = styled.svg`
     position: absolute;
     left: 0;
     top:0;
-    width: ${props => props.originWidth}px;
-    height: ${props => props.originWidth*9/16}px;
-    transform: scale(${props => props.renderWidth/props.originWidth});
-    transform-origin: 0 0;
     z-index: ${props => props.active ? '1': 'auto'}
 `
 
@@ -251,8 +247,8 @@ class PreviewPlayerRepresentation extends React.Component{
                                 />
                                 <ResizeHandleSVG active={this.state.focusedIdx>-1}
                                                  innerRef={node => this.node = node}
-                                                 originWidth={1080}
-                                                 renderWidth={this.state.width}
+                                                 width={this.state.width}
+                                                 height={this.state.width*9/16}
                                                  onMouseDown={(e)=>{
                                                      e.persist()
                                                      this.setState({x:e.clientX, y: e.clientY})
@@ -281,7 +277,7 @@ class PreviewPlayerRepresentation extends React.Component{
                                                             idx={i}
                                                             ref={`image_${i}`}
                                                             visible={this.state.focusedIdx!=-1}
-                                                            scale={this.state.width/1080}
+                                                            scale={1}
                                                             focused={i === this.state.focusedIdx}
                                                             focus={this.focusImage}
                                                             setAnchorIdx={this.setAnchorIdx}

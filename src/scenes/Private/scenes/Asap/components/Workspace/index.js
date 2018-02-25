@@ -179,6 +179,10 @@ class WorkspaceRepresentation extends React.Component{
         return images.map((image)=>{
             const href = image.href
             return Object.assign({}, image, {
+                x: image.x*1080/this.props.width,
+                y: image.y*1080/this.props.width,
+                width: image.width*1080/this.props.width,
+                height: image.height*1080/this.props.width,
                 mimeType: href.slice(href.indexOf(':')+1,href.indexOf(';')),
                 base64: href.slice(href.indexOf(',')+1)
             })
@@ -198,10 +202,10 @@ class WorkspaceRepresentation extends React.Component{
         const {width, background, errorVisible} = this.props
         return(
             <RenderComposition background={background}>
-                <RenderSVG
-                    renderWidth={width}
-                    originWidth={1080}
-                    innerRef={node => this.renderNode = node}
+                <svg
+                    ref={node => this.renderNode = node}
+                    width = {width}
+                    height={width*9/16}
                 />
                 {errorVisible &&
                 <PlayerController error={this.state.error}>
