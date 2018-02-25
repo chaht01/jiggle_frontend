@@ -101,11 +101,6 @@ const mapDispatchToProps = (dispatch) => { //TODO: temporary auto auth
 
 }
 const HomeRepresentation = ({isAuthenticated, login, ...rest})=>{
-    if(isAuthenticated){
-        return (
-            <Redirect to="/protected"/>
-        )
-    }else{
         return (
             <React.Fragment>
                 <ParentContainer>
@@ -116,7 +111,7 @@ const HomeRepresentation = ({isAuthenticated, login, ...rest})=>{
                                     <img src={logo_white} alt="jiggle"/>
                                 </LogoContainer>
                             </Logo>
-                            <Button size="small" onClick={login} compact theme={{fg:'#FA4D1E', bg:'#fff'}}>로그인</Button>
+                            <Button size="small" as={Link} to={`${routeConfig.privateRoot}`} rounded compact inverted theme={{fg:'#fff', bg:'#fff'}}>시작하기</Button>
                         </Child>
                     </Parent>
                     <ParentContent>
@@ -133,7 +128,7 @@ const HomeRepresentation = ({isAuthenticated, login, ...rest})=>{
                                     <img src={logo_colored} alt="jiggle"/>
                                 </LogoContainer>
                             </Logo>
-                            <Button size="small" onClick={login} compact theme={{fg:'#fff', bg:'#FA4D1E'}}>로그인</Button>
+                            <Button size="small" as={Link} to={`${routeConfig.privateRoot}`} rounded compact inverted theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}>시작하기</Button>
                         </Child>
                     </Parent>
                     <Collabo>
@@ -152,7 +147,6 @@ const HomeRepresentation = ({isAuthenticated, login, ...rest})=>{
 
             </React.Fragment>
         )
-    }
 }
 
 const Home = connect(

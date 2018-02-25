@@ -360,7 +360,7 @@ class AppearanceControllerRepresentation extends React.Component{
         if(!_.isEqual(this.props.templateType, nextProps.templateType)){
             this.setState({
                 colorTabs: this.buildColorTab(colorsByType(nextProps.templateType))
-            }, () => this.props.saveColor(this.getPalette()))
+            }, () => this.props.saveColor(this.getPalette(this.state.colorTabs[0].colors[0])))
         }
 
     }

@@ -109,7 +109,7 @@ class WorkspaceRepresentation extends React.Component{
             const {
                 images,
                 imageVisible,
-                transitionActive
+                transitionActive,
             } = recentProps // received from parent component
             for (let i = 0; i < masks.length; i++) {
                 for(let j=0; j<masks[i].length; j++){
