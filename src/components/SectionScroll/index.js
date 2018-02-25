@@ -288,7 +288,7 @@ export default class SectionScroll extends React.Component{
      * anchor index synchronized with current scroll position
      */
     checkAnchorIndex() {
-        this.anchorIdx = Math.round((this.state.self.scrollTop+this.state.screenHeight/2)/this.state.screenHeight)
+        this.anchorIdx = Math.round(this.state.self.scrollTop/this.state.screenHeight)
     }
 
     /**
