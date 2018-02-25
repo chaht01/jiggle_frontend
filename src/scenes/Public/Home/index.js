@@ -19,8 +19,10 @@ import logo_white from '../../../assets/images/logo/jiggle_logo-01.png'
 import logo_colored from '../../../assets/images/logo/jiggle_logo-02.png'
 import wallVideo from '../../../assets/video/jiggle_wall.mp4'
 import collabo from '../../../assets/images/main/tool_logo_black-01.png'
+import * as actionType from "../../../sagas/types";
 
 const LogoContainer = styled.div`
+    display: inline-block;
     height: 100%;
     padding: 1.1rem 0;
     >img{
@@ -91,7 +93,14 @@ const mapStateToProps = (state, ownProps) => {
     }
 }
 
-const HomeRepresentation = ({isAuthenticated, ...rest})=>{
+
+const mapDispatchToProps = (dispatch) => { //TODO: temporary auto auth
+    return {
+        login: () => dispatch({type: actionType.LOGIN_REQUEST, user:'hello', password:'world'})
+    }
+
+}
+const HomeRepresentation = ({isAuthenticated, login, ...rest})=>{
     if(isAuthenticated){
         return (
             <Redirect to="/protected"/>
@@ -107,7 +116,7 @@ const HomeRepresentation = ({isAuthenticated, ...rest})=>{
                                     <img src={logo_white} alt="jiggle"/>
                                 </LogoContainer>
                             </Logo>
-                            <Button compact size="small" as={Link} to={`${routeConfig.publicRoot}/sign`} theme={{fg:'#FA4D1E', bg:'#fff'}}>로그인</Button>
+                            <Button size="small" onClick={login} compact theme={{fg:'#FA4D1E', bg:'#fff'}}>로그인</Button>
                         </Child>
                     </Parent>
                     <ParentContent>
@@ -124,7 +133,7 @@ const HomeRepresentation = ({isAuthenticated, ...rest})=>{
                                     <img src={logo_colored} alt="jiggle"/>
                                 </LogoContainer>
                             </Logo>
-                            <Button size="small" as={Link} to={`${routeConfig.publicRoot}/sign`} compact theme={{fg:'#fff', bg:'#FA4D1E'}}>로그인</Button>
+                            <Button size="small" onClick={login} compact theme={{fg:'#fff', bg:'#FA4D1E'}}>로그인</Button>
                         </Child>
                     </Parent>
                     <Collabo>
@@ -148,7 +157,7 @@ const HomeRepresentation = ({isAuthenticated, ...rest})=>{
 
 const Home = connect(
     mapStateToProps,
-    null
+    mapDispatchToProps
 )(HomeRepresentation)
 
 export default Home

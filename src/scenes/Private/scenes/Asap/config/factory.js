@@ -5,8 +5,60 @@ import {getRangeOfValidData, getValidDataWithinRange, performDataValidation} fro
 //TODO: context switching and validation
 
 const factory = {
-    sheet: (data) => {
+    sheet: (data, comments=[], emphasisTarget=[-1,-1,-1,-1]) => {
         return {
+            ['ONLY_SHEET']: () => { // wild card
+                return {
+                    cells: function (row, col, prop) {
+                        let cellProperties = {}
+                        const range = getRangeOfValidData(data)
+                        let emphasized = emphasisTarget || [range[1],range[1],range[3],range[3]]
+                        if (range[0] > emphasized[0] || emphasized[1] > range[1]
+                            || range[2] > emphasized[2] || emphasized[3] > range[3]) {
+                            emphasized = [range[1],range[1],range[3],range[3]]
+                        }
+
+                        const inComments = (col, row) => {
+                            return comments.filter((comment) => {
+                                    if (col == comment.col && row == comment.row) {
+                                        return true
+                                    }
+                                }).length !== 0
+                        }
+
+                        if (col === emphasized[0] && row === emphasized[2]) {
+                            cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                td.classList.add('emphasisCell')
+                                td.innerText = value
+                                if (inComments(col, row)) {
+                                    td.classList.add('commentCell')
+                                }
+                            }
+                        } else {
+
+                            if (range[0] <= col && col <= range[1]
+                                && range[2] <= row && row <= range[3]) {
+                                cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                    td.innerText = value
+                                    td.style.color = '#000'
+                                    if (inComments(col, row)) {
+                                        td.classList.add('commentCell')
+                                    }
+                                }
+                            } else {
+                                cellProperties.renderer = (instance, td, row, col, prop, value, cellProperties) => {
+                                    td.style.background = '#f1f1f5'
+                                    td.innerText = value
+                                    if (inComments(col, row)) {
+                                        td.classList.add('commentCell')
+                                    }
+                                }
+                            }
+                        }
+                        return cellProperties
+                    }
+                }
+            },
             [TEMPLATE.BAR_EMPHASIS]: (ctx) => {
                 return {
                     contextMenu: {

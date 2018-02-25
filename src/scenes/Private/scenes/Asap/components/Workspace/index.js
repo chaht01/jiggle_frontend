@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import {Loader} from 'semantic-ui-react'
 import Composition from '../../../../../../components/Composition'
 import styled from 'styled-components'
@@ -8,6 +9,7 @@ import {getDefaultSwatch} from '../../config/common'
 import connect from "react-redux/es/connect/connect";
 import * as _ from "lodash";
 import download from 'downloadjs'
+import {TEMPLATE} from "../../config/types";
 
 const RenderComposition = styled(Composition)`
     background: ${props=> props.background || '#fff'};
@@ -37,12 +39,13 @@ const PlayerController = styled.div`
 `
 
 const mapStateToProps = (state, ownProps) => {
+    console.log(ownProps)
     return {
         templateType: ownProps.templateType || state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
-        dirtyDataLoading: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.loading,
-        templateConfig: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config,
+        dirtyDataLoading: ownProps.dirtyDataLoading || state.PrivateReducer.AsapReducer.procedureManager.dirtyData.loading,
+        templateConfig: ownProps.templateConfig || state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config,
         safeMask: ownProps.safeMask || state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
-        meta: ownProps.safeMask || state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
+        meta: ownProps.meta || state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
         color: ownProps.color || state.PrivateReducer.AsapReducer.procedureManager.appearance.color,
         theme: ownProps.theme || state.PrivateReducer.AsapReducer.procedureManager.appearance.theme,
     }
@@ -60,6 +63,7 @@ class WorkspaceRepresentation extends React.Component{
         this.drawChart = this.drawChart.bind(this)
         this.renderGIF = this.renderGIF.bind(this)
         this.handleError = this.handleError.bind(this)
+        console.log(this.props)
     }
 
     handleError(msg){
@@ -94,7 +98,7 @@ class WorkspaceRepresentation extends React.Component{
                 this.handleError('데이터가 부족합니다')
                 return
             }
-            const {mask, comments, breakPoint = [-1,-1,-1,-1]} = recentProps.safeMask
+            const {mask:masks, comments, breakPoint = [-1,-1,-1,-1]} = recentProps.safeMask
             const {
                 templateType,
                 templateConfig,
@@ -107,16 +111,20 @@ class WorkspaceRepresentation extends React.Component{
                 imageVisible,
                 transitionActive
             } = recentProps // received from parent component
-            for (let i = 0; i < mask.length; i++) {
-                if (mask[i].length == 0) {
-                    isValid = false
-                    break;
+            for (let i = 0; i < masks.length; i++) {
+                for(let j=0; j<masks[i].length; j++){
+                    if (masks[i][j].length == 0) {
+                        isValid = false
+                        break;
+                    }
                 }
+                if(!isValid)
+                    break
             }
             if (isValid) {
                 const width = 1080
-                const color = recentProps.color || colorToPalette(getDefaultSwatch(templateType), templateType, mask)
-                const {charts, factory} = getFactory(templateType, mask, meta, templateConfig, width, color, theme, comments, breakPoint)
+                const color = recentProps.color || colorToPalette(getDefaultSwatch(templateType), templateType, masks)
+                const {charts, factory} = getFactory(templateType, masks, meta, templateConfig, width, color, theme, comments, breakPoint)
 
                 this.charts = charts
                 this.factory = factory
@@ -127,10 +135,22 @@ class WorkspaceRepresentation extends React.Component{
                 }else{
                     const renderChart = factory.renderChart()
                     if(imageVisible){
-                        const gParent = renderChart(this.renderNode, charts[charts.length-1], this.imageSerializer(images))
+                        let chartArgs
+                        if([TEMPLATE.LINE, TEMPLATE.LINE_DENSE].indexOf(templateType)>-1){
+                            chartArgs = [charts[charts.length-1]]
+                        }else{
+                            chartArgs = charts[charts.length-1]
+                        }
+                        const gParent = renderChart(this.renderNode, chartArgs, this.imageSerializer(images))
 
                     }else{
-                        const gParent = renderChart(this.renderNode, charts[charts.length-1])
+                        let chartArgs
+                        if([TEMPLATE.LINE, TEMPLATE.LINE_DENSE].indexOf(templateType)>-1){
+                            chartArgs = [charts[charts.length-1]]
+                        }else{
+                            chartArgs = charts[charts.length-1]
+                        }
+                        const gParent = renderChart(this.renderNode, chartArgs)
                     }
                 }
             }else{
@@ -159,6 +179,7 @@ class WorkspaceRepresentation extends React.Component{
 
     componentWillReceiveProps(nextProps){
         if(!_.isEqual(nextProps, this.props) && !nextProps.dirtyDataLoading){
+            // ReactDOM.unmountComponentAtNode(this.renderNode)
             this.drawChart(nextProps)
         }
     }

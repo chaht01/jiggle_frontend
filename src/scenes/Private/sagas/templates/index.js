@@ -42,12 +42,15 @@ export function* fetchTemplatesThumbnailsAsync() {
         thumbnails = thumbnails.map((template) => {
             return Object.assign({}, template, {
                 type: getTypeFromName(template.name),
-                placeholder: mergeDataToDummy([
-                            ['', '삼성', 'sk하이닉스'],
-                            ['2014', '1', '4'],
-                            ['2015', '2', '5'],
-                            ['2016', '3', '6'],
-                        ])
+                placeholder: {
+                    data: mergeDataToDummy([
+                        ['', '삼성', 'sk하이닉스'],
+                        ['2014', '1', '4'],
+                        ['2015', '2', '5'],
+                        ['2016', '3', '6'],
+                    ]),
+                    emphasisTarget: [2, 2, 3, 3]
+                }
             })
         })
 

@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import Dropzone from 'react-dropzone'
 import StackGrid from 'react-stack-grid'
 import Checkbox from '../../../../../../components/Checkbox'
-import { saveColor, saveTheme} from '../../sagas/actions'
+import { saveColor, saveTheme } from '../../sagas/actions'
 import { colorsByType, colorToPalette, Swatch } from '../../config/common'
 import connect from "react-redux/es/connect/connect";
 import {TEMPLATE, THEME} from "../../config/types";

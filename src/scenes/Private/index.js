@@ -37,6 +37,7 @@ const PrivateAppContent = styled(({width, ...rest}) => <AppContent width={width}
 `
 
 const LogoContainer = styled.div`
+    display: inline-block;
     height: 100%;
     padding: 1.1rem 0;
     >img{
