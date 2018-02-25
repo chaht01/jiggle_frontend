@@ -102,10 +102,10 @@ export const colorsByType = (type) => {
         case TEMPLATE.LINE:
             ret.similar = [new Swatch('#dd6b4b', '#e5a248'), new Swatch('#7d9ec9', '#416299'), new Swatch('#5a72b7', '#5a9baf')]
             ret.contrast = [new Swatch('#dd6b4b', '#4299bc'), new Swatch('#7d9ec9', '#835f96'), new Swatch('#5a72b7', '#e5a248')]
-            ret.single = [new Swatch('#dd6b4b', '#dd6b4b', 1), new Swatch('#7d9ec9', '#7d9ec9', 1), new Swatch('#5a72b7', '#5a72b7', 1)]
+            ret.single = [new Swatch('#dd6b4b', '#dd6b4b'), new Swatch('#7d9ec9', '#7d9ec9'), new Swatch('#5a72b7', '#5a72b7')]
             break
         case TEMPLATE.LINE_DENSE:
-            ret.single = [new Swatch('#dd6b4b', '#dd6b4b', 1), new Swatch('#7d9ec9', '#7d9ec9', 1), new Swatch('#5a72b7', '#5a72b7', 1)]
+            ret.single = [new Swatch('#dd6b4b', '#dd6b4b'), new Swatch('#7d9ec9', '#7d9ec9'), new Swatch('#5a72b7', '#5a72b7')]
             break
         case TEMPLATE.BAR_EMPHASIS:
         case TEMPLATE.BAR_HORIZONTAL_EMPHASIS:
@@ -160,6 +160,7 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, theme
             settings = [defaultSettings(width, mask[0], meta, color)]
             break;
         case TEMPLATE.LINE:
+            console.log(color)
             settings = mask.map(m => {
                 const settingsForLine = Object.assign({}, defaultSettings(width, m, meta, color), {delay:1000, duration:1000})
                 return settingsForLine

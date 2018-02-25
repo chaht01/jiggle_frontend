@@ -17,7 +17,6 @@ const RenderComposition = styled(Composition)`
 const RenderSVG = styled.svg`
     transform: scale(${props => props.renderWidth/props.originWidth});
     transform-origin: 0 0;
-    overflow: visible !important;
     fill: #fff;
     width: ${props => props.originWidth}px;
     height: ${props => props.originWidth*9/16}px;
@@ -39,7 +38,6 @@ const PlayerController = styled.div`
 `
 
 const mapStateToProps = (state, ownProps) => {
-    console.log(ownProps)
     return {
         templateType: ownProps.templateType || state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
         dirtyDataLoading: ownProps.dirtyDataLoading || state.PrivateReducer.AsapReducer.procedureManager.dirtyData.loading,
@@ -161,13 +159,12 @@ class WorkspaceRepresentation extends React.Component{
             }
             if (isValid) {
                 const width = 1080
-                const color = recentProps.color || colorToPalette(getDefaultSwatch(templateType), templateType, masks)
+                const defaultColor = colorToPalette(getDefaultSwatch(templateType), templateType, masks)
+                const color = (this.props.templateType == templateType) ? (recentProps.color || defaultColor) : defaultColor
                 const {charts, factory} = getFactory(templateType, masks, meta, templateConfig, width, color, theme, comments, breakPoint)
 
                 this.charts = charts
                 this.factory = factory
-
-                this.draw(recentProps)
             }else{
                 throw (new Error('데이터가 유효하지 않습니다'))
             }
@@ -193,8 +190,7 @@ class WorkspaceRepresentation extends React.Component{
     }
 
     componentWillReceiveProps(nextProps){
-        if(!_.isEqual(nextProps, this.props) && !nextProps.dirtyDataLoading){
-            // ReactDOM.unmountComponentAtNode(this.renderNode)
+        if(!_.isEqual(nextProps, this.props)){
             this.setupChart(nextProps)
         }
     }

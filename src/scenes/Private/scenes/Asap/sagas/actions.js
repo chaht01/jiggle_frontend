@@ -300,6 +300,13 @@ export const appearancePlayerClear = () => {
     }
 }
 
+/*** PLAYER UPDATE ***/
+export const updatePlayers = () => {
+    return {
+        type: actionType.GLOBAL_PLAYER_UPDATE
+    }
+}
+
 
 
 

@@ -5,14 +5,14 @@ import FullPage from '../../../../../../components/Layout/FullPage'
 import Composition from '../../../../../../components/Composition'
 import PaddedContainer from '../PaddedContainer'
 import SectionFooter from '../SectionFooter'
-
-import styled from 'styled-components'
+import {Popup} from 'semantic-ui-react'
+import styled, {keyframes} from 'styled-components'
 import Resizeable from '../../../../components/Resizeable'
 import Workspace from '../Workspace'
 
 import connect from "react-redux/es/connect/connect";
 import * as numeral from "numeral";
-import {appearancePlayerSet} from "../../sagas/actions";
+import {appearancePlayerSet, updatePlayers} from "../../sagas/actions";
 
 
 
@@ -70,6 +70,40 @@ const RelativeWorkspace = styled(Workspace)`
     height: 100%;
 `
 
+const spinAni = keyframes`
+    0%, 100% { 
+    transform: scale(0.0);
+    -webkit-transform: scale(0.0);
+  } 50% { 
+    transform: scale(1.0);
+    -webkit-transform: scale(1.0);
+  }
+`
+
+const Spinner = styled.div`
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    position: relative;
+    margin: 0 auto;
+    &:before, &:after{
+        display:block;
+        content:'';
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: #FB4C1E;
+        opacity: 0.6;
+        position: absolute;
+        top: 0;
+        left: 0;
+        animation: ${spinAni} 2.0s infinite ease-in-out;
+    }
+    &:after{
+        animation-delay: -1.0s;
+    }
+`
+
 const mapStateToProps = (state, ownProps) => {
     return {
         mask: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
@@ -82,7 +116,8 @@ const mapStateToProps = (state, ownProps) => {
 }
 const mapDispatchToProps = (dispatch) => {
     return {
-        setDataPlayerNode: (node) => dispatch(appearancePlayerSet(node))
+        setAppearancePlayerNode: (node) => dispatch(appearancePlayerSet(node)),
+        updatePlayers: () => dispatch(updatePlayers())
     }
 }
 class PreviewPlayerRepresentation extends React.Component{
@@ -112,9 +147,12 @@ class PreviewPlayerRepresentation extends React.Component{
         this.stop = this.stop.bind(this)
     }
     renderGIF(){
-        if(this.renderNode!==null){
-            this.renderNode.getWrappedInstance().renderGIF()
-        }
+        this.focusImage(-1, ()=>{
+            if(this.renderNode!==null){
+                this.renderNode.getWrappedInstance().renderGIF()
+            }
+        })
+
     }
     setAnchorIdx(idx, cb){
         this.setState({
@@ -122,6 +160,7 @@ class PreviewPlayerRepresentation extends React.Component{
         }, cb)
     }
     focusImage(idx, cb){
+        this.props.updatePlayers()
         this.setState({
             focusedIdx:idx,
         }, ()=>{
@@ -151,6 +190,8 @@ class PreviewPlayerRepresentation extends React.Component{
     }
 
     componentDidMount(){
+        this.props.setAppearancePlayerNode(this.renderNode.getWrappedInstance())
+        this.renderNode.getWrappedInstance().draw()
         this.setState({width: numeral(getComputedStyle(ReactDOM.findDOMNode(this.renderNode)).width).value()})
     }
 
@@ -200,7 +241,7 @@ class PreviewPlayerRepresentation extends React.Component{
                 <PaddedContainer>
                     <FullPage>
                         <PreviewContainer>
-                            <PreviewThumbnails onClick={this.stop}>
+                            <PreviewThumbnails>
                                 <RelativeWorkspace
                                     innerRef={node => this.renderNode = node}
                                     width={this.state.width}
@@ -253,14 +294,26 @@ class PreviewPlayerRepresentation extends React.Component{
                                     }
                                 </ResizeHandleSVG>
                             </PreviewThumbnails>
+                            <PreviewOpts>
+                                {this.state.transitionPlay ?
+                                    <Popup
+                                        style={{
+                                            opacity: 0.7,
+                                            borderRadius: '2px',
+                                            padding: '.8rem'
+                                        }}
+                                        trigger={<Spinner onClick={()=>this.stop()}/>}
+                                        content={'정지 화면으로 보려면 클릭'}
+                                        position='top center'
+                                    />
+
+                                    :
+                                    <Button compact size='small' rounded inverted theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}
+                                            onClick={()=>this.play()}
+                                    > 재생 </Button>
+                                }
+                            </PreviewOpts>
                         </PreviewContainer>
-                        <PreviewOpts>
-                            <Button compact size='small' rounded inverted theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}
-                                    onClick={()=>this.play()}
-                            >
-                                재생 {this.state.transitionPlay ? '중':''}
-                            </Button>
-                        </PreviewOpts>
                     </FullPage>
                 </PaddedContainer>
                 <SectionFooter>

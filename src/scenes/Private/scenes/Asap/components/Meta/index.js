@@ -14,7 +14,7 @@ import Workspace from '../Workspace'
 import styled from 'styled-components'
 
 /* UTILS */
-import { saveMeta, dataPlayerSet } from '../../sagas/actions'
+import { saveMeta, dataPlayerSet, updatePlayers} from '../../sagas/actions'
 import connect from "react-redux/es/connect/connect";
 import {TEMPLATE} from "../../config/types";
 import config from '../../config/factory'
@@ -81,7 +81,8 @@ const mapDispatchToProps = (dispatch) => {
             obj[key] = e.target.value
             return dispatch(saveMeta(obj))
         },
-        setDataPlayerNode: (node) => dispatch(dataPlayerSet(node))
+        setDataPlayerNode: (node) => dispatch(dataPlayerSet(node)),
+        updatePlayers: () => dispatch(updatePlayers())
     }
 }
 
@@ -94,6 +95,7 @@ class MetaRepresentation extends React.Component{
         this.preventWheel = this.preventWheel.bind(this)
         this.handleWheelEvent = this.handleWheelEvent.bind(this)
         this.saveMeta = _.throttle(this.saveMeta.bind(this), 250)
+        this.updatePlayer = this.updatePlayer.bind(this)
     }
     handleWheelEvent(element, e){
         const dY = e.deltaY,
@@ -110,14 +112,24 @@ class MetaRepresentation extends React.Component{
     saveMeta(e, field){
         this.props.saveMeta(e, field)
     }
+    updatePlayer(){
+        this.props.updatePlayers()
+    }
     preventWheel(node){
         ReactDOM.findDOMNode(node).addEventListener('wheel', this.handleWheelEvent.bind(this, ReactDOM.findDOMNode(node)), {passive: false})
     }
     componentDidMount(){
         this.props.setDataPlayerNode(this.playerNode.getWrappedInstance())
         this.preventWheel(this.form)
-
     }
+
+    componentWillReceiveProps(nextProps){
+        if(!_.isEqual(nextProps.meta, this.props.meta)){
+            console.log(nextProps.meta)
+            this.props.updatePlayers()
+        }
+    }
+
     componentDidUpdate(){
         this.props.setDataPlayerNode(this.playerNode.getWrappedInstance())
         this.preventWheel(this.form)
@@ -125,7 +137,6 @@ class MetaRepresentation extends React.Component{
     render(){
         const {meta} = this.props
         const {saveMeta} = this
-        const throttle_delay = 250
         return(
             <ConfigPanel>
                 <ConfigForm ref={node => this.form = node}>

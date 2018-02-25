@@ -11,7 +11,7 @@ import SectionFooter from '../SectionFooter'
 
 import styled from 'styled-components'
 import connect from "react-redux/es/connect/connect";
-import {saveMask} from "../../sagas/actions";
+import {saveMask, updatePlayers} from "../../sagas/actions";
 import factory from '../../config/factory'
 import Workspace from '../Workspace'
 import * as _ from "lodash";
@@ -36,14 +36,13 @@ const mapStateToProps = (state, ownProps) => {
         comments:state.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments,
         emphasisTarget:state.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget,
         templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
-
-        playerNode: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.playerNode,
     }
 }
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        saveMask : (mask) => dispatch(saveMask(mask))
+        saveMask : (mask) => dispatch(saveMask(mask)),
+        updatePlayers: () => dispatch(updatePlayers())
     }
 }
 
@@ -69,7 +68,6 @@ class DataConfigViewRepresentation extends React.Component{
         }
     }
     handleModal(openStatus){
-        console.log(openStatus)
         this.setState({modalOpen: openStatus})
     }
     next(){
@@ -101,7 +99,7 @@ class DataConfigViewRepresentation extends React.Component{
             }
             if (isValid) {
                 this.props.saveMask(chartMaterials)
-                props.playerNode.draw()
+                this.props.updatePlayers()
             }else{
 
             }

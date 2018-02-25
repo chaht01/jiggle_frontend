@@ -347,6 +347,15 @@ const procedureManager = (state=initialState, action) => {
                     playerNode: null
                 }
             }
+
+        case actionType.GLOBAL_PLAYER_UPDATE:
+            if(state.appearance.playerNode !== null){
+                setTimeout(state.appearance.playerNode.draw, 0)
+            }
+            if(state.dirtyData.playerNode !== null){
+                setTimeout(state.dirtyData.playerNode.draw, 0)
+            }
+            return state
         /* GLOBAL */
         case actionType.PROCEDURE_CLEAR:
             return initialState

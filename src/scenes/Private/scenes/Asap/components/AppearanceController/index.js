@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import Dropzone from 'react-dropzone'
 import StackGrid from 'react-stack-grid'
 import Checkbox from '../../../../../../components/Checkbox'
-import { saveColor, saveTheme } from '../../sagas/actions'
+import { saveColor, saveTheme, updatePlayers} from '../../sagas/actions'
 import { colorsByType, colorToPalette, Swatch } from '../../config/common'
 import connect from "react-redux/es/connect/connect";
 import {TEMPLATE, THEME} from "../../config/types";
@@ -220,6 +220,7 @@ const mapDispatchToProps = (dispatch) => {
     return {
         saveColor: (color) => dispatch(saveColor(color)),
         saveTheme: (theme) => dispatch(saveTheme(theme)),
+        updatePlayers: () => dispatch(updatePlayers())
     }
 }
 
@@ -251,6 +252,7 @@ class AppearanceControllerRepresentation extends React.Component{
         this.activeTab = this.activeTab.bind(this)
         this.selectColor = this.selectColor.bind(this)
         this.getSelectedColor = this.getSelectedColor.bind(this)
+        this.updatePlayers = this.updatePlayers.bind(this)
     }
     buildColorTab(colorObj){
         const keyMap = {
@@ -308,7 +310,10 @@ class AppearanceControllerRepresentation extends React.Component{
                     return tab
                 })
             }
-        }, ()=>this.props.saveColor(this.getPalette(color)))
+        }, ()=>{
+            this.props.saveColor(this.getPalette(color))
+            this.props.updatePlayers()
+        })
 
 
     }
@@ -323,8 +328,15 @@ class AppearanceControllerRepresentation extends React.Component{
             }
         }, ()=>{
             this.props.saveTheme(this.state.theme.colors[idx])
+            this.props.updatePlayers()
         })
     }
+
+    updatePlayers(){
+        setTimeout(this.props.dataPlayerNode.draw, 0)
+        setTimeout(this.props.appearancePlayerNode.draw, 0)
+    }
+
     handleWheelEvent(element, e){
         const dY = e.deltaY,
             currScrollPos = element.scrollTop,
@@ -345,6 +357,7 @@ class AppearanceControllerRepresentation extends React.Component{
     }
     attachPreview(idx){
         this.props.triggerAttachCall(idx)
+        this.props.updatePlayers()
     }
     componentDidMount(){
         this.preventWheel(this.bgColors)
