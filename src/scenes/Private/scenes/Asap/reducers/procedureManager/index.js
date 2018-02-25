@@ -34,13 +34,15 @@ const initialDirtyDataState = {
     range:initialRange,
     emphasisTarget: null,
     safeMask: null,
-    error: null
+    error: null,
+    playerNode: null
 }
 const initialColor = null
 const initialTheme = _.cloneDeep(THEME.LIGHT)
 const initialAppearanceState = {
     color: initialColor, // set init value null due to it has dependency on template type
-    theme: initialTheme
+    theme: initialTheme,
+    playerNode: null
 }
 const initialState = {
     selectedTemplate: initialTemplateState,
@@ -268,6 +270,22 @@ const procedureManager = (state=initialState, action) => {
                     }
                 }
             }
+        case actionType.DATA_PLAYER_SET:
+            return {
+                ...state,
+                dirtyData: {
+                    ...state.dirtyData,
+                    playerNode: action.payload
+                }
+            }
+        case actionType.DATA_PLAYER_CLEAR:
+            return {
+                ...state,
+                dirtyData: {
+                    ...state.dirtyData,
+                    playerNode: null
+                }
+            }
         case actionType.MASK_SAVE:
             return {
                 ...state,
@@ -311,6 +329,22 @@ const procedureManager = (state=initialState, action) => {
                 appearance: {
                     ...state.appearance,
                     theme: initialTheme
+                }
+            }
+        case actionType.APPEARANCE_PLAYER_SET:
+            return {
+                ...state,
+                appearance: {
+                    ...state.appearance,
+                    playerNode: action.payload
+                }
+            }
+        case actionType.APPEARANCE_PLAYER_CLEAR:
+            return {
+                ...state,
+                appearance: {
+                    ...state.appearance,
+                    playerNode: null
                 }
             }
         /* GLOBAL */

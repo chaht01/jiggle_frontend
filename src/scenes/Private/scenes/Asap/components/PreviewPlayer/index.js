@@ -7,17 +7,12 @@ import PaddedContainer from '../PaddedContainer'
 import SectionFooter from '../SectionFooter'
 
 import styled from 'styled-components'
-import parseBar from 'd3-reusable/src/parser/bar-parser'
-import BarFactory from "d3-reusable/src/factory/bar-factory";
-import {getChildG} from 'd3-reusable/src/common/utils'
 import Resizeable from '../../../../components/Resizeable'
 import Workspace from '../Workspace'
 
 import connect from "react-redux/es/connect/connect";
 import * as numeral from "numeral";
-import {getFactory, colorsByType, getDefaultSwatch} from "../../config/common";
-import * as d3 from 'd3'
-import * as _ from "lodash";
+import {appearancePlayerSet} from "../../sagas/actions";
 
 
 
@@ -53,6 +48,11 @@ const GifViewer = styled.div`
     align-items: center;
 `
 
+const PreviewOpts = styled.div`
+    width: ${props => props.width};
+    text-align: center;
+    padding: 1rem 0;
+`
 const ResizeHandleSVG = styled.svg`
     position: absolute;
     left: 0;
@@ -80,7 +80,11 @@ const mapStateToProps = (state, ownProps) => {
         theme: state.PrivateReducer.AsapReducer.procedureManager.appearance.theme
     }
 }
-
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setDataPlayerNode: (node) => dispatch(appearancePlayerSet(node))
+    }
+}
 class PreviewPlayerRepresentation extends React.Component{
     constructor(props){
         super(props)
@@ -97,17 +101,19 @@ class PreviewPlayerRepresentation extends React.Component{
                 y:0
             },
             images: [],
+            transitionPlay: false
         }
         this.renderGIF = this.renderGIF.bind(this)
         this.focusImage = this.focusImage.bind(this)
         this.setAnchorIdx = this.setAnchorIdx.bind(this)
         this.updateTransformer = this.updateTransformer.bind(this)
         this.deleteImage = this.deleteImage.bind(this)
+        this.play = this.play.bind(this)
+        this.stop = this.stop.bind(this)
     }
     renderGIF(){
         if(this.renderNode!==null){
             this.renderNode.getWrappedInstance().renderGIF()
-            // this.renderNode.renderGIF()
         }
     }
     setAnchorIdx(idx, cb){
@@ -135,6 +141,13 @@ class PreviewPlayerRepresentation extends React.Component{
             this.updateTransformer()
             this.focusImage(-1)
         })
+    }
+
+    play(){
+        this.setState({transitionPlay: true}, () => this.renderNode.getWrappedInstance().draw())
+    }
+    stop(){
+        this.setState({transitionPlay: false}, () => this.renderNode.getWrappedInstance().draw())
     }
 
     componentDidMount(){
@@ -187,13 +200,13 @@ class PreviewPlayerRepresentation extends React.Component{
                 <PaddedContainer>
                     <FullPage>
                         <PreviewContainer>
-                            <PreviewThumbnails>
+                            <PreviewThumbnails onClick={this.stop}>
                                 <RelativeWorkspace
                                     innerRef={node => this.renderNode = node}
                                     width={this.state.width}
                                     images={this.state.images}
                                     imageVisible={this.state.focusedIdx==-1}
-                                    transitionActive={false}
+                                    transitionActive={this.state.transitionPlay}
                                 />
                                 <ResizeHandleSVG active={this.state.focusedIdx>-1}
                                                  innerRef={node => this.node = node}
@@ -241,6 +254,13 @@ class PreviewPlayerRepresentation extends React.Component{
                                 </ResizeHandleSVG>
                             </PreviewThumbnails>
                         </PreviewContainer>
+                        <PreviewOpts>
+                            <Button compact size='small' rounded inverted theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}
+                                    onClick={()=>this.play()}
+                            >
+                                재생 {this.state.transitionPlay ? '중':''}
+                            </Button>
+                        </PreviewOpts>
                     </FullPage>
                 </PaddedContainer>
                 <SectionFooter>
@@ -253,7 +273,7 @@ class PreviewPlayerRepresentation extends React.Component{
 
 const PreviewPlayer = connect(
     mapStateToProps,
-    null,
+    mapDispatchToProps,
 )(PreviewPlayerRepresentation)
 
 export default PreviewPlayer

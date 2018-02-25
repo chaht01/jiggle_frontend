@@ -233,6 +233,20 @@ export const dataModalOpen = (bool, payload) => {
     }
 }
 
+/*** DATA PLAYER NODE SET ***/
+export const dataPlayerSet = (playerNode) => {
+    return {
+        type: actionType.DATA_PLAYER_SET,
+        payload: playerNode
+    }
+}
+
+export const dataPlayerClear = () => {
+    return {
+        type: actionType.DATA_PLAYER_CLEAR
+    }
+}
+
 /*** MASK SAVE ***/
 export const saveMask = (mask) => {
     return {
@@ -269,6 +283,20 @@ export const saveTheme = (theme) => {
 export const clearTheme = () => {
     return {
         type: actionType.THEME_CLEAR
+    }
+}
+
+/*** APPEARANCE PLAYER NODE SET ***/
+export const appearancePlayerSet = (playerNode) => {
+    return {
+        type: actionType.APPEARANCE_PLAYER_SET,
+        payload: playerNode
+    }
+}
+
+export const appearancePlayerClear = () => {
+    return {
+        type: actionType.APPEARANCE_PLAYER_CLEAR
     }
 }
 

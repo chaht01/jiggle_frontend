@@ -102,6 +102,7 @@ const mapStateToProps = (state, ownProps) => {
     return {
         thumbnails: state.PrivateReducer.templatesThumbnails.list,
         loading: state.PrivateReducer.templatesThumbnails.loading,
+        error: state.PrivateReducer.templatesThumbnails.error,
         selectedTemplate: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate,
     }
 }
@@ -179,6 +180,7 @@ class TemplatesRepresentation extends React.Component{
                                 <Dimmer active>
                                     <Loader />
                                 </Dimmer> :
+                                this.props.error ? '알 수 없는 에러가 발생했습니다. 다시 시도해 보세요.':
                                 this.props.thumbnails.map((template, i) => {
                                     const Thumb = withRouter(
                                         ({history, ...rest}) => (

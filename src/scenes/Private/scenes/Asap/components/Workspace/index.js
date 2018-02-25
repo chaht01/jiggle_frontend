@@ -60,16 +60,54 @@ class WorkspaceRepresentation extends React.Component{
             error: false,
             msg: ''
         }
-        this.drawChart = this.drawChart.bind(this)
+        this.setupChart = this.setupChart.bind(this)
         this.renderGIF = this.renderGIF.bind(this)
         this.handleError = this.handleError.bind(this)
-        console.log(this.props)
+        this.getSVGNode = this.getSVGNode.bind(this)
+        this.draw = this.draw.bind(this)
     }
 
     handleError(msg){
         this.setState({error: true, msg})
     }
+    getSVGNode(){
+        return this.renderNode
+    }
+    draw(recentProps){
+        const props = recentProps || this.props
+        const {transitionActive, templateType, imageVisible, images=[]} = props
 
+        if(this.charts && this.charts.length!=0 && this.factory){
+            if(transitionActive){
+                const renderTransition = this.factory.renderTransition()
+                if(imageVisible) {
+                    renderTransition(this.renderNode, this.charts, this.imageSerializer(images))
+                }else {
+                    renderTransition(this.renderNode, this.charts)
+                }
+            }else{
+                const renderChart = this.factory.renderChart()
+                if(imageVisible){
+                    let chartArgs
+                    if([TEMPLATE.LINE, TEMPLATE.LINE_DENSE].indexOf(templateType)>-1){
+                        chartArgs = [this.charts[this.charts.length-1]]
+                    }else{
+                        chartArgs = this.charts[this.charts.length-1]
+                    }
+                    const gParent = renderChart(this.renderNode, chartArgs, this.imageSerializer(images))
+
+                }else{
+                    let chartArgs
+                    if([TEMPLATE.LINE, TEMPLATE.LINE_DENSE].indexOf(templateType)>-1){
+                        chartArgs = [this.charts[this.charts.length-1]]
+                    }else{
+                        chartArgs = this.charts[this.charts.length-1]
+                    }
+                    const gParent = renderChart(this.renderNode, chartArgs)
+                }
+            }
+        }
+    }
     renderGIF(){
         if(this.charts && this.charts.length!=0 && this.factory){
             const onProcess = (progress) => {
@@ -78,8 +116,8 @@ class WorkspaceRepresentation extends React.Component{
             const onFinished = (blob) => {
                 download(blob, `chart.gif`, 'image/gif')
             };
-
-            this.factory.recordTransition(
+            const factoryCopied = _.cloneDeep(this.factory)
+            factoryCopied.recordTransition(
                 this.renderNode,
                 this.charts,
                 onProcess,
@@ -90,7 +128,7 @@ class WorkspaceRepresentation extends React.Component{
 
     }
 
-    drawChart(recentProps){
+    setupChart(recentProps){
         let isValid = true
         try {
             this.setState({error:null, msg:''})
@@ -129,30 +167,7 @@ class WorkspaceRepresentation extends React.Component{
                 this.charts = charts
                 this.factory = factory
 
-                if(transitionActive){
-                    const renderTransition = factory.renderTransition()
-                    renderTransition(this.renderNode, charts)
-                }else{
-                    const renderChart = factory.renderChart()
-                    if(imageVisible){
-                        let chartArgs
-                        if([TEMPLATE.LINE, TEMPLATE.LINE_DENSE].indexOf(templateType)>-1){
-                            chartArgs = [charts[charts.length-1]]
-                        }else{
-                            chartArgs = charts[charts.length-1]
-                        }
-                        const gParent = renderChart(this.renderNode, chartArgs, this.imageSerializer(images))
-
-                    }else{
-                        let chartArgs
-                        if([TEMPLATE.LINE, TEMPLATE.LINE_DENSE].indexOf(templateType)>-1){
-                            chartArgs = [charts[charts.length-1]]
-                        }else{
-                            chartArgs = charts[charts.length-1]
-                        }
-                        const gParent = renderChart(this.renderNode, chartArgs)
-                    }
-                }
+                this.draw(recentProps)
             }else{
                 throw (new Error('데이터가 유효하지 않습니다'))
             }
@@ -174,13 +189,13 @@ class WorkspaceRepresentation extends React.Component{
     }
 
     componentDidMount(){
-        this.drawChart(this.props)
+        this.setupChart(this.props)
     }
 
     componentWillReceiveProps(nextProps){
         if(!_.isEqual(nextProps, this.props) && !nextProps.dirtyDataLoading){
             // ReactDOM.unmountComponentAtNode(this.renderNode)
-            this.drawChart(nextProps)
+            this.setupChart(nextProps)
         }
     }
     render(){

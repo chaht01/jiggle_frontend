@@ -36,6 +36,8 @@ const mapStateToProps = (state, ownProps) => {
         comments:state.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments,
         emphasisTarget:state.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget,
         templateType: state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
+
+        playerNode: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.playerNode,
     }
 }
 
@@ -99,6 +101,7 @@ class DataConfigViewRepresentation extends React.Component{
             }
             if (isValid) {
                 this.props.saveMask(chartMaterials)
+                props.playerNode.draw()
             }else{
 
             }

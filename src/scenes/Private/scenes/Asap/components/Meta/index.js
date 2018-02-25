@@ -14,7 +14,7 @@ import Workspace from '../Workspace'
 import styled from 'styled-components'
 
 /* UTILS */
-import { saveMeta } from '../../sagas/actions'
+import { saveMeta, dataPlayerSet } from '../../sagas/actions'
 import connect from "react-redux/es/connect/connect";
 import {TEMPLATE} from "../../config/types";
 import config from '../../config/factory'
@@ -81,6 +81,7 @@ const mapDispatchToProps = (dispatch) => {
             obj[key] = e.target.value
             return dispatch(saveMeta(obj))
         },
+        setDataPlayerNode: (node) => dispatch(dataPlayerSet(node))
     }
 }
 
@@ -89,6 +90,7 @@ class MetaRepresentation extends React.Component{
     constructor(props){
         super(props)
         this.form = null
+        this.playerNode = null
         this.preventWheel = this.preventWheel.bind(this)
         this.handleWheelEvent = this.handleWheelEvent.bind(this)
         this.saveMeta = _.throttle(this.saveMeta.bind(this), 250)
@@ -112,9 +114,12 @@ class MetaRepresentation extends React.Component{
         ReactDOM.findDOMNode(node).addEventListener('wheel', this.handleWheelEvent.bind(this, ReactDOM.findDOMNode(node)), {passive: false})
     }
     componentDidMount(){
+        this.props.setDataPlayerNode(this.playerNode.getWrappedInstance())
         this.preventWheel(this.form)
+
     }
     componentDidUpdate(){
+        this.props.setDataPlayerNode(this.playerNode.getWrappedInstance())
         this.preventWheel(this.form)
     }
     render(){
@@ -167,6 +172,7 @@ class MetaRepresentation extends React.Component{
                 </ConfigForm>
                 <PreRender>
                     <Workspace
+                        ref={node => this.playerNode = node}
                         errorVisible={true}
                         background="#18171C"
                         width={328}
