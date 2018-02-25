@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import Dropzone from 'react-dropzone'
 import StackGrid from 'react-stack-grid'
 import Checkbox from '../../../../../../components/Checkbox'
-import { saveColor, saveTheme} from '../../sagas/actions'
+import { saveColor, saveTheme } from '../../sagas/actions'
 import { colorsByType, colorToPalette, Swatch } from '../../config/common'
 import connect from "react-redux/es/connect/connect";
 import {TEMPLATE, THEME} from "../../config/types";
@@ -360,7 +360,7 @@ class AppearanceControllerRepresentation extends React.Component{
         if(!_.isEqual(this.props.templateType, nextProps.templateType)){
             this.setState({
                 colorTabs: this.buildColorTab(colorsByType(nextProps.templateType))
-            }, () => this.props.saveColor(this.getPalette()))
+            }, () => this.props.saveColor(this.getPalette(this.state.colorTabs[0].colors[0])))
         }
 
     }

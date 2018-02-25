@@ -37,6 +37,7 @@ const PrivateAppContent = styled(({width, ...rest}) => <AppContent width={width}
 `
 
 const LogoContainer = styled.div`
+    display: inline-block;
     height: 100%;
     padding: 1.1rem 0;
     >img{
@@ -114,24 +115,23 @@ const PrivateRepresentation = ({match, logout, selectedTemplate, dirtyData}) => 
     return (
         <AppContainer>
             <PrivateAppBar>
-                <Logo to={`${match.url}`}>
+                <Logo to={`${routeConfig.publicRoot}`}>
                     <LogoContainer>
                         <img src={LogoImage} alt="jiggle"/>
                     </LogoContainer>
                 </Logo>
-                <Route exact path={`${match.url}`} component={CreateButton}/>
-                <Route exact path={`${match.url}/asap`} component={()=> {
+                {/*<Route exact path={`${match.url}`} component={CreateButton}/>*/}
+                <Route exact path={`${match.url}`} component={()=> {
                     return(
                         (selectedTemplate.config || selectedTemplate.loading) && <AutoSaver loading={selectedTemplate.loading || dirtyData.loading}/>
                     )}
                 }/>
 
-                <AuthButton logout={logout}/>
+                {/*<AuthButton logout={logout}/>*/}
             </PrivateAppBar>
             <PrivateAppContent>
                 <Switch>
-                    <Route exact path={`${match.url}`} component={Dashboard}/>
-                    <Route path={`${match.url}/asap`} component={Asap}/>
+                    <Route path={`${match.url}`} component={Asap}/>
                     {/*<Route exact path={`${match.url}/:id(\\d+)`} component={ChartBuilder}/>*/}
                     <Route component={() => (<Redirect to={{pathname: match.url}}/>)}/>
                 </Switch>

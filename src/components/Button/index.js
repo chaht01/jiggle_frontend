@@ -3,6 +3,7 @@ import {Button as SemanticButton} from 'semantic-ui-react'
 
 import styled, {ThemeProvider} from 'styled-components'
 
+import tinycolor from 'tinycolor2'
 
 const theme = {
     fg: '#222', //foreground color(text)
@@ -52,7 +53,12 @@ const StyledButton = styled(SemanticButton)`
     font-weight: 500 !important;
     padding: 0.7857em 1.6428em 0.7857em !important;
     margin: 0 0.8214em !important;
-    box-shadow: 0 0 0 1px ${props => props.theme.bc} inset!important
+    box-shadow: 0 0 0 1px ${props => props.theme.bc} inset!important;
+    transition: all .2s !important;
+    &:hover{
+        background: ${props => tinycolor(props.theme.bg).darken().toString()} !important;
+        box-shadow: 0 0 0 1px ${props => tinycolor(props.theme.bc).darken().toString()} inset, 0px 0px 6px -1px rgba(100,100,100,0.6) !important;
+    }
 `
 const mergeObject = (...options) => {
     return Object.assign({}, ...options)

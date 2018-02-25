@@ -1,5 +1,6 @@
 import React from 'react'
-import {Modal, Button, Input, Header} from 'semantic-ui-react'
+import {Modal, Input, Header} from 'semantic-ui-react'
+import Button from '../../../../../../components/Button'
 import styled from 'styled-components'
 import connect from "react-redux/es/connect/connect";
 import {saveComment} from "../../sagas/actions";
@@ -24,8 +25,8 @@ LabelEditor.Value = styled.div`
 `
 
 const StyledModal = styled(Modal)`
-    width: 523px !important;
-    padding: 36px 2rem 29px;
+    width: 370px !important;
+    padding: 24px 2rem 20px;
     text-align: center;
     margin-left: 0 !important;
     transform: translateX(-50%);
@@ -34,8 +35,8 @@ StyledModal.Close = styled.a`
     position: absolute;
     cursor: pointer;
     display: block;
-    width: ${15*Math.sqrt(2)}px;
-    height: ${15*Math.sqrt(2)}px;
+    width: ${11*Math.sqrt(2)}px;
+    height: ${11*Math.sqrt(2)}px;
     transform: rotate(45deg);
     right: 0;
     top: 0;
@@ -66,29 +67,29 @@ StyledModal.Close = styled.a`
 StyledModal.Profile = styled.img`
     position: relative;
     display: block;
-    width: 122px;
-    height: 122px;
+    width: 96px;
+    height: 96px;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 28px;
+    margin-bottom: 19px;
     text-align: center;
 `
 StyledModal.Header = styled.div`
     margin-bottom: 15px;
     font-weight: 700;
-    font-size: 27px;
+    font-size: 18px;
     color: #2b2b2b;
     text-align: center;
 `
 StyledModal.Description = styled.div`
-    margin-bottom: 15px;
+    margin-bottom: 11px;
     font-weight: 400;
-    font-size: 18px;
+    font-size: 12px;
     color: #494949;
     text-align: center;
 `
 StyledModal.Content = styled(Modal.Content)`
-    padding: 16px 0 31px;
+    padding: 11px 0 22px;
 `
 StyledModal.Actions = styled.div`
     display: flex;
@@ -258,10 +259,10 @@ class LabelModalRepresentation extends React.Component {
                     }
                 </StyledModal.Content>
                 <StyledModal.Actions>
-                    <Button compact onClick={() => {
+                    <Button compact size='small' theme={{fg:'#fff', bg:'#FB4C1E'}} style={{width: '7.5rem'}} onClick={()=>{
                         this.save()
                         this.close()
-                    }} positive icon='checkmark' labelPosition='right' content='확인'/>
+                    }} icon='checkmark' labelPosition='right' content='확인'/>
                 </StyledModal.Actions>
             </StyledModal>
         )

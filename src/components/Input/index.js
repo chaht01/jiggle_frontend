@@ -24,6 +24,7 @@ const StyledInput = styled(SemanticInput)`
         ${props => props.square ? 'border-radius: 0 !important;' : ''}
         color: ${props => props.theme.fg} !important;
         background: ${props => props.theme.bg} !important;
+        transition: all .2s !important;
         &:focus{
             border-color: ${props => props.theme.bc} !important;
         }
