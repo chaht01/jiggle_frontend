@@ -143,11 +143,11 @@ class PreviewPlayerRepresentation extends React.Component{
         this.stop = this.stop.bind(this)
     }
     renderGIF(){
-        this.focusImage(-1, ()=>{
+        // this.focusImage(-1, ()=>{
             if(this.renderNode!==null){
                 this.renderNode.getWrappedInstance().renderGIF()
             }
-        })
+        // })
 
     }
     setAnchorIdx(idx, cb){

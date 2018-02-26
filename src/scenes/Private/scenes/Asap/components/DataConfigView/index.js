@@ -133,7 +133,7 @@ class DataConfigViewRepresentation extends React.Component{
                     </FullPage>
                 </PaddedContainer>
                 <SectionFooter>
-                    <Modal trigger={<Button compact size='small' theme={{fg:'#fff', bg:'#2C2D2F'}} style={{width: '7.5rem'}} onClick={()=>this.handleModal(true)}>데이터 입력방법</Button>}
+                    <Modal trigger={<Button compact size='small' theme={{fg:'#fff', bg:'#2C2D2F'}} style={{width: '8rem'}} onClick={()=>this.handleModal(true)}>데이터 입력방법</Button>}
                            basic size='large'
                            closeOnEscape={true}
                            closeOnRootNodeClick={true}
@@ -150,7 +150,7 @@ class DataConfigViewRepresentation extends React.Component{
                             <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}} onClick={()=>this.handleModal(false)}>확인</Button>
                         </Modal.Actions>
                     </Modal>
-                    <Button compact size='small' theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '7.5rem'}} onClick={this.next} disabled={this.props.safeMask===null}>확인</Button>
+                    <Button compact size='small' theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '8rem'}} onClick={this.next} disabled={this.props.safeMask===null}>확인</Button>
                 </SectionFooter>
             </React.Fragment>
         )
@@ -177,6 +177,11 @@ class DummyModalContent extends React.Component{
         const color = colors[Object.keys(colors)[0]][0]
         this.palette = colorToPalette(color, templateType, this.mask.mask)
         this.theme = THEME.DARK
+
+        this.node = null
+    }
+    componentDidMount(){
+        this.node.getWrappedInstance().draw()
     }
     render(){
         const {
@@ -201,7 +206,9 @@ class DummyModalContent extends React.Component{
                 <DummyChart>
                     <Workspace
                         background="transparent"
+                        ref={node => this.node = node}
                         errorVisible={true}
+                        meta={placeholder.meta}
                         width={533}
                         safeMask={this.mask}
                         color={this.palette}

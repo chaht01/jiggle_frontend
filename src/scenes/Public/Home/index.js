@@ -61,7 +61,8 @@ const ParentContent = styled.div`
 `
 const Child = styled(AppBar)`
     position: fixed;
-    transform: translateZ(0);
+    left: 50%;
+    transform: translateZ(0) translateX(-50%);
     backface-visibility: hidden;
     will-change: transform;
     perspective: 1000;

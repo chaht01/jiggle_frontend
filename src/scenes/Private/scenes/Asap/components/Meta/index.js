@@ -66,6 +66,7 @@ const ConfigLabel = styled.label`
 
 const PreRender = styled.div`
     padding: 1rem;
+    box-shadow: 0 -1px 9px -1px rgba(20, 20, 20, 0.6);
 `
 
 const mapStateToProps = (state, ownProps) => {
@@ -135,7 +136,7 @@ class MetaRepresentation extends React.Component{
         this.preventWheel(this.form)
     }
     render(){
-        const {meta} = this.props
+        const {meta, activateSection} = this.props
         const {saveMeta} = this
         return(
             <ConfigPanel>
@@ -181,7 +182,7 @@ class MetaRepresentation extends React.Component{
                                }}/>
                     </ConfigField>
                 </ConfigForm>
-                <PreRender>
+                <PreRender onClick={()=>activateSection(2)}>
                     <Workspace
                         ref={node => this.playerNode = node}
                         errorVisible={true}

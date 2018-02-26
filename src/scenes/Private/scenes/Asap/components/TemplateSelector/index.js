@@ -21,6 +21,25 @@ import { fetchTemplatesThumbnails } from '../../../../sagas/templates/actions'
 /* UTIL */
 import media from '../../../../../../config/media'
 import {fetchTemplate} from "../../sagas/actions";
+import factory from '../../config/factory'
+import Workspace from '../Workspace'
+import * as _ from "lodash";
+import {colorsByType, colorToPalette} from "../../config/common";
+import {THEME} from "../../config/types";
+import numeral from 'numeral'
+
+const Msg = styled.div`
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom:0;
+    padding-bottom: 50px;
+    color: #fff;
+`
 
 const ThumbnailContainer = styled(FullPage)`
     display: grid;
@@ -31,8 +50,11 @@ const ThumbnailContainer = styled(FullPage)`
     overflow: auto;
 `
 const Thumbnail = styled.div`
+    cursor: pointer;
     display: block;
+    position:relative;
     border: 2px solid ${props => props.selected ? '#FA4D1E' : 'transparent'};
+    transition: all .2s;
 `
 const ThumbnailDescription = styled.div`
     display: flex;
@@ -43,60 +65,7 @@ const ThumbnailDescription = styled.div`
     color: #C7C8CA;
     background: #1C2021;
 `
-const CompositionExtended = styled(Composition)`
-    text-align: center;
-    font-weight: 800;
-    font-size: 2rem;
-    cursor: pointer;
-    background: #2A2E2F;
-    overflow: hidden;
-`
 
-const ThumbJoke = styled.img`
-    position:relative;
-    width: 100%; 
-    top: 50%; 
-    transform: translate(0, -50%) scale(1.5);
-    opacity: 0.3;
-    transition: all .5s;
-    &:hover{
-        transform: translate(0, -50%) scale(1);
-        opacity: 1;
-    }
-`
-
-const RealThumb = styled.div`
-    position:relative;
-    width: 100%; 
-    height: 100%;
-    background-size: auto 100%;
-    background-repeat: no-repeat;
-    background-position: 50%;
-    background-color: #fff;
-    opacity: 0.3;
-    transition: all .5s;
-    background-image: url(${props => props.thumb});
-    &:after{
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background-size: auto 100%;
-        background-repeat: no-repeat;
-        background-position: 50%;
-        background-color: #fff;
-        left: 0;
-        top: 0;
-        background-image: url(${props => props.animate});
-        content:"";
-        display: none;
-    }
-    &:hover{
-        opacity: 1;
-        &:after{
-            display: block;
-        }
-    }
-`
 
 const mapStateToProps = (state, ownProps) => {
     return {
@@ -120,7 +89,6 @@ const mapDispatchToProps = (dispatch) => {
     }
 }
 
-
 class TemplatesRepresentation extends React.Component{
     constructor(props){
         super(props)
@@ -128,8 +96,10 @@ class TemplatesRepresentation extends React.Component{
             selected: -1,
             loading: this.props.selectedTemplate.loading,
             config: this.props.selectedTemplate.config,
-            over: false
+            thumb_width:0,
+            over: -1
         }
+        this.thumbNode = null
         this.scrollable = null
         this.handleOver = this.handleOver.bind(this)
         this.confirmTemplate = this.confirmTemplate.bind(this)
@@ -149,8 +119,8 @@ class TemplatesRepresentation extends React.Component{
         }
         e.stopPropagation();
     }
-    handleOver(value){
-        this.setState({over:value})
+    handleOver(idx){
+        this.setState({over:idx})
     }
     confirmTemplate(){
         this.props.selectTemplate(this.state.selected, this.props.thumbnails[this.state.selected])
@@ -174,38 +144,65 @@ class TemplatesRepresentation extends React.Component{
         return (
             <React.Fragment>
                 <PaddedContainer>
-                    <ThumbnailContainer ref={(container)=> this.scrollable = container}>
-                        {
-                            this.props.loading ?
-                                <Dimmer active>
-                                    <Loader />
-                                </Dimmer> :
-                                this.props.error ? '알 수 없는 에러가 발생했습니다. 다시 시도해 보세요.':
-                                this.props.thumbnails.map((template, i) => {
-                                    const Thumb = withRouter(
-                                        ({history, ...rest}) => (
-                                            <Thumbnail onClick={() => {
-                                                this.setState({selected: i})
-                                            }} selected={i===this.state.selected}>
-                                                <CompositionExtended>
-                                                    {template.thumb ? (template.dummy ? <ThumbJoke src={template.thumb} alt=""/> : <RealThumb thumb={template.thumb} animate={template.animate}/>) : template.name}
-                                                    {this.props.selectedTemplate.idx==i && (this.props.selectedTemplate.loading ?
-                                                        <Dimmer active>
-                                                            <Loader size='medium'>Loading</Loader>
-                                                        </Dimmer>
-                                                        : (this.props.selectedTemplate.error ? '':'active'))}
-                                                </CompositionExtended>
-                                                <ThumbnailDescription>
-                                                    {template.desc}
-                                                </ThumbnailDescription>
-                                            </Thumbnail>
-                                        ))
-                                    return (
-                                        <Thumb key={i}/>
-                                    )
-                                })
-                        }
-                    </ThumbnailContainer>
+                    {
+                        this.props.loading ?
+                            <Dimmer active>
+                                <Loader />
+                            </Dimmer> :
+                            this.props.error ?
+                                <Msg>알 수 없는 에러가 발생했습니다. 다시 시도해 보세요.</Msg>
+                                :
+                                <ThumbnailContainer ref={(container)=> this.scrollable = container}>
+                                    {this.props.thumbnails.map((template, i) => {
+                                        const mask = factory.mask(template.placeholder.data, [], template.placeholder.emphasisTarget)[template.type]()
+                                        const colors = colorsByType(template.type)
+                                        const color = colors[Object.keys(colors)[0]][0]
+                                        const palette = colorToPalette(color, template.type, mask.mask)
+                                        const theme = THEME.DARK
+                                        const dummyMeta = {}
+                                        const Thumb = withRouter(
+                                            ({history, ...rest}) => (
+                                                <Thumbnail
+                                                    onClick={() => {
+                                                        this.setState({selected: i})
+                                                    }}
+                                                    onDoubleClick={()=>{
+                                                        console.log('ff')
+                                                        this.setState({selected: i}, this.confirmTemplate)
+                                                    }}
+                                                    selected={i === this.state.selected}
+                                                    onMouseEnter={()=>this.handleOver(i)}
+                                                    onMouseLeave={()=>this.handleOver(-1)}
+                                                >
+                                                    <Workspace
+                                                        background="transparent"
+                                                        width={`100%`}
+
+                                                        templateType={template.type}
+                                                        templateConfig={template}
+                                                        safeMask={mask}
+                                                        meta={dummyMeta}
+                                                        color={palette}
+                                                        theme={theme}
+
+                                                        transitionActive={this.state.over==i}
+                                                        autoPlay={true}
+                                                    />
+                                                    {this.props.selectedTemplate.idx == i && (this.props.selectedTemplate.loading ?
+                                                    <Loader active inverted size='medium'></Loader>
+                                                    : null)}
+                                                    <ThumbnailDescription>
+                                                        {template.desc}
+                                                    </ThumbnailDescription>
+                                                </Thumbnail>
+                                            ))
+                                        return (
+                                            <Thumb key={i}/>
+                                        )
+                                    })
+                                    }
+                                </ThumbnailContainer>
+                    }
                 </PaddedContainer>
                 <SectionFooter>
                     <Button onClick={this.confirmTemplate} compact size="small" theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '7.5rem'}} disabled={this.state.selected==-1}>

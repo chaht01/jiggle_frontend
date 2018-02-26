@@ -10,6 +10,7 @@ import connect from "react-redux/es/connect/connect";
 import * as _ from "lodash";
 import download from 'downloadjs'
 import {TEMPLATE} from "../../config/types";
+import * as numeral from "numeral";
 
 const RenderComposition = styled(Composition)`
     background: ${props=> props.background || '#fff'};
@@ -40,7 +41,6 @@ const PlayerController = styled.div`
 const mapStateToProps = (state, ownProps) => {
     return {
         templateType: ownProps.templateType || state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config.type,
-        dirtyDataLoading: ownProps.dirtyDataLoading || state.PrivateReducer.AsapReducer.procedureManager.dirtyData.loading,
         templateConfig: ownProps.templateConfig || state.PrivateReducer.AsapReducer.procedureManager.selectedTemplate.config,
         safeMask: ownProps.safeMask || state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
         meta: ownProps.meta || state.PrivateReducer.AsapReducer.procedureManager.dirtyData.meta,
@@ -56,7 +56,8 @@ class WorkspaceRepresentation extends React.Component{
         super(props)
         this.state = {
             error: false,
-            msg: ''
+            msg: '',
+            rendeBlock: false
         }
         this.setupChart = this.setupChart.bind(this)
         this.renderGIF = this.renderGIF.bind(this)
@@ -72,6 +73,9 @@ class WorkspaceRepresentation extends React.Component{
         return this.renderNode
     }
     draw(recentProps){
+        if(this.state.renderBlock){
+           return
+        }
         const props = recentProps || this.props
         const {transitionActive, templateType, imageVisible, images=[]} = props
 
@@ -108,7 +112,9 @@ class WorkspaceRepresentation extends React.Component{
     }
     renderGIF(){
         if(this.charts && this.charts.length!=0 && this.factory){
+            this.setState({renderBlock: true})
             const onProcess = (progress) => {
+                this.setState({renderBlock: false})
                 console.log(progress)
             };
             const onFinished = (blob) => {
@@ -165,6 +171,9 @@ class WorkspaceRepresentation extends React.Component{
 
                 this.charts = charts
                 this.factory = factory
+                if(recentProps.autoPlay){
+                    this.draw(recentProps)
+                }
             }else{
                 throw (new Error('데이터가 유효하지 않습니다'))
             }
@@ -200,12 +209,13 @@ class WorkspaceRepresentation extends React.Component{
     }
     render(){
         const {width, background, errorVisible} = this.props
+        let height = typeof width ==="string" ? (width.endsWith('%') ? '100%' :  numeral(width)*9/16) : width*9/16
         return(
             <RenderComposition background={background}>
                 <svg
                     ref={node => this.renderNode = node}
                     width = {width}
-                    height={width*9/16}
+                    height={height}
                 />
                 {errorVisible &&
                 <PlayerController error={this.state.error}>

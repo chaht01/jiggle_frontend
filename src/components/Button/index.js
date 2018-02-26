@@ -51,7 +51,7 @@ const StyledButton = styled(SemanticButton)`
     background: ${props => props.theme.bg} !important;
     font-size: ${props => size[props.size || 'medium'].fontSize}px !important;
     font-weight: 500 !important;
-    padding: 0.7857em 1.6428em 0.7857em !important;
+    padding: 0.7857em 2.1428em 0.7857em !important;
     margin: 0 0.8214em !important;
     box-shadow: 0 0 0 1px ${props => props.theme.bc} inset!important;
     transition: all .2s !important;
