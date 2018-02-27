@@ -52,7 +52,7 @@ const StyledButton = styled(SemanticButton)`
     font-size: ${props => size[props.size || 'medium'].fontSize}px !important;
     font-weight: 500 !important;
     padding: 0.7857em 2.1428em 0.7857em !important;
-    margin: 0 0.8214em !important;
+    ${props => !props.nomargin ? 'margin: 0 0.8214em !important;' : ''}
     box-shadow: 0 0 0 1px ${props => props.theme.bc} inset!important;
     transition: all .2s !important;
     &:hover{

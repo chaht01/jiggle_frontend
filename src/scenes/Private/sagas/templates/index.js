@@ -53,6 +53,10 @@ const defaultPlaceholder = (type) => {
                     unit:'억원',
                     reference:'와이즈에프엔',
                     madeBy: 'jiggle'
+                },
+                paper: {
+                    title: `아이폰 부진에 삼성디스플 1Q 실적, 절반으로 내려앉나`,
+                    contents: `아이폰 X(iPhone X)가 수요부진으로 올해 1분기 생산량을 줄일 것으로 전망되면서 관련 부품사인 삼성디스플레이의 영업이익은 지난해 같은 기간의 절반 수준에 그칠 것이란 전망이 나온다. 엎친 데 덮친 격으로 중국 스마트폰 판매 부진도 부정적 요인이라는 분석이다.`
                 }
             }
         case TEMPLATE.BAR_HORIZONTAL_EMPHASIS:
@@ -72,6 +76,10 @@ const defaultPlaceholder = (type) => {
                     unit:'크레딧',
                     reference:'캘리포니아주 대기자원위원회',
                     madeBy: 'jiggle'
+                },
+                paper:{
+                    title: `"현대차보다 테슬라" 해외주식 쇼핑 열기 '후끈'`,
+                    contents: `미국 주식에 10억원을 투자한 고액자산가 A씨는 최근 프라이빗뱅커(PB)의 조언으로 SK하이닉스 (78,700원 상승1200 1.6%)를 팔고 대만 반도체회사 TSMC를 매수했다. A씨는 "TSMC의 수익구조가 SK하이닉스보다 매력적이란 생각에 매수했다"고 설명했다. 올 들어 국내 투자자들이 글로벌 주식시장에 뛰어들며 해외주식 비중을 공격적으로 늘리고 있다. 6년째 박스권에 머문 한국 증시보다 수익기회가 높은 선진·신흥 주식시장에서 4차산업 관련주에 투자하는 수요가 급증하고 있다.  `
                 }
             }
         case TEMPLATE.BAR:
@@ -93,6 +101,10 @@ const defaultPlaceholder = (type) => {
                     unit:'억원',
                     reference:'예탁결제원, 금융투자협회',
                     madeBy: 'jiggle'
+                },
+                paper:{
+                    title: `"현대차보다 테슬라" 해외주식 쇼핑 열기 '후끈'`,
+                    contents: `미국 주식에 10억원을 투자한 고액자산가 A씨는 최근 프라이빗뱅커(PB)의 조언으로 SK하이닉스 (78,700원 상승1200 1.6%)를 팔고 대만 반도체회사 TSMC를 매수했다. A씨는 "TSMC의 수익구조가 SK하이닉스보다 매력적이란 생각에 매수했다"고 설명했다. 올 들어 국내 투자자들이 글로벌 주식시장에 뛰어들며 해외주식 비중을 공격적으로 늘리고 있다. 6년째 박스권에 머문 한국 증시보다 수익기회가 높은 선진·신흥 주식시장에서 4차산업 관련주에 투자하는 수요가 급증하고 있다.  `
                 }
             }
         case TEMPLATE.BAR_HORIZONTAL:
@@ -113,6 +125,10 @@ const defaultPlaceholder = (type) => {
                     unit:'만원',
                     reference:'삼성전자',
                     madeBy: 'jiggle'
+                },
+                paper:{
+                    title: `"카메라 재창조" 갤S9, 내달 16일 출시…가격은?`,
+                    contents: `상반기 스마트폰 최대 기대작 '갤럭시S9'이 베일을 벗었다. AR(증강현실), AI(인공지능) 등을 활용해 강력해진 카메라 기능과 더욱 얇아진 베젤리스 디자인이 특징이다. 내달 16일 글로벌 순차 출시되며 가격은 공개되지 않았지만 전작인 갤럭시S8과 비슷한 수준으로 책정될 것이라는 예상이다. `
                 }
             }
         case TEMPLATE.BAR_GROUPED:
@@ -131,6 +147,10 @@ const defaultPlaceholder = (type) => {
                     unit:'억원',
                     reference:'공정거래위원회 기업진단 공개 시스템',
                     madeBy: 'jiggle'
+                },
+                paper:{
+                    title: `[MT리포트]부영·호반·중흥 '신3인방'이 사는 법`,
+                    contents: `지난 3년간 이어진 주택시장 호황은 건설사들의 명암을 갈랐다. 대형건설사들이 해외사업 부실로 주춤할 때 부영, 호반, 중흥 등 중견건설사 신3인방은 공공택지 입찰과 용지 확보에 나서 공격적으로 베팅하며 몸집을 키웠다. 보수적 경영으로 쌓은 현금으로 자체 사업을 늘리고 지역언론사를 비롯해 각종 인수전에 나서며 전국구 기업으로 떠오른 것. `
                 }
             }
         case TEMPLATE.LINE:
@@ -148,6 +168,10 @@ const defaultPlaceholder = (type) => {
                     unit:'%',
                     reference:'윤호중 의원실, 관세청',
                     madeBy: 'jiggle'
+                },
+                paper:{
+                    title: `[단독]롯데면세점, 강남 지역 송객수수료 인상`,
+                    contents: `롯데면세점이 최근 강남 지역에서 단체여행객과 중국 보따리상인 '따이궁'을 유치하는 각 여행사에게 지급하는 송객수수료를 상향 조정했다. 지난해 사드(THAAD·고고도미사일방어체계) 보복 여파로 강남 지역 매출이 크게 줄자 모객에 나선 것. `
                 }
             }
         case TEMPLATE.LINE_DENSE:
@@ -162,6 +186,10 @@ const defaultPlaceholder = (type) => {
                     unit:'원',
                     reference:'',
                     madeBy: 'jiggle'
+                },
+                paper:{
+                    title: `[단독]롯데면세점, 강남 지역 송객수수료 인상`,
+                    contents: `롯데면세점이 최근 강남 지역에서 단체여행객과 중국 보따리상인 '따이궁'을 유치하는 각 여행사에게 지급하는 송객수수료를 상향 조정했다. 지난해 사드(THAAD·고고도미사일방어체계) 보복 여파로 강남 지역 매출이 크게 줄자 모객에 나선 것. `
                 }
             }
     }
