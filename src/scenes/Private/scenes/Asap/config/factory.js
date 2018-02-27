@@ -485,7 +485,7 @@ const factory = {
             [TEMPLATE.BAR_EMPHASIS]: () => {
                 let ret = {
                     mask: [],
-                    comments: [],
+                    comments: [], // [commentList, commentList, ...] : commentList is Array
                     breakPoint: -1
                 }
                 const range = getRangeOfValidData(data)
@@ -496,7 +496,7 @@ const factory = {
                     emphasisRange = [range[1], range[1], range[3], range[3]]
                 }
                 const validation = performDataValidation(data, range, comments, emphasisRange)
-                ret.comments = validation.comments
+                // ret.comments = validation.comments
                 const emphasisRowPos = validation.breakPoint[2]
 
                 if(emphasisRowPos!=-1){
@@ -509,11 +509,20 @@ const factory = {
                             return true
                         })
                     )
+                    ret.comments.push(
+                        validation.comments.filter((comment) => {
+                            if (comment.row == emphasisRowPos) {
+                                return false
+                            }
+                            return true
+                        })
+                    )
                 }
 
 
                 // # else
                 ret.mask.push(validation.rawData)
+                ret.comments.push(validation.comments)
 
                 ret.breakPoint = validation.breakPoint[2]
                 return ret
@@ -522,7 +531,7 @@ const factory = {
             [TEMPLATE.BAR_HORIZONTAL_EMPHASIS]: () => {
                 let ret = {
                     mask: [],
-                    comments: [],
+                    comments: [], // [commentList, commentList, ...] : commentList is Array
                     breakPoint: -1
                 }
                 const range = getRangeOfValidData(data)
@@ -533,7 +542,7 @@ const factory = {
                     emphasisRange = [range[1], range[1], range[3], range[3]]
                 }
                 const validation = performDataValidation(data, range, comments, emphasisRange)
-                ret.comments = validation.comments
+                // ret.comments = validation.comments
                 const emphasisRowPos = validation.breakPoint[2]
 
                 if(emphasisRowPos!=-1){
@@ -546,12 +555,20 @@ const factory = {
                             return true
                         })
                     )
+                    ret.comments.push(
+                        validation.comments.filter((comment) => {
+                            if (comment.row == emphasisRowPos) {
+                                return false
+                            }
+                            return true
+                        })
+                    )
                 }
 
 
                 // # else
                 ret.mask.push(validation.rawData)
-
+                ret.comments.push(validation.comments)
                 ret.breakPoint = validation.breakPoint[2]
                 return ret
             },
@@ -559,46 +576,47 @@ const factory = {
             [TEMPLATE.BAR]: () => {
                 let ret = {
                     mask:[],
-                    comments:[]
+                    comments: [], // [commentList, commentList, ...] : commentList is Array
                 }
                 const range = getRangeOfValidData(data)
                 //TODO validation of props and error handling
                 const validation = performDataValidation(data, range, comments)
                 ret.mask.push(validation.rawData)
-                ret.comments = validation.comments
+                ret.comments.push(validation.comments)
+
                 return ret
             },
 
             [TEMPLATE.BAR_HORIZONTAL]: () => {
                 let ret = {
                     mask:[],
-                    comments:[]
+                    comments: [], // [commentList, commentList, ...] : commentList is Array
                 }
                 const range = getRangeOfValidData(data)
                 //TODO validation of props and error handling
                 const validation = performDataValidation(data, range, comments)
                 ret.mask.push(validation.rawData)
-                ret.comments = validation.comments
+                ret.comments.push(validation.comments)
                 return ret
             },
 
             [TEMPLATE.BAR_GROUPED]: () => {
                 let ret = {
                     mask:[],
-                    comments:[]
+                    comments: [], // [commentList, commentList, ...] : commentList is Array
                 }
                 const range = getRangeOfValidData(data)
                 //TODO validation of props and error handling
                 const validation = performDataValidation(data, range, comments)
                 ret.mask.push(validation.rawData)
-                ret.comments = validation.comments
+                ret.comments.push(validation.comments)
                 return ret
             },
 
             [TEMPLATE.LINE]: () => {
                 let ret = {
                     mask:[],
-                    comments:[]
+                    comments: [], // [commentList, commentList, ...] : commentList is Array
                 }
                 const range = getRangeOfValidData(data)
                 //TODO validation of props and error handling
@@ -607,16 +625,17 @@ const factory = {
                 commentsToSend.sort((a, b) => a.row - b.row)
                 commentsToSend.forEach((comment) => {
                     ret.mask.push(validation.rawData.slice(0, comment.row + 1))
+                    ret.comments.push(commentsToSend)
                 })
                 ret.mask.push(validation.rawData)
-                ret.comments = validation.comments
+                ret.comments.push(commentsToSend)
                 return ret
             },
 
             [TEMPLATE.LINE_DENSE]: () => {
                 let ret = {
                     mask:[],
-                    comments:[]
+                    comments: [], // [commentList, commentList, ...] : commentList is Array
                 }
                 const range = getRangeOfValidData(data)
                 //TODO validation of props and error handling
@@ -625,12 +644,10 @@ const factory = {
                 commentsToSend.sort((a, b) => a.row - b.row)
                 commentsToSend.forEach((comment) => {
                     ret.mask.push(validation.rawData.slice(0, comment.row + 1))
+                    ret.comments.push(commentsToSend)
                 })
                 ret.mask.push(validation.rawData)
-                ret.comments = validation.comments.map((c)=>{
-                    c.comment = c.value
-                    return c
-                })
+                ret.comments.push(commentsToSend)
                 return ret
             }
         }

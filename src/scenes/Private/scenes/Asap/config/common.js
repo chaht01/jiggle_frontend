@@ -141,6 +141,15 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, theme
     let settings = []
     let charts = []
     let factory = null
+    if(comments.length==0 || mask.length!=comments.length){
+        console.error('Warning: comments not given while using getFactory method. Comments will extend along with mask size')
+        let resLen = mask.length - comments.length
+        while(resLen){
+            resLen--
+            comments.push([])
+        }
+    }
+
     switch (type){
         case TEMPLATE.BAR:
         case TEMPLATE.BAR_HORIZONTAL:
@@ -172,8 +181,8 @@ export const getFactory = (type, mask, meta, templateConfig, width, color, theme
             })
             break;
     }
-    charts = settings.map((setting) => {
-        return Object.assign({}, templateConfig, {theme}, {label:comments}, setting)
+    charts = settings.map((setting, i) => {
+        return Object.assign({}, templateConfig, {theme}, {label:comments[i]}, setting)
     })
 
     switch (type){
