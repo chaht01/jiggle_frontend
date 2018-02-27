@@ -7,7 +7,7 @@ import { withRouter, Link } from 'react-router-dom'
 import routeConfig from '../../../../../../config/route'
 
 /* COMPONENTS */
-import {Dimmer, Loader, Segment} from 'semantic-ui-react'
+import {Dimmer, Loader, Label} from 'semantic-ui-react'
 import FullPage from '../../../../../../components/Layout/FullPage'
 import Composition from '../../../../../../components/Composition'
 import Button from '../../../../../../components/Button'
@@ -47,30 +47,42 @@ const ThumbnailContainer = styled(FullPage)`
     grid-column-gap: 1rem;
     align-content: start;
     grid-row-gap: 2rem;
+    padding-bottom: calc(50px + 10rem);
     overflow: auto;
 `
 const Thumbnail = styled.div`
     cursor: pointer;
-    display: block;
+    display: flex;
+    flex-direction: column;
     position:relative;
     border: 2px solid ${props => props.selected ? '#FA4D1E' : 'transparent'};
     transition: all .2s;
 `
 const ThumbnailDescription = styled.div`
+    flex:1;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     width: 100%;
-    height: 3.4rem;
-    color: #C7C8CA;
-    background: #1C2021;
+    // height: 3.4rem;
+    // color: #C7C8CA;
+    // background: #1C2021;
+    background: #e1e1e4;
+    color: #222;
     padding: .3rem .8rem;
     font-size: .85rem;
     line-height: 1.4;
     transition: all .25s;
-    &:hover{
-        color: #fff;
-    }
+`
+
+ThumbnailDescription.TextSpan = styled.div`
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+`
+ThumbnailDescription.Tag = styled(Label)`
+    background: #A5ABB8 !important;
+    color: #fff !important;
 `
 
 
@@ -117,11 +129,12 @@ class TemplatesRepresentation extends React.Component{
             scrollableDist = element.scrollHeight - element.clientHeight
         if((dY>0 && currScrollPos >= scrollableDist) ||
             (dY<0 && currScrollPos <= 0)){
-            e.preventDefault();
-            e.stopPropagation();
             if(dY>0 && currScrollPos >= scrollableDist){
                 this.props.activateSection(1)
+                return true;
             }
+            e.preventDefault();
+            e.stopPropagation();
             return false;
         }
         e.stopPropagation();
@@ -144,8 +157,11 @@ class TemplatesRepresentation extends React.Component{
             setTimeout(()=>this.props.activateSection(1), 250)
         }
     }
-    componentWillUnmount(){
-
+    componentDidUpdate(){
+        if(this.scrollable!==null){
+            const ele = ReactDOM.findDOMNode(this.scrollable)
+            ele.addEventListener('wheel', this.handleWheelEvent.bind(this, ele), {passive: false})
+        }
     }
     render(){
         return (
@@ -199,7 +215,14 @@ class TemplatesRepresentation extends React.Component{
                                                     <Loader active inverted size='medium'></Loader>
                                                     : null)}
                                                     <ThumbnailDescription>
-                                                        {template.description}
+                                                        <ThumbnailDescription.TextSpan>
+                                                            {template.description}
+                                                        </ThumbnailDescription.TextSpan>
+                                                        <Label.Group>
+                                                            <ThumbnailDescription.Tag size='tiny'>$10.00</ThumbnailDescription.Tag>
+                                                            <ThumbnailDescription.Tag size='tiny'>$10.00</ThumbnailDescription.Tag>
+                                                            <ThumbnailDescription.Tag size='tiny'>$10.00</ThumbnailDescription.Tag>
+                                                        </Label.Group>
                                                     </ThumbnailDescription>
                                                 </Thumbnail>
                                             ))
@@ -215,7 +238,7 @@ class TemplatesRepresentation extends React.Component{
                     <Button onClick={this.confirmTemplate} compact size="small" theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '8rem'}} disabled={this.state.selected==-1}>
                         {this.state.selected!=-1 && this.props.selectedTemplate.loading ?
                             <Loader active inline inverted size='mini'/>
-                            : '확인'
+                            : '다음'
                         }
                     </Button>
                 </SectionFooter>

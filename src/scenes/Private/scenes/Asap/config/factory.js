@@ -4,6 +4,27 @@ import BreakModal from '../components/BreakModal'
 import {getRangeOfValidData, getValidDataWithinRange, performDataValidation} from "../sagas/actions";
 //TODO: context switching and validation
 
+const checkValidation = (selectedData) => {
+    let totalCnt = 0
+    let emptyCnt = 0
+    selectedData.map((row) => {
+        row.map((cell) => {
+            totalCnt++
+            if (typeof cell == 'string') {
+                cell = cell.trim()
+            }
+            if (['', undefined, null].indexOf(cell) > -1) {
+                emptyCnt++;
+            }
+        })
+    })
+    if (totalCnt == emptyCnt) {
+        return false
+    }
+    return true
+}
+
+
 const factory = {
     sheet: (data, comments=[], emphasisTarget=[-1,-1,-1,-1]) => {
         return {
@@ -69,7 +90,9 @@ const factory = {
                             if (key === 'label') {
                                 const selectedData = data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
                                 const range = [options.start.col, options.end.col, options.start.row, options.end.row]
-                                this.props.modalOpen(true, {selectedData, range})
+                                if(checkValidation(selectedData)){
+                                    this.props.modalOpen(true, {selectedData, range})
+                                }
                             }
                         }.bind(ctx),
                         items: {
@@ -141,7 +164,9 @@ const factory = {
                             if (key === 'label') {
                                 const selectedData = data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
                                 const range = [options.start.col, options.end.col, options.start.row, options.end.row]
-                                this.props.modalOpen(true, {selectedData, range})
+                                if(checkValidation(selectedData)){
+                                    this.props.modalOpen(true, {selectedData, range})
+                                }
                             }
                         }.bind(ctx),
                         items: {
@@ -193,7 +218,9 @@ const factory = {
                             if (key === 'label') {
                                 const selectedData = data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
                                 const range = [options.start.col, options.end.col, options.start.row, options.end.row]
-                                this.props.modalOpen(true, {selectedData, range})
+                                if(checkValidation(selectedData)){
+                                    this.props.modalOpen(true, {selectedData, range})
+                                }
                             }
                         }.bind(ctx),
                         items: {
@@ -248,7 +275,9 @@ const factory = {
                             if (key === 'label') {
                                 const selectedData = data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
                                 const range = [options.start.col, options.end.col, options.start.row, options.end.row]
-                                this.props.modalOpen(true, {selectedData, range})
+                                if(checkValidation(selectedData)){
+                                    this.props.modalOpen(true, {selectedData, range})
+                                }
                             }
                         }.bind(ctx),
                         items: {
@@ -320,7 +349,9 @@ const factory = {
                             if (key === 'label') {
                                 const selectedData = data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
                                 const range = [options.start.col, options.end.col, options.start.row, options.end.row]
-                                this.props.modalOpen(true, {selectedData, range})
+                                if(checkValidation(selectedData)){
+                                    this.props.modalOpen(true, {selectedData, range})
+                                }
                             }
                         }.bind(ctx),
                         items: {
@@ -372,7 +403,9 @@ const factory = {
                             if (key === 'label') {
                                 const selectedData = data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
                                 const range = [options.start.col, options.end.col, options.start.row, options.end.row]
-                                this.props.modalOpen(true, {selectedData, range})
+                                if(checkValidation(selectedData)){
+                                    this.props.modalOpen(true, {selectedData, range})
+                                }
                             }
                         }.bind(ctx),
                         items: {
@@ -424,7 +457,9 @@ const factory = {
                             if (key === 'label') {
                                 const selectedData = data.slice(options.start.row, options.end.row + 1).map((row) => row.slice(options.start.col, options.end.col + 1))
                                 const range = [options.start.col, options.end.col, options.start.row, options.end.row]
-                                this.props.modalOpen(true, {selectedData, range})
+                                if(checkValidation(selectedData)){
+                                    this.props.modalOpen(true, {selectedData, range})
+                                }
                             }
                         }.bind(ctx),
                         items: {

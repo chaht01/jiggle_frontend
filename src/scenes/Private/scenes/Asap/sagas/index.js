@@ -14,7 +14,7 @@ import {
 /*** FETCH TEMPLATE ***/
 export function* fetchTemplateAsync(action) {
     try{
-        yield call(delay, 1000)
+        yield call(delay, 100)
         const template = yield action.payload.template
         yield put(fetchTemplateSuccess(template))
     } catch (error){

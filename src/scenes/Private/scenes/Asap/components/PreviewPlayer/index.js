@@ -317,7 +317,7 @@ class PreviewPlayerRepresentation extends React.Component{
                                     />
 
                                     :
-                                    <Button compact size='small' rounded inverted theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}
+                                    <Button compact size='small' rounded style={{width: '6rem'}} inverted theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}
                                             onClick={()=>this.play()}
                                     > 재생 </Button>
                                 }

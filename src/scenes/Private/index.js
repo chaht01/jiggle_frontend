@@ -18,6 +18,7 @@ import * as actionType from '../../sagas/types'
 
 /* ASSETS */
 import LogoImage from '../../assets/images/logo/jiggle_logo-02.png'
+import LogoVideo from '../../assets/images/logo/red_logo.mp4'
 import connect from "react-redux/es/connect/connect";
 
 
@@ -42,7 +43,6 @@ const LogoContainer = styled.div`
     padding: 1.1rem 0;
     >img{
         height: 100%;
-        margin-right: 1rem;
     }
 `
 
@@ -118,6 +118,7 @@ const PrivateRepresentation = ({match, logout, selectedTemplate, dirtyData}) => 
                 <Logo to={`${routeConfig.publicRoot}`}>
                     <LogoContainer>
                         <img src={LogoImage} alt="jiggle"/>
+                        <video autoPlay playsInline="true" style={{height:'130%', marginTop:'-30%'}}><source type="video/mp4" src={LogoVideo}/></video>
                     </LogoContainer>
                 </Logo>
                 {/*<Route exact path={`${match.url}`} component={CreateButton}/>*/}

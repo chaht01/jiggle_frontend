@@ -89,15 +89,6 @@ const procedureManager = (state=initialState, action) => {
 
         /* ACTION RELATED TO CHART DATA */
         case actionType.CHART_DATA_POST_REQUEST:
-            return {
-                ...state,
-                dirtyData: {
-                    ...state.dirtyData,
-                    loading: true,
-                    error: null,
-                }
-            }
-        case actionType.CHART_DATA_POST_SUCCESS:
             const {data, range} = action.payload
             return {
                 ...state,
@@ -105,6 +96,15 @@ const procedureManager = (state=initialState, action) => {
                     ...state.dirtyData,
                     data,
                     range,
+                    loading: true,
+                    error: null,
+                }
+            }
+        case actionType.CHART_DATA_POST_SUCCESS:
+            return {
+                ...state,
+                dirtyData: {
+                    ...state.dirtyData,
                     loading: false,
                     error: null,
                 }

@@ -16,13 +16,17 @@ import factory from '../../config/factory'
 import Workspace from '../Workspace'
 import * as _ from "lodash";
 import {colorsByType, colorToPalette} from "../../config/common";
-import {THEME} from "../../config/types";
+import {THEME, TEMPLATE} from "../../config/types";
 
 
 const SheetOpts = styled.div`
+    display: flex;
+    justify-content: space-between;
     width: 830px;
     text-align: right;
     padding: 1rem 0;
+    color: #fff;
+    font-size: .8rem;
 `
 
 
@@ -123,6 +127,7 @@ class DataConfigViewRepresentation extends React.Component{
                     <FullPage>
                         <Sheet ref={node => this.sheetNode = node} width="830" height="400"/>
                         <SheetOpts>
+                            {`* 원하는 데이터 영역에서 마우스 오른쪽을 눌러 '라벨'${[TEMPLATE.BAR_EMPHASIS, TEMPLATE.BAR_HORIZONTAL_EMPHASIS].indexOf(templateType)>-1 ? `과 '강조하기'`:''} 기능을 사용해보세요!`}
                             <Button compact size='small' rounded inverted theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}
                                     onClick={()=>this.play()}
                                     disabled={dirtyDataLoading}
@@ -134,7 +139,7 @@ class DataConfigViewRepresentation extends React.Component{
                     </FullPage>
                 </PaddedContainer>
                 <SectionFooter>
-                    <Modal trigger={<Button compact size='small' theme={{fg:'#fff', bg:'#2C2D2F'}} style={{width: '8rem'}} onClick={()=>this.handleModal(true)}>데이터 입력방법</Button>}
+                    <Modal dimmer="blurring" trigger={<Button compact size='small' theme={{fg:'#fff', bg:'#2C2D2F'}} style={{width: '8rem', paddingLeft: '1em', paddingRight:'1em !important', letterSpacing:'.3px !important'}} onClick={()=>this.handleModal(true)}>데이터 입력방법</Button>}
                            basic size='large'
                            closeOnEscape={true}
                            closeOnRootNodeClick={true}
@@ -151,7 +156,7 @@ class DataConfigViewRepresentation extends React.Component{
                             <Button compact theme={{fg:'#fff', bg:'#FA4D1E'}} onClick={()=>this.handleModal(false)}>확인</Button>
                         </Modal.Actions>
                     </Modal>
-                    <Button compact size='small' theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '8rem'}} onClick={this.next} disabled={this.props.safeMask===null}>확인</Button>
+                    <Button compact size='small' theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '8rem'}} onClick={this.next} disabled={this.props.safeMask===null}>다음</Button>
                 </SectionFooter>
             </React.Fragment>
         )

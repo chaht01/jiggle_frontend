@@ -120,7 +120,7 @@ FileUploader.Zone = styled.div`
     width: 70px;
     height: 70px;
     border-radius: 10px;
-    border: 1px solid #161719;
+    border: 1px solid #60646c;
     transition: all .2s;
     left: 50%;
     top: 50%;
@@ -130,7 +130,7 @@ FileUploader.Zone = styled.div`
         content:'';
         width: 40%;
         height: 2px;
-        background: #161719;
+        background: #60646c;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
