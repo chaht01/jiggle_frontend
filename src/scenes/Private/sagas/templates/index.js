@@ -174,15 +174,26 @@ const defaultPlaceholder = (type) => {
 
 }
 
+const description = [
+    '1. 인구나 사용자 증가 지표등에 활용.',
+    '2. 기업, 기관 등의 실적 비교에 활용.',
+    '3. 국가 별 주요 경제지표 순위 등에 활용 할 수 있어요.',
+    '4. 기업 기관의 가장 최근 수치를 강조할 때 활용합니다.',
+    '5. 기업 실적 추이 등을 표현할 때 활용합니다.',
+    '6. 기업, 기관의 예산, 모바일 API의 추이를 표현할 때 활용합니다.',
+    '7. 주가 등 등락의 진폭이 큰 경제지표 표현에 활용합니다.'
+]
+
 export function* fetchTemplatesThumbnailsAsync() {
     try{
         const res = yield call(Api.fetchApi, ['/template/all'])
         let thumbnails = res.data
-        thumbnails = thumbnails.map((template) => {
+        thumbnails = thumbnails.map((template, i) => {
             const type = getTypeFromName(template.name)
             return Object.assign({}, template, {
                 type,
-                placeholder: defaultPlaceholder(type)
+                placeholder: defaultPlaceholder(type),
+                description: description[i]
             })
         })
 

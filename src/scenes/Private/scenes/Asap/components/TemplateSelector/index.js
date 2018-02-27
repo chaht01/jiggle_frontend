@@ -64,6 +64,13 @@ const ThumbnailDescription = styled.div`
     height: 3.4rem;
     color: #C7C8CA;
     background: #1C2021;
+    padding: .3rem .8rem;
+    font-size: .85rem;
+    line-height: 1.4;
+    transition: all .25s;
+    &:hover{
+        color: #fff;
+    }
 `
 
 
@@ -192,7 +199,7 @@ class TemplatesRepresentation extends React.Component{
                                                     <Loader active inverted size='medium'></Loader>
                                                     : null)}
                                                     <ThumbnailDescription>
-                                                        {template.desc}
+                                                        {template.description}
                                                     </ThumbnailDescription>
                                                 </Thumbnail>
                                             ))
