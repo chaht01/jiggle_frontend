@@ -17,7 +17,7 @@ import routeConfig from '../../config/route'
 import * as actionType from '../../sagas/types'
 
 /* ASSETS */
-import LogoImage from '../../assets/images/logo/jiggle_logo-02.png'
+import LogoImage from '../../assets/images/logo/jiggle_logo-02_charonly.png'
 import LogoVideo from '../../assets/images/logo/red_logo.mp4'
 import connect from "react-redux/es/connect/connect";
 
