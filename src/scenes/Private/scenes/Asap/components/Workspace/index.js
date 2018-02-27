@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {Loader} from 'semantic-ui-react'
+import {Dimmer} from 'semantic-ui-react'
 import Composition from '../../../../../../components/Composition'
 import styled from 'styled-components'
 import {getFactory, colorToPalette} from "../../config/common";
@@ -57,7 +57,7 @@ class WorkspaceRepresentation extends React.Component{
         this.state = {
             error: false,
             msg: '',
-            rendeBlock: false
+            renderBlock: false
         }
         this.setupChart = this.setupChart.bind(this)
         this.renderGIF = this.renderGIF.bind(this)
@@ -110,24 +110,32 @@ class WorkspaceRepresentation extends React.Component{
             }
         }
     }
-    renderGIF(){
+    renderGIF(width, onProgress){
         if(this.charts && this.charts.length!=0 && this.factory){
-            this.setState({renderBlock: true})
-            const onProcess = (progress) => {
-                this.setState({renderBlock: false})
-                console.log(progress)
-            };
-            const onFinished = (blob) => {
-                download(blob, `chart.gif`, 'image/gif')
-            };
-            const factoryCopied = _.cloneDeep(this.factory)
-            factoryCopied.recordTransition(
-                this.renderNode,
-                this.charts,
-                onProcess,
-                onFinished,
-                this.imageSerializer(this.props.images)
-            )
+            this.setState({renderBlock: true, GIFWidth: width}, () => {
+                const onProcess = (progress) => {
+                    if(this.state.renderBlock){
+                        this.setState({renderBlock: false})
+                    }
+                    if(typeof onProgress === 'function'){
+                        onProgress(progress)
+                    }
+                };
+                const onFinished = (blob) => {
+                    onProgress(0)
+                    download(blob, `chart.gif`, 'image/gif')
+                };
+                const factoryCopied = _.cloneDeep(this.factory)
+                const chartsCopied = _.cloneDeep(this.charts)
+                const imagesCopied = _.cloneDeep(this.props.images)
+                factoryCopied.recordTransition(
+                    this.GIFNode,
+                    chartsCopied,
+                    onProcess,
+                    onFinished,
+                    this.imageSerializer(imagesCopied)
+                )
+            })
         }
 
     }
@@ -222,7 +230,15 @@ class WorkspaceRepresentation extends React.Component{
                     {this.state.error ? this.state.msg : ''}
                 </PlayerController>
                 }
-
+                <Dimmer
+                    active={this.state.renderBlock}
+                >
+                    <svg
+                        ref={node => this.GIFNode = node}
+                        width={numeral(this.state.GIFWidth).value()}
+                        height={numeral(this.state.GIFWidth).value()*9/16}
+                    />
+                </Dimmer>
             </RenderComposition>
         )
 

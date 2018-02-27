@@ -57,6 +57,7 @@ class DataConfigViewRepresentation extends React.Component{
             width: 0,
             height: 0,
         }
+        this.sheetNode = null
         this.next = this.next.bind(this)
         this.play = this.play.bind(this)
         this.handleModal = this.handleModal.bind(this)
@@ -120,7 +121,7 @@ class DataConfigViewRepresentation extends React.Component{
             <React.Fragment>
                 <PaddedContainer>
                     <FullPage>
-                        <Sheet width="830" height="400"/>
+                        <Sheet ref={node => this.sheetNode = node} width="830" height="400"/>
                         <SheetOpts>
                             <Button compact size='small' rounded inverted theme={{fg:'#FA4D1E', bg:'#FA4D1E'}}
                                     onClick={()=>this.play()}
@@ -173,8 +174,9 @@ class DummyModalContent extends React.Component{
         const {templateType} = this.props
         this.mask = factory.mask(this.props.placeholder.data, [], this.props.placeholder.emphasisTarget)[templateType]()
         this.sheetOpts = factory.sheet(this.props.placeholder.data, [], this.props.placeholder.emphasisTarget)['ONLY_SHEET']()
-        const colors = colorsByType(templateType)
-        const color = colors[Object.keys(colors)[0]][0]
+        const colorsTabs = colorsByType(templateType)
+        const randomColors = colorsTabs[Object.keys(colorsTabs)[parseInt(Math.random()*Object.keys(colorsTabs).length)]]
+        const color = randomColors[parseInt(Math.random()*randomColors.length)]
         this.palette = colorToPalette(color, templateType, this.mask.mask)
         this.theme = THEME.DARK
 

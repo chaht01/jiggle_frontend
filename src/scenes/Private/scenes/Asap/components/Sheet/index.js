@@ -40,9 +40,16 @@ class SheetRepresentation extends React.Component{
         this.state = {
             data: _.cloneDeep(defaultDummyData),
         }
+        this.refNode = null
         this.saveData = this.saveData.bind(this)
+        this.getInstance = this.getInstance.bind(this)
     }
-
+    getInstance(){
+        if(this.refNode===null){
+            return null
+        }
+        return this.refNode.getInstance()
+    }
     saveData(){
         const {data} = this.state
         const dataToSave = JSON.parse(JSON.stringify(data))
@@ -57,6 +64,7 @@ class SheetRepresentation extends React.Component{
             <React.Fragment>
                 <SheetContainer width={width}>
                     <Handson
+                        ref={node => this.refNode = node}
                         settings={{
                             data: this.state.data,
                             onAfterChange:(changes, source) => {
@@ -99,7 +107,8 @@ const Sheet = connect(
                 && next.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget === prev.PrivateReducer.AsapReducer.procedureManager.dirtyData.emphasisTarget
                 && _.isEqual(next.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments, prev.PrivateReducer.AsapReducer.procedureManager.dirtyData.comments)
             )
-        }
+        },
+        withRef: true
     }
 )(SheetRepresentation)
 export default Sheet

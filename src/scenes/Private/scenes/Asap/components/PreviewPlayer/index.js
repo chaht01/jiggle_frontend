@@ -100,6 +100,18 @@ const Spinner = styled.div`
     }
 `
 
+const Progress = styled.div`
+        display:block;
+        width: 100%;
+        transform: translateX(${props => -100+props.progress}%);
+        top: 0;
+        height: 2px;
+        position: absolute;
+        background: #F74E2C;
+        transition: all .2s;
+        left: 0;
+`
+
 const mapStateToProps = (state, ownProps) => {
     return {
         mask: state.PrivateReducer.AsapReducer.procedureManager.dirtyData.safeMask,
@@ -132,7 +144,8 @@ class PreviewPlayerRepresentation extends React.Component{
                 y:0
             },
             images: [],
-            transitionPlay: false
+            transitionPlay: false,
+            renderProgress: 0
         }
         this.renderGIF = this.renderGIF.bind(this)
         this.focusImage = this.focusImage.bind(this)
@@ -143,12 +156,12 @@ class PreviewPlayerRepresentation extends React.Component{
         this.stop = this.stop.bind(this)
     }
     renderGIF(){
-        // this.focusImage(-1, ()=>{
-            if(this.renderNode!==null){
-                this.renderNode.getWrappedInstance().renderGIF()
-            }
-        // })
-
+        if(this.renderNode!==null){
+            this.renderNode.getWrappedInstance().renderGIF(560, (progress)=>{
+                console.log(progress)
+                this.setState({renderProgress: progress*100})
+            })
+        }
     }
     setAnchorIdx(idx, cb){
         this.setState({
@@ -313,7 +326,10 @@ class PreviewPlayerRepresentation extends React.Component{
                     </FullPage>
                 </PaddedContainer>
                 <SectionFooter>
-                    <Button compact size='small' theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '7.5rem'}} onClick={this.renderGIF}>저장하기</Button>
+                    <Progress progress={this.state.renderProgress}/>
+                    <Button compact size='small' theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '8rem'}} onClick={this.renderGIF}>
+                        저장하기
+                    </Button>
                 </SectionFooter>
             </React.Fragment>
         )

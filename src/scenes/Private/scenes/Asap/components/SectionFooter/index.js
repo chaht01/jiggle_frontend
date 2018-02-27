@@ -21,7 +21,7 @@ const Footer = styled.div`
     top: auto;
     width: 100%;
     height: 50px;
-    padding: 0 20px;
+    padding: 0 3rem;
     background: #000;
     z-index: 202;
     transform: translateZ(0);

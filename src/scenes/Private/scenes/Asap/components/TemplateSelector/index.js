@@ -205,7 +205,7 @@ class TemplatesRepresentation extends React.Component{
                     }
                 </PaddedContainer>
                 <SectionFooter>
-                    <Button onClick={this.confirmTemplate} compact size="small" theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '7.5rem'}} disabled={this.state.selected==-1}>
+                    <Button onClick={this.confirmTemplate} compact size="small" theme={{fg:'#fff', bg:'#FA4D1E'}} style={{width: '8rem'}} disabled={this.state.selected==-1}>
                         {this.state.selected!=-1 && this.props.selectedTemplate.loading ?
                             <Loader active inline inverted size='mini'/>
                             : '확인'

@@ -15,7 +15,8 @@ export const THEME = {
         colorTernary : "#ffffff",
         backgroundColor : "#2c2d2e",
         colorStripe1: "#333435",
-        colorStripe2: "#2c2d2e"
+        colorStripe2: "#2c2d2e",
+        colorAxis: '#6d6d6d'
     },
     LIGHT: {
         colorPrimary : "#000000",
@@ -23,6 +24,7 @@ export const THEME = {
         colorTernary : "#7f7f7f",
         backgroundColor : "#f3f4f5",
         colorStripe1: "#e6e7e8",
-        colorStripe2: "#f3f4f5"
+        colorStripe2: "#f3f4f5",
+        colorAxis: '#7f7f7f'
     }
 }
