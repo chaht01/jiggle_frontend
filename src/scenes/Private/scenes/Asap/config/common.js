@@ -109,7 +109,7 @@ export const colorsByType = (type) => {
             break
         case TEMPLATE.BAR_EMPHASIS:
         case TEMPLATE.BAR_HORIZONTAL_EMPHASIS:
-            ret.emphasis = [new Swatch('#dd6b4b', '#b5b5b5', 2), new Swatch('#7d9ec9', '#b5b5b5', 2), new Swatch('#e5a248', '#b5b5b5', 2)]
+            ret.emphasis = [new Swatch('#dd6b4b', '#d0d0d0', 2), new Swatch('#7d9ec9', '#d0d0d0', 2), new Swatch('#e5a248', '#d0d0d0', 2)]
             break
     }
     return ret

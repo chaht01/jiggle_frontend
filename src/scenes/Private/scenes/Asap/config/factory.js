@@ -34,10 +34,13 @@ const factory = {
                         let cellProperties = {}
                         const range = getRangeOfValidData(data)
                         let emphasized = emphasisTarget || [range[1],range[1],range[3],range[3]]
+                        /*
+                        Manually given [-1, -1, -1, -1] should not be marked as emphasis.
                         if (range[0] > emphasized[0] || emphasized[1] > range[1]
                             || range[2] > emphasized[2] || emphasized[3] > range[3]) {
                             emphasized = [range[1],range[1],range[3],range[3]]
                         }
+                        */
 
                         const inComments = (col, row) => {
                             return comments.filter((comment) => {

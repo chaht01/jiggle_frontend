@@ -18,14 +18,7 @@ const mapStateToProps = (state, ownProps) => {
 const PrivateRouteRepresentation = ({component: Component, isAuthenticated, ...rest}) => {
     return (
         <Route {...rest} render={props => (
-            isAuthenticated ? (
-                    <Component {...props}/>
-                ) : (
-                    <Redirect to={{
-                        pathname: `${routeConfig.publicRoot}/sign`,
-                        state: {from: props.location}
-                    }}/>
-                )
+            <Component {...props}/>
         )}/>
     )
 
