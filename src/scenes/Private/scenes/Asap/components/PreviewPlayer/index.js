@@ -157,7 +157,7 @@ class PreviewPlayerRepresentation extends React.Component{
     }
     renderGIF(){
         if(this.renderNode!==null){
-            this.renderNode.getWrappedInstance().renderGIF(1080, (progress)=>{
+            this.renderNode.getWrappedInstance().renderGIF(560, (progress)=>{
                 console.log(progress)
                 this.setState({renderProgress: progress*100})
             })
