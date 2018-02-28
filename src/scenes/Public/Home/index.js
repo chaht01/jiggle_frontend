@@ -92,7 +92,10 @@ const CollaboHolder = styled.div`
     font-size: 1.1rem;
 `
 CollaboHolder.ImageHolder = styled.div`
-    width: 22rem;position: relative;margin-bottom: 0rem;
+    max-width: 30rem;
+    width: 90%;
+    position: relative;
+    margin: 0 auto;
 `
 CollaboHolder.Image = styled.img`
     display: block;
@@ -100,9 +103,30 @@ CollaboHolder.Image = styled.img`
     margin: 0 auto;
     position: relative;
 `
+CollaboHolder.Description = styled.div`
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-weight: 100;
+    letter-spacing: 1px;
+    word-spacing: 1px;
+`
 
 const SliderContent = ParentContent.extend`
     background: #fff;
+    overflow: hidden;
+`
+
+const Arrow = styled.a`
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    ${media.tablet`width: 5vw;height:5vw;`}
+    background-image: url(${images.arrow});
+    background-size: contain;
+    background-repeat: no-repeat;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
 `
 
 const mapStateToProps = (state, ownProps) => {
@@ -118,6 +142,24 @@ const mapDispatchToProps = (dispatch) => { //TODO: temporary auto auth
         login: () => dispatch({type: actionType.LOGIN_REQUEST, user:'hello', password:'world'}),
         fetchTemplates: () => dispatch(fetchTemplatesThumbnails()),
     }
+}
+
+const mergeProps = (stateProps, dispatchProps, ownProps) => {
+    let templates = stateProps.thumbnails.map((template)=>{
+        if(template.placeholder){
+            const mask = factory.mask(template.placeholder.data, [], template.placeholder.emphasisTarget)[template.type]()
+            const colorsTabs = colorsByType(template.type)
+            const randomColors = colorsTabs[Object.keys(colorsTabs)[parseInt(Math.random()*Object.keys(colorsTabs).length)]]
+            const color = randomColors[parseInt(Math.random()*randomColors.length)]
+            const palette = colorToPalette(color, template.type, mask.mask)
+            const theme = THEME.DARK
+            const dummyMeta = template.placeholder.meta
+            let placeholder = Object.assign({}, template.placeholder, {mask, palette, theme})
+            let ret = Object.assign({}, template, {placeholder})
+            return ret
+        }
+    })
+    return Object.assign({}, stateProps, dispatchProps, ownProps, {thumbnails:templates})
 
 }
 class HomeRepresentation extends React.Component{
@@ -182,19 +224,19 @@ class HomeRepresentation extends React.Component{
 
             }
         ]
+        this.props.fetchTemplates()
         this.handleScroll = this.handleScroll.bind(this)
         this.onSelectSlide = this.onSelectSlide.bind(this)
+        this.beforeSelectSlide = this.beforeSelectSlide.bind(this)
         this.scrollTop = 0
         this.state = {
             docHeight: 0,
             contentOffset: 0,
-            focusedSlide: 0
+            focusedSlide: -1,
+            futureSlide: -1,
         }
     }
 
-    componentWillMount(){
-        this.props.fetchTemplates()
-    }
 
     handleScroll(e){
         if(typeof window.pageYOffset!= 'undefined'){
@@ -227,6 +269,10 @@ class HomeRepresentation extends React.Component{
         this.setState({focusedSlide:idx})
     }
 
+    beforeSelectSlide(before, after){
+        this.setState({futureSlide: after})
+    }
+
     componentWillUnmount(){
         window.removeEventListener('scroll', this.handleScroll)
     }
@@ -255,6 +301,7 @@ class HomeRepresentation extends React.Component{
                             <source src={wallVideo} type="video/mp4"></source>
                         </WallVideo>
                     </ParentContent>
+                    <Arrow/>
                 </ParentContainer>
                 <ParentContainer>
                     <Parent>
@@ -272,12 +319,15 @@ class HomeRepresentation extends React.Component{
                             <CollaboHolder.ImageHolder>
                                 <CollaboHolder.Image src={collabo}/>
                             </CollaboHolder.ImageHolder>
-                            <div>Jiggle은 데이터 스토리텔링을 도와줍니다.</div>
-                            <div>이제껏 기사에 쓰이는 도표는 겉치레에 지나지 않았죠.</div>
-                            <div>딱딱한 그래프에 플롯과 주인공을 만들어 보세요.</div>
-                            <div>Jiggle이 여러분의 이야기를 그려 드립니다.</div>
+                            <CollaboHolder.Description>
+                                <div>Jiggle은 <span style={{color:"#FB4C1E"}}>데이터 스토리텔링</span>을 도와줍니다.</div>
+                                <div>이제껏 기사에 쓰이는 도표는 겉치레에 지나지 않았죠.</div>
+                                <div>딱딱한 그래프에 플롯과 주인공을 만들어 보세요.</div>
+                                <div>Jiggle이 여러분의 이야기를 그려 드립니다.</div>
+                            </CollaboHolder.Description>
                         </CollaboHolder>
                     </Collabo>
+                    <Arrow/>
                 </ParentContainer>
 
 
@@ -303,11 +353,11 @@ class HomeRepresentation extends React.Component{
                                         }}>
                                         <Preview src={desc.preview}>
                                             {i==0 &&
-                                                <ActiveTemplate
-                                                    active={
-                                                        this.state.scrollTop> this.state.docHeight*(i-0.5)+this.state.contentOffset
-                                                    }
-                                                />
+                                            <ActiveTemplate
+                                                active={
+                                                    this.state.scrollTop> this.state.docHeight*(i-0.5)+this.state.contentOffset
+                                                }
+                                            />
                                             }
                                             {i==2 &&
                                             <ActivePreview
@@ -365,19 +415,16 @@ class HomeRepresentation extends React.Component{
                             focusOnSelect={true}
                             adaptiveHeight={true}
                             slidesToShow={3}
+                            slidesToScroll={1}
                             afterChange={this.onSelectSlide}
+                            beforeChange={this.beforeSelectSlide}
                             style={{height:'100vh'}}
+                            init={()=>this.setState({focusedSlide:0})}
                             responsive={[{breakpoint:viewport.tablet, settings: {slidesToShow:1, dots:true}}]}
                         >
                             {this.props.thumbnails.map((template,c_i)=>{
-                                const mask = factory.mask(template.placeholder.data, [], template.placeholder.emphasisTarget)[template.type]()
-                                const colors = colorsByType(template.type)
-                                const color = colors[Object.keys(colors)[0]][0]
-                                const palette = colorToPalette(color, template.type, mask.mask)
-                                const theme = THEME.DARK
-                                const dummyMeta = template.placeholder.meta
                                 return(
-                                    <Viewport key={c_i} active={this.state.focusedSlide==c_i}>
+                                    <Viewport key={c_i} active={this.state.futureSlide==c_i}>
                                         <Viewport.Title>
                                             {template.placeholder.paper.title}
                                         </Viewport.Title>
@@ -387,10 +434,10 @@ class HomeRepresentation extends React.Component{
 
                                             templateType={template.type}
                                             templateConfig={template}
-                                            safeMask={mask}
-                                            meta={dummyMeta}
-                                            color={palette}
-                                            theme={theme}
+                                            safeMask={template.placeholder.mask}
+                                            meta={template.placeholder.meta}
+                                            color={template.placeholder.palette}
+                                            theme={template.placeholder.theme}
 
                                             transitionActive={this.state.focusedSlide==c_i}
                                             autoPlay={true}
@@ -426,8 +473,9 @@ const EndFooter = styled.div`
 `
 
 const Viewport = styled.div`
+    cursor: pointer;
     position: relative;
-    transform: scale(${props => props.active? 1.5: 0.9});
+    transform: scale(${props => props.active? 1.8: 0.9});
     ${media.tablet`
         transform: scale(${props => props.active? 1: 0.9});`}
     opacity: ${props => props.active? 1: 0.7};
@@ -612,7 +660,8 @@ StepDescription.List = styled.div`
 
 const Home = connect(
     mapStateToProps,
-    mapDispatchToProps
+    mapDispatchToProps,
+    mergeProps
 )(HomeRepresentation)
 
 export default Home

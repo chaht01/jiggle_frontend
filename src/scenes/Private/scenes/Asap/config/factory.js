@@ -605,6 +605,7 @@ const factory = {
                 ret.mask.push(validation.rawData)
                 ret.comments.push(validation.comments)
                 ret.breakPoint = validation.breakPoint[2]
+                console.log(ret)
                 return ret
             },
 
