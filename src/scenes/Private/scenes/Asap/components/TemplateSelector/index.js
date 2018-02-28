@@ -218,11 +218,6 @@ class TemplatesRepresentation extends React.Component{
                                                         <ThumbnailDescription.TextSpan>
                                                             {template.description}
                                                         </ThumbnailDescription.TextSpan>
-                                                        <Label.Group>
-                                                            <ThumbnailDescription.Tag size='tiny'>$10.00</ThumbnailDescription.Tag>
-                                                            <ThumbnailDescription.Tag size='tiny'>$10.00</ThumbnailDescription.Tag>
-                                                            <ThumbnailDescription.Tag size='tiny'>$10.00</ThumbnailDescription.Tag>
-                                                        </Label.Group>
                                                     </ThumbnailDescription>
                                                 </Thumbnail>
                                             ))

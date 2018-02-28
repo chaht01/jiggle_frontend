@@ -73,42 +73,48 @@ class WorkspaceRepresentation extends React.Component{
         return this.renderNode
     }
     draw(recentProps){
-        if(this.state.renderBlock){
-           return
-        }
-        const props = recentProps || this.props
-        const {transitionActive, templateType, imageVisible, images=[]} = props
+        try{
+            if(this.state.renderBlock){
+                return
+            }
+            const props = recentProps || this.props
+            const {transitionActive, templateType, imageVisible, images=[]} = props
 
-        if(this.charts && this.charts.length!=0 && this.factory){
-            if(transitionActive){
-                const renderTransition = this.factory.renderTransition()
-                if(imageVisible) {
-                    renderTransition(this.renderNode, this.charts, this.imageSerializer(images))
-                }else {
-                    renderTransition(this.renderNode, this.charts)
-                }
-            }else{
-                const renderChart = this.factory.renderChart()
-                if(imageVisible){
-                    let chartArgs
-                    if([TEMPLATE.LINE, TEMPLATE.LINE_DENSE].indexOf(templateType)>-1){
-                        chartArgs = [this.charts[this.charts.length-1]]
-                    }else{
-                        chartArgs = this.charts[this.charts.length-1]
+            if(this.charts && this.charts.length!=0 && this.factory){
+                if(transitionActive && this.charts.length>1){ // TODO: this.charts length should be prepared as more than 1
+                    const renderTransition = this.factory.renderTransition()
+                    if(imageVisible) {
+                        renderTransition(this.renderNode, this.charts, this.imageSerializer(images))
+                    }else {
+                        renderTransition(this.renderNode, this.charts)
                     }
-                    const gParent = renderChart(this.renderNode, chartArgs, this.imageSerializer(images))
-
                 }else{
-                    let chartArgs
-                    if([TEMPLATE.LINE, TEMPLATE.LINE_DENSE].indexOf(templateType)>-1){
-                        chartArgs = [this.charts[this.charts.length-1]]
+                    const renderChart = this.factory.renderChart()
+                    if(imageVisible){
+                        let chartArgs
+                        if([TEMPLATE.LINE, TEMPLATE.LINE_DENSE].indexOf(templateType)>-1){
+                            chartArgs = [this.charts[this.charts.length-1]]
+                        }else{
+                            chartArgs = this.charts[this.charts.length-1]
+                        }
+                        const gParent = renderChart(this.renderNode, chartArgs, this.imageSerializer(images))
+
                     }else{
-                        chartArgs = this.charts[this.charts.length-1]
+                        let chartArgs
+                        if([TEMPLATE.LINE, TEMPLATE.LINE_DENSE].indexOf(templateType)>-1){
+                            chartArgs = [this.charts[this.charts.length-1]]
+                        }else{
+                            chartArgs = this.charts[this.charts.length-1]
+                        }
+                        const gParent = renderChart(this.renderNode, chartArgs)
                     }
-                    const gParent = renderChart(this.renderNode, chartArgs)
                 }
             }
+        }catch(err){
+            console.error('Cannot execute workspace method: draw()')
+            console.error(err.stack)
         }
+
     }
     renderGIF(width, onProgress){
         if(this.charts && this.charts.length!=0 && this.factory){

@@ -13,6 +13,12 @@
   src: url('./assets/fonts/Spoqa_Han_Sans_Bold.ttf');
   font-weight: 700;
 }
+@font-face {
+  font-family: 'Gyeongi';
+  src: url('./assets/fonts/Gyeongi.ttf');
+  font-weight: 300;
+}
+
 body{
   font-family: 'Spoqa Hans';
   font-weight: 400;
@@ -30,4 +36,15 @@ body{
 
 .ht_master .wtHolder{
 
+}
+
+.slick-slider{
+  height: 100%;
+}
+.slick-list{
+  overflow: visible;
+  height: 100% !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
