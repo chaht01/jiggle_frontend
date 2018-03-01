@@ -48,6 +48,7 @@ export default class SectionScroll extends React.Component{
         this.checkAnchorIndex = this.checkAnchorIndex.bind(this)
         this.getPropsToSend = this.getPropsToSend.bind(this)
         this.finished = this.finished.bind(this)
+        this.triggerScrollAnimate = this.triggerScrollAnimate.bind(this)
     }
 
     /**
@@ -237,14 +238,14 @@ export default class SectionScroll extends React.Component{
         const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset)
 
         if ('requestAnimationFrame' in window === false) {
-            container.scroll(0, destinationOffsetToScroll);
+            container.scrollTo(0, destinationOffsetToScroll);
             if (callback) {
                 callback();
             }
             return;
         }
 
-        container.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start))
+        container.scrollTo(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start))
         if (container.scrollTop-destinationOffsetToScroll === 0 || time==1) {
             if (callback) {
                 callback()
