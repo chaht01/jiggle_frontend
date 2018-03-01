@@ -108,6 +108,25 @@ const mapDispatchToProps = (dispatch) => {
     }
 }
 
+const mergeProps = (stateProps, dispatchProps, ownProps) => {
+    let templates = stateProps.thumbnails.map((template, i)=>{
+        if(template.placeholder){
+            const mask = factory.mask(template.placeholder.data, [], template.placeholder.emphasisTarget)[template.type]()
+            const colorsTabs = colorsByType(template.type)
+            const randomColors = colorsTabs[Object.keys(colorsTabs)[0]]
+            const color = randomColors[(i%parseInt(randomColors.length))]
+            const palette = colorToPalette(color, template.type, mask.mask)
+            const theme = THEME.DARK
+            const dummyMeta = template.placeholder.meta
+            let placeholder = Object.assign({}, template.placeholder, {mask, palette, theme})
+            let ret = Object.assign({}, template, {placeholder})
+            return ret
+        }
+    })
+    return Object.assign({}, stateProps, dispatchProps, ownProps, {thumbnails:templates})
+
+}
+
 class TemplatesRepresentation extends React.Component{
     constructor(props){
         super(props)
@@ -178,11 +197,6 @@ class TemplatesRepresentation extends React.Component{
                                 <ThumbnailContainer ref={(container)=> this.scrollable = container}>
                                     {this.props.thumbnails.map((template, i) => {
                                         const mask = factory.mask(template.placeholder.data, [], template.placeholder.emphasisTarget)[template.type]()
-                                        const colors = colorsByType(template.type)
-                                        const color = colors[Object.keys(colors)[0]][0]
-                                        const palette = colorToPalette(color, template.type, mask.mask)
-                                        const theme = THEME.DARK
-                                        const dummyMeta = {}
                                         const Thumb = withRouter(
                                             ({history, ...rest}) => (
                                                 <Thumbnail
@@ -204,9 +218,9 @@ class TemplatesRepresentation extends React.Component{
                                                         templateType={template.type}
                                                         templateConfig={template}
                                                         safeMask={mask}
-                                                        meta={dummyMeta}
-                                                        color={palette}
-                                                        theme={theme}
+                                                        meta={template.placeholder.meta}
+                                                        color={template.placeholder.palette}
+                                                        theme={template.placeholder.theme}
 
                                                         transitionActive={this.state.over==i}
                                                         autoPlay={true}
@@ -244,7 +258,8 @@ class TemplatesRepresentation extends React.Component{
 
 const TemplateSelector = connect(
     mapStateToProps,
-    mapDispatchToProps
+    mapDispatchToProps,
+    mergeProps
 )(TemplatesRepresentation)
 
 export default TemplateSelector

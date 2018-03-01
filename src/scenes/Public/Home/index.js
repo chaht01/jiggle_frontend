@@ -311,7 +311,7 @@ class HomeRepresentation extends React.Component{
                         </Child>
                     </Parent>
                     <ParentContent>
-                        <WallVideo autoPlay muted loop
+                        <WallVideo autoPlay muted loop playsInline
                                    style={{
                                        transform: `translateY(${this.state.scrollTop> this.state.docHeight ? '-30' : -30*this.state.scrollTop/this.state.docHeight}%)`
                                    }}
@@ -388,11 +388,7 @@ class HomeRepresentation extends React.Component{
                                     </PreviewContainer>
                                     <StepDescription
                                         left={i%2==1} right={i%2==0}>
-                                        <StepDescription.Title
-                                            style={{
-                                                transform: `translateY(${this.state.scrollTop> this.state.docHeight*(1+i)+this.state.contentOffset ? '-100' : this.state.scrollTop < this.state.docHeight*(i-1)+this.state.contentOffset ? '100' : -100*(this.state.scrollTop-(this.state.docHeight*(i)+this.state.contentOffset))/(this.state.docHeight)}%)`
-                                            }}
-                                        >{desc.title}</StepDescription.Title>
+                                        <StepDescription.Title>{desc.title}</StepDescription.Title>
                                         <StepDescription.Desc>
                                             {desc.desc.map((line,k) =>
                                                 <div key={k}>{line}</div>
