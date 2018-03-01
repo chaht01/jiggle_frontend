@@ -39,7 +39,7 @@ export default class SectionScroll extends React.Component{
         this.anchorIdx = 0                      // current activated anchorIdx(synchronized with real scroll position)
         this.activeAnchorLength = 0             // the number of active anchors (it can be used to style any component related to currently clickable object)
 
-
+        this.scroll = this.scroll.bind(this)
         this.handleSection = this.handleSection.bind(this)
         this.disableScroll = this.disableScroll.bind(this)
         this.handleWheelEvents = this.handleWheelEvents.bind(this)
