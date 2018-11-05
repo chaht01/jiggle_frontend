@@ -64,8 +64,8 @@ Service is available at http://jiggle.newslabfellows.com
 
 ## Supporters
 
-![Google Newslab](https://i.imgur.com/eQ98cPi.png =150x)
+![Google Newslab](https://i.imgur.com/eQ98cPi.png?1)
 
-![Mediati](https://i.imgur.com/5US15NE.jpg =150x)
+![Mediati](https://i.imgur.com/5US15NE.jpg?2)
 
-![MoneyToday](https://i.imgur.com/oxukC3m.png =150x)
+![MoneyToday](https://i.imgur.com/oxukC3m.png?1)
